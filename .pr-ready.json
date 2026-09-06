@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "checks": {
+    "build": ["make", "build"],
+    "test": ["make", "test"],
+    "lint": ["make", "lint"],
+    "static": ["make", "typecheck"]
+  }
+}
