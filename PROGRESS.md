@@ -3,10 +3,12 @@
 ## Resume here
 
 - Phase: 1 — Understand agents and demonstrate one reliability problem.
-- Current milestone: **M04 — Reproduce one fault and compare one safeguard**.
-- Status: **complete**.
-- Technical verification: **passed**; 225 offline tests, Ruff lint/format, strict
-  typing, lockfile, sdist/wheel build and isolated offline installed-wheel smoke.
+- Current milestone: **M05 — Package a reproducible first release**.
+- Status: **in_progress**.
+- Local M05 verification: **passed**; 248 offline tests, one explicitly gated live
+  test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
+  extracted-source checks and repeatable isolated wheel verification. Hosted
+  Ubuntu/macOS CI is configured but unrun.
 - Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
   reports invalid; all 10 read-back runs hit the output limit before executing a
   tool. No valid claims or live read-back behavior to assess; see the live note.
@@ -25,15 +27,17 @@
   in all four cells. Both no-fault comparison claims were contradicted; read-back
   under the fault reported non-completion but queried the wrong ID. Do not claim
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
-- Exact next action: commit the reviewed M04 checkpoint, then implement only M05's
-  reproducible v0.1 packaging. Preserve the wrong-ID evidence; no automatic reruns,
-  ID correction, new model, or M06 reliability work.
+- M04 checkpoint: committed locally as `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
+  (`feat: add first agent fault comparison`). It is not pushed.
+- Exact next action: commit and push M05 as explicitly requested on 2026-09-07,
+  then inspect Ubuntu/macOS CI. Follow `docs/public-launch.md`, including
+  private vulnerability reporting when public. Do not tag/release or start M06 yet.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
-- Publication: M01–M03 baseline committed and pushed with explicit approval as
-  `b71f5835558a490812f0df44b610d37e4cf49896` on `origin/main`. M04 changes are local.
-- Next milestone: M05 explicitly authorized on 2026-09-07. All observed format and
-  ID-copying failures stay in M04; no output stripping or safeguard-win claim.
+- Publication: M01–M03 is pushed as `b71f583`; M04 is committed locally as
+  `43c0ab3`. M05 is uncommitted. Nothing after M03 has been pushed.
+- Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
+  All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
 ## Implementation session — 2026-09-06
 
@@ -342,19 +346,133 @@ left local for review, not staged to bypass the assessment.
   checks and successful format smoke tests do not guarantee correct agent output.
 - Repeating a create makes another task. Retry safety remains M07.
 - Independent evaluation, dropped-write injection, comparisons and saved Markdown
-  reports work for the one-task contract. A report-regeneration CLI remains later
-  work. `finished` is a loop/batch status, not task success or safeguard superiority.
+  reports work for the one-task contract. M05 adds JSON-only report regeneration;
+  `finished` is still a loop/batch status, not task success or safeguard superiority.
 - The observer checks a final small-state snapshot, not causal history, arbitrary
   agent workloads, concurrent execution, or tamper-proof evidence. It reads all
   task rows and is not a hostile-file or large-database security boundary.
 - Trace flushing is not a crash-safe transaction, and an HTTP timeout is not a
   hard runtime/cancellation guarantee. These limitations are documented in M02.
-- M01–M03 has a public commit; current M04 manifests correctly identify a dirty
+- M01–M03 has a pushed commit; historical M04 manifests correctly identify a dirty
   worktree based on that commit. They do not pretend it is a committed M04 revision.
 - Two local-model experiments ran across M02/M03; the separate M04 batch is
   recorded above. No hosted/paid API used.
 - This verification covers the macOS development machine. Offline Linux CI is
-  planned for M05 and has not been run or claimed here.
+  configured in M05 but cannot run until its commit is pushed; it has not been
+  claimed as passed.
+
+## M05 implementation session — 2026-09-07
+
+- The user requested the M04 commit before M05. After a complete check and staged
+  credential scan, committed M04 locally as `43c0ab3` with 22 files. No push.
+- Added `aflab report RUN_DIRECTORY` to rebuild a run or comparison Markdown report
+  only from validated saved JSON. `--check` is read-only and returns 1 for stale or
+  missing Markdown. Invalid, ambiguous or inconsistent evidence returns 2 without
+  changing the existing report. Report replacement is atomic and refuses symlinks.
+- Run regeneration accepts `evaluation.json` and optional matching
+  `observation.json`; comparison regeneration accepts `comparison.json`. It does
+  not contact Ollama, read SQLite, rerun evaluation, rewrite evidence, or establish
+  that saved JSON is authentic.
+- Added seven saved-report tests, a CLI version check, and an opt-in live smoke.
+  The live test requires both `AFLAB_RUN_LIVE_TESTS=1` and the dedicated Make target;
+  the user flag alone remains skipped. Default pytest keeps sockets disabled.
+- Added Ubuntu GitHub Actions configuration. Environment installation may fetch
+  the pinned `uv` and locked packages; `make check` itself runs offline/no-sync,
+  blocks Python sockets, and cannot select live inference. The job has not run
+  because M05 is local and uncommitted/unpushed; Docker, Podman and `act` are not
+  installed locally. Do not claim Linux PASS yet.
+- Prepared package version 0.1.0, changelog, contribution/security guidance,
+  macOS/Linux development instructions, explicit limitations, evidence-led
+  experiment/video write-up, M05 walkthrough, and release-candidate notes.
+- Full local `make check` PASS on macOS/Python 3.12.13: lockfile, Ruff, strict mypy
+  over 30 source/test/example files, 234 offline tests passed, one live test skipped,
+  and 0.1.0 sdist/wheel built. No network/model use by the suite.
+- Isolated wheel smoke PASS using the built 0.1.0 wheel: installed-package import,
+  offline run and four-cell comparison, and exact `report --check` results. The
+  first version-smoke attempt stopped after argparse correctly raised `SystemExit`
+  for `--version`; it generated no experiment. The corrected smoke used package
+  metadata and completed. Temporary evidence was cleaned.
+- Clean extracted-sdist smoke PASS: new temporary environment, locked offline sync,
+  full offline checks, and package rebuild. Temporary tree moved to Trash. An
+  initial over-restrictive temporary-path guard refused before extraction; no test
+  result was claimed from it and its empty directory was also moved to Trash.
+- `report --check` PASS on the latest replacement-model run and comparison. It
+  correctly reported the older M03 Markdown stale because its historical heading
+  differs from the current renderer; no historical artifact was rewritten.
+- `make doctor` remains READY for the verified local Instruct checkpoint. No live
+  M05 smoke was invoked, no model/download/daemon setting changed, and no M06 work.
+- M05 remains `in_progress` until review and the Ubuntu workflow runs on a pushed
+  release commit. No M05 staging, commit, push, tag, or GitHub release yet.
+- Added an offline regression that resolves every repository-relative Markdown
+  link in root and `docs/`; removed a deliberately non-portable link to ignored
+  local run data while retaining its provenance as plain text.
+- Final deterministic PR-readiness verdict: **NOT PR READY**. Build, test, lint and
+  static checks all PASS; no suspicious files. The stated blocker is the expected
+  set of untracked M05 files. No staging or commit was used to hide that state.
+
+## M05 public-repository polish — 2026-09-07
+
+- Reworked the README around a model-free quickstart, expected scripted outcomes,
+  architecture, exact live-model setup and candid historical limitations. It does
+  not claim that read-back won, a public release exists, or live raw data is public.
+- Captured four real offline CLI experiment cells into a checked-in JSON/report
+  excerpt. Documented the scripted client and omitted traces/manifests/databases;
+  added a fresh-directory capture helper and tests for all five saved reports.
+- Hardened saved-report validation: reject duplicate JSON keys, non-file/symlink
+  evidence (including dangling optional observations) and unsupported schemas;
+  regression-test preservation of reports and cleanup after replacement failure.
+- Added `make package-check`: hash-locked runtime export, fresh isolated wheel
+  installation and application checks outside the checkout. Imports are verified
+  against the installed environment; scripted application calls block sockets.
+- Expanded CI to Ubuntu 24.04 and macOS 14; pinned existing actions to verified
+  commit SHAs, kept read-only permissions, disabled checkout credential persistence,
+  added stale-run cancellation and configured Dependabot for action updates.
+  Default `make test` explicitly clears both live-test opt-in flags.
+- Added architecture, artifact, roadmap, troubleshooting and public-launch guides;
+  issue forms, PR template, code of conduct, support guidance and editor settings.
+  Clarified that security reporting requires owner setup, not merely a link.
+- `make check` PASS: 248 passed, 1 live skipped; Ruff and strict mypy over 34 files;
+  locked environment; built 0.1.0 wheel and source archive. `make package-check` PASS.
+- Clean extracted 0.1.0 source archive: offline locked sync, full `make check` and
+  `make package-check` all PASS on macOS/Python 3.12.13. Temporary verification
+  environments were cleaned automatically; no historical run artifacts changed.
+- Exact release archive inspection PASS: 22 wheel entries and 91 source entries,
+  expected code/license/type marker and example/check helpers present; no run
+  databases, environment directories or credentials files bundled. An initial
+  overly broad inspection also selected an older dev wheel and was corrected to
+  exact release filenames; old local build artifacts were not deleted.
+- YAML syntax parsing PASS for workflows, Dependabot and issue forms. GitHub's
+  hosted issue rendering/workflow behavior is not locally verified. A limited
+  credential-pattern scan found no matches in current files or reachable Git
+  history; this is not a complete security audit or a privacy clearance.
+- Verified GitHub is still PRIVATE with Issues enabled. Private vulnerability
+  reporting could not be verified from the private-repository endpoint. Enabling
+  and checking it when public is an explicit launch step.
+- Review fixes: gave example helpers an explicit test import path; normalized
+  macOS temporary-directory symlinks in installed-package identity checks. Both
+  failures were in the new verification setup and passed after correction.
+- M05 stays `in_progress`: user review and hosted CI remain. No staging, commit,
+  push, visibility change, tag/release, live inference, model/daemon change or M06.
+- Final PR-readiness assessment: **NOT PR READY**. Build, tests, lint and static
+  checks PASS; no suspicious files detected. The sole reported blocker is the
+  intended new files remaining untracked. They were not staged without permission.
+
+## M05 authorized commit and push — 2026-09-07
+
+- User explicitly requested committing and pushing the pending changes and
+  suggestions for the repository About text and topics. Metadata suggestions do
+  not authorize a visibility change, tag or release.
+- Reviewed the staged M05 changes and confirmed `origin/main` still points to
+  `b71f583`; the push will also include the existing local M04 commit `43c0ab3`.
+- Fresh `make check` PASS: 248 offline tests passed, one live test skipped,
+  lockfile, Ruff, strict mypy over 34 files, and 0.1.0 wheel/source build.
+  `make package-check` PASS with a fresh isolated installed environment.
+- Staged whitespace checks and a limited credential/artifact-pattern scan PASS;
+  ignored local runs, databases and environments are excluded.
+- Deterministic analyzer verdict: **PR READY**. Build, tests, lint and static
+  checks PASS; no suspicious files or blockers detected.
+- M05 remains `in_progress`: hosted CI and the separate learning checkpoint
+  remain pending. Commit/push authorization does not establish learning completion.
 
 ## Remaining roadmap
 
@@ -364,7 +482,7 @@ left local for review, not staged to bypass the assessment.
 | M02: first agent | complete | Explained; user explicitly authorized M03 |
 | M03: independent evaluation | complete | Explained; user explicitly authorized M04 |
 | M04: first fault comparison | complete | Original inconclusive batch and replacement smoke recorded; user reviewed summary and authorized M05 |
-| M05: reproducible first release | planned | Explicitly authorized; begin only after committing the M04 checkpoint |
+| M05: reproducible first release | in_progress | Public-facing polish and local checks pass; commit/push authorized; learning review and hosted Ubuntu/macOS CI remain |
 | M06–M10: execution reliability | planned | Review the first release and plan the next phase |
 | M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |

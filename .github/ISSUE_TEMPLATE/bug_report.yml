@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible installation, execution or evaluation problem.
+body:
+  - type: markdown
+    attributes:
+      value: "Use synthetic data only. For vulnerabilities, follow SECURITY.md instead."
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Smallest reproduction
+      description: Exact command and minimal synthetic input. Say whether it is scripted or live.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected and actual result
+      description: Separate task outcome, final claim and command exit status where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python/uv version and commit or aflab version. For live runs, include sanitized doctor output.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Relevant report/trace excerpt and any omissions. Do not upload an unreviewed run directory.

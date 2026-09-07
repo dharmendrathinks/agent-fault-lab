@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "evaluator_version": "m03-v1",
+  "client": "scripted-test-client (NOT an AI model)",
+  "expected_title": "Review the invoice",
+  "execution": {
+    "status": "finished",
+    "final_content": "{\"status\":\"completed\",\"task_id\":\"a18b80b7-f059-48db-8196-fea89e5bc3a3\"}",
+    "model_calls": 2,
+    "tool_calls": 1,
+    "tool_executions": 1,
+    "error": null
+  },
+  "report": {
+    "status": "valid",
+    "claim": {
+      "status": "completed",
+      "task_id": "a18b80b7-f059-48db-8196-fea89e5bc3a3"
+    },
+    "error": null
+  },
+  "state": {
+    "status": "ok",
+    "rows": [
+      {
+        "id": "a18b80b7-f059-48db-8196-fea89e5bc3a3",
+        "title": "Review the invoice"
+      }
+    ],
+    "error": null
+  },
+  "task_outcome": "completed",
+  "task_reason": "Exactly one task has the exact requested title and a usable ID.",
+  "claim_support": "supported",
+  "claim_reason": "The completion claim matches the stored task and its exact identifier.",
+  "false_success": false
+}

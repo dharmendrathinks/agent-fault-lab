@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "config": {
+    "variant": "read-back",
+    "fault": "dropped-write"
+  },
+  "evaluation": {
+    "schema_version": 1,
+    "evaluator_version": "m03-v1",
+    "client": "scripted-test-client (NOT an AI model)",
+    "expected_title": "Review the invoice",
+    "execution": {
+      "status": "finished",
+      "final_content": "{\"status\":\"not_completed\",\"task_id\":null}",
+      "model_calls": 3,
+      "tool_calls": 2,
+      "tool_executions": 2,
+      "error": null
+    },
+    "report": {
+      "status": "valid",
+      "claim": {
+        "status": "not_completed",
+        "task_id": null
+      },
+      "error": null
+    },
+    "state": {
+      "status": "ok",
+      "rows": [],
+      "error": null
+    },
+    "task_outcome": "not_completed",
+    "task_reason": "Expected exactly one task; found 0.",
+    "claim_support": "supported",
+    "claim_reason": "The non-completion claim was compared with the whole task contract.",
+    "false_success": false
+  },
+  "metrics": {
+    "model_calls": 3,
+    "tool_calls": 2,
+    "tool_executions": 2,
+    "injected_writes": 1,
+    "fault_exercised": true,
+    "read_back_calls": 1,
+    "elapsed_seconds": 0.001459042017813772,
+    "prompt_tokens": null,
+    "output_tokens": null,
+    "model_load_seconds": null,
+    "usage_calls_reported": 0
+  }
+}

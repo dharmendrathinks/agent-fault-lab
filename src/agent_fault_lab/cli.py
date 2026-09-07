@@ -1,4 +1,4 @@
-"""M04: explicit one-task runs and bounded, independently evaluated comparisons."""
+"""v0.1 CLI for recorded runs, comparisons, and deterministic reports."""
 
 import argparse
 import json
@@ -26,7 +26,12 @@ from agent_fault_lab.model import (
     ToolCall,
 )
 from agent_fault_lab.ollama_adapter import OllamaClient
-from agent_fault_lab.reporting import json_block, render_report
+from agent_fault_lab.reporting import render_run_report
+from agent_fault_lab.saved_reports import (
+    render_saved_report,
+    replace_report,
+    report_matches,
+)
 from agent_fault_lab.scripted import ScriptedClient
 from agent_fault_lab.tasks import TaskStore
 from agent_fault_lab.trace import Recorder
@@ -204,16 +209,7 @@ def _execute(
                 output / "observation.json", observation.model_dump(mode="json")
             )
             with (output / "report.md").open("x", encoding="utf-8") as report_file:
-                report_file.write(
-                    render_report(evaluation)
-                    + "\n## Experiment and accounting\n\n"
-                    + json_block(
-                        {
-                            "config": config.model_dump(mode="json"),
-                            "metrics": observation.metrics.model_dump(mode="json"),
-                        }
-                    )
-                )
+                report_file.write(render_run_report(evaluation, observation))
             recorder.emit(
                 "evaluation_completed",
                 task_outcome=evaluation.task_outcome,
@@ -365,7 +361,13 @@ def _compare(*, offline: bool, trials: int, output: Path | None) -> int:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="aflab",
-        description="M04: compare a read-back instruction against dropped writes.",
+        description=(
+            "Reproduce agent failures, evaluate outcomes independently, and "
+            "regenerate reports from saved evidence."
+        ),
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {version('agent-fault-lab')}"
     )
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("doctor", help="Check local Ollama; never download or infer.")
@@ -402,6 +404,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     compare.add_argument(
         "--output", type=Path, help="New directory; parent must exist."
     )
+    report = commands.add_parser(
+        "report", help="Regenerate Markdown from saved JSON; never run a model."
+    )
+    report.add_argument("run_directory", type=Path)
+    report.add_argument(
+        "--check",
+        action="store_true",
+        help="Read-only: return 1 when report.md is missing or stale.",
+    )
     args = parser.parse_args(argv)
     try:
         if args.command == "doctor":
@@ -409,6 +420,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(info.model_dump_json(indent=2))
             print("READY for a local smoke test" if info.ready else "NOT READY")
             return 0 if info.ready else 2
+        if args.command == "report":
+            kind, rendered = render_saved_report(args.run_directory)
+            if args.check:
+                if report_matches(args.run_directory, rendered):
+                    print(f"{kind.capitalize()} report matches saved JSON evidence")
+                    return 0
+                print(
+                    "report.md is missing or stale; saved evidence was not changed",
+                    file=sys.stderr,
+                )
+                return 1
+            target = replace_report(args.run_directory, rendered)
+            print(f"Regenerated {kind} report: {target}")
+            return 0
         if args.command == "compare":
             return _compare(
                 offline=args.offline, trials=args.trials, output=args.output

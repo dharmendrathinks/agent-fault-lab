@@ -719,3 +719,40 @@ M02, M03, and M04; see `PROGRESS.md`. All later milestones remain recorded and g
   validation, not a replacement for the recorded 20-run experiment or a general
   reliability conclusion. A larger follow-up batch needs separate review.
 - No new dependency, daemon setting, hosted API, commit/push, or M05 work.
+
+### M05 implementation decisions — 2026-09-07
+
+- The user accepted the M04 summary, explicitly requested its commit, and then
+  authorized M05. M04 was committed locally as `43c0ab3`; it was not pushed.
+- M05 packages the existing experiment rather than adding a new fault, safeguard,
+  model, provider or agent framework. M06 and later reliability work stay gated.
+- `aflab report RUN_DIRECTORY` regenerates Markdown only from validated saved JSON.
+  It performs no model call or database re-evaluation. `--check` makes the operation
+  read-only and detects a stale/missing report for automation.
+- A run report validates `evaluation.json`; when `observation.json` exists, the
+  embedded evaluation must match before accounting is rendered. A comparison
+  report validates `comparison.json`. Ambiguous or invalid evidence fails closed.
+- Report replacement is atomic and refuses a symlink target. Saved raw evidence
+  is never overwritten by report regeneration.
+- Default tests and CI remain offline and socket-blocked. A live Ollama smoke test
+  requires both a dedicated command and `AFLAB_RUN_LIVE_TESTS=1`; it never pulls a
+  model or falls back to cloud.
+- Prepare v0.1 metadata, Linux CI, macOS/Linux development instructions,
+  contribution and security guidance, limitations, release notes, and a short
+  evidence-led experiment write-up. Publishing, tagging and pushing remain
+  separate user-authorized actions.
+
+### M05 public-repository polish — 2026-09-07
+
+- User requested open-source polish before making the repository public. Keep
+  M05 scope: no new agent fault or treatment, paid model use or GitHub mutation.
+- Lead the README with an offline quickstart and inspectable, explicitly scripted
+  example captured through the real CLI. Include only portable JSON/report excerpts
+  and disclose omissions. Regression-check the example against the renderer.
+- Check an isolated installed wheel with locked runtime dependencies, and configure
+  Ubuntu/macOS CI with read-only permissions and SHA-pinned actions.
+- Harden saved-report inputs against duplicate keys, non-file/symlink evidence and
+  unsupported schemas. Preserve evidence and existing reports on error. This is
+  not authenticated evidence or a hostile-filesystem security boundary.
+- Add architecture, artifact, troubleshooting, community and public-launch guidance.
+  Commit, push, visibility changes and publication remain explicit user decisions.

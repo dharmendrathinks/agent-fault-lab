@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "evaluator_version": "m03-v1",
+  "client": "scripted-test-client (NOT an AI model)",
+  "expected_title": "Review the invoice",
+  "execution": {
+    "status": "finished",
+    "final_content": "{\"status\":\"completed\",\"task_id\":\"70e1c4d9-327f-45db-8eef-667f6c91601a\"}",
+    "model_calls": 2,
+    "tool_calls": 1,
+    "tool_executions": 1,
+    "error": null
+  },
+  "report": {
+    "status": "valid",
+    "claim": {
+      "status": "completed",
+      "task_id": "70e1c4d9-327f-45db-8eef-667f6c91601a"
+    },
+    "error": null
+  },
+  "state": {
+    "status": "ok",
+    "rows": [],
+    "error": null
+  },
+  "task_outcome": "not_completed",
+  "task_reason": "Expected exactly one task; found 0.",
+  "claim_support": "contradicted",
+  "claim_reason": "The completion claim fails the task contract or names the wrong ID.",
+  "false_success": true
+}

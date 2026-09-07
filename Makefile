@@ -1,4 +1,4 @@
-.PHONY: check lockcheck test lint typecheck build demo agent-demo doctor
+.PHONY: check lockcheck test lint typecheck build package-check demo agent-demo doctor live-test
 
 UV ?= uv
 RUN = $(UV) run --offline --no-sync
@@ -9,7 +9,7 @@ lockcheck:
 	$(UV) lock --check --offline
 
 test:
-	$(RUN) pytest
+	AFLAB_RUN_LIVE_TESTS=0 AFLAB_LIVE_TEST_COMMAND=0 $(RUN) pytest
 
 lint:
 	$(RUN) ruff check .
@@ -21,6 +21,9 @@ typecheck:
 build:
 	$(UV) build --offline --no-build-isolation
 
+package-check: build
+	$(RUN) python scripts/check_distribution.py
+
 demo:
 	$(RUN) python examples/task_workflow.py
 
@@ -29,3 +32,7 @@ agent-demo:
 
 doctor:
 	$(RUN) aflab doctor
+
+live-test:
+	@test "$$AFLAB_RUN_LIVE_TESTS" = "1" || (echo "Refused: set AFLAB_RUN_LIVE_TESTS=1 explicitly" >&2; exit 2)
+	AFLAB_LIVE_TEST_COMMAND=1 $(RUN) pytest --enable-socket -m live tests/test_live_ollama.py

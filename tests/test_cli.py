@@ -3,6 +3,7 @@
 import json
 import sqlite3
 from contextlib import closing
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -10,10 +11,20 @@ import pytest
 from agent_fault_lab import cli
 from agent_fault_lab.cli import main
 from agent_fault_lab.evaluation import Evaluation
+from agent_fault_lab.experiments import Observation
 from agent_fault_lab.model import DEFAULT_MODEL, ModelTurn, RunResult
 from agent_fault_lab.ollama_adapter import DoctorResult, OllamaClient
-from agent_fault_lab.reporting import render_report
+from agent_fault_lab.reporting import render_report, render_run_report
 from agent_fault_lab.scripted import ScriptedClient
+
+
+def test_version_is_the_installed_package_version(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+    assert exc.value.code == 0
+    assert capsys.readouterr().out.strip() == f"aflab {version('agent-fault-lab')}"
 
 
 def test_offline_demo_saves_real_evidence(
@@ -53,6 +64,10 @@ def test_offline_demo_saves_real_evidence(
     assert evaluation.claim_support == "supported"
     assert evaluation.report.status == "valid"
     assert (output / "report.md").read_text().startswith(render_report(evaluation))
+    assert (output / "report.md").read_text() == render_run_report(
+        evaluation,
+        Observation.model_validate_json((output / "observation.json").read_text()),
+    )
     with closing(
         sqlite3.connect(f"{(output / 'tasks.sqlite3').as_uri()}?mode=ro", uri=True)
     ) as connection:

@@ -103,9 +103,9 @@ comparison. Do not silently relax grading, rerun until favorable, or jump to M05
 Local directory:
 `runs/m04-compare-b80c5e4c-978c-4483-b92c-39fb02fdee11`.
 
-[Generated comparison report](../../runs/m04-compare-b80c5e4c-978c-4483-b92c-39fb02fdee11/report.md)
-links all 20 per-run artifacts. Local run data is ignored by Git and therefore
-these links are not available from a fresh clone; this note is a factual summary,
+Its generated `report.md` links all 20 per-run artifacts. Local run data is ignored
+by Git and therefore is not available from a fresh clone; the path above is plain
+local provenance, not a source-distribution link. This note is a factual summary,
 not a replacement for those raw artifacts or a public benchmark dataset.
 
 Source provenance: M04 worktree based on published baseline commit

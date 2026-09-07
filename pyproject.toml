@@ -4,16 +4,21 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agent-fault-lab"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Learn agent reliability through reproducible failures and tested safeguards."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = "MIT"
+keywords = ["ai-agents", "evaluation", "fault-injection", "reliability"]
 dependencies = [
     "httpx>=0.28,<0.29",
     "ollama>=0.6,<1",
     "pydantic>=2.10,<3",
 ]
+
+[project.urls]
+Repository = "https://github.com/dharmendrathinks/agent-fault-lab"
+Issues = "https://github.com/dharmendrathinks/agent-fault-lab/issues"
 
 [project.scripts]
 aflab = "agent_fault_lab.cli:main"
@@ -32,9 +37,11 @@ packages = ["src/agent_fault_lab"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."] # Test repository examples as well as the installed src package.
 addopts = "--strict-config --strict-markers --disable-socket"
 required_plugins = ["pytest-socket"]
 filterwarnings = ["error"]
+markers = ["live: explicit local Ollama test; never selected by default"]
 
 [tool.ruff]
 target-version = "py312"
@@ -46,4 +53,4 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["src", "tests", "examples"]
+files = ["src", "tests", "examples", "scripts"]

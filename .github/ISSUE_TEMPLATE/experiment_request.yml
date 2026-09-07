@@ -1,0 +1,24 @@
+name: Experiment proposal
+description: Propose a concrete failure to reproduce or a safeguard to evaluate.
+body:
+  - type: textarea
+    id: failure
+    attributes:
+      label: Concrete failure and affected user
+      description: Describe the problem, a real reproduction if available, and existing work.
+    validations:
+      required: true
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: Independent success and failure criteria
+      description: How could we test the outcome without trusting the agent's own answer?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Smallest useful experiment
+      description: Required tools/models, cost, privacy boundaries and why existing experiments are insufficient.
+    validations:
+      required: true

@@ -6,6 +6,7 @@ import re
 from pydantic import JsonValue
 
 from agent_fault_lab.evaluation import Evaluation
+from agent_fault_lab.experiments import Observation
 
 
 def json_block(value: JsonValue) -> str:
@@ -69,4 +70,25 @@ def render_report(evaluation: Evaluation) -> str:
             "uses a separate read-only SQLite connection, not the agent's tools. The "
             "snapshot is not tamper-proof or a concurrency/security certification.\n",
         ]
+    )
+
+
+def render_run_report(
+    evaluation: Evaluation, observation: Observation | None = None
+) -> str:
+    """Render a saved run, optionally including M04 experiment accounting."""
+    report = render_report(evaluation)
+    if observation is None:
+        return report
+    if observation.evaluation != evaluation:
+        raise ValueError("Observation and evaluation evidence do not match")
+    return (
+        report
+        + "\n## Experiment and accounting\n\n"
+        + json_block(
+            {
+                "config": observation.config.model_dump(mode="json"),
+                "metrics": observation.metrics.model_dump(mode="json"),
+            }
+        )
     )
