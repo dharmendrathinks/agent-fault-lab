@@ -11,11 +11,18 @@ milestone needs a clear failure, an independent check and an honest result.
 - Traces, accounting, saved evidence and reproducible reports.
 - Offline tests, package checks and contribution documentation.
 
-## Next, after first-release review
+## Added in v0.2.0rc1 (prerelease)
 
-- M06: malformed tool results and response-contract handling.
-- M07: retries, duplicate effects and idempotency.
-- Subsequent execution milestones: timeout, interruption and recovery experiments.
+- [M06](milestones/M06.md): malformed tool results and response-contract handling.
+- [M07](milestones/M07.md): retries, duplicate effects and operation-ID replay.
+- [M08](milestones/M08.md): process supervision, deadlines and cancellation limits.
+- [M09](milestones/M09.md): durable conversation state and crash/restart recovery.
+- [M10](milestones/M10.md): read-only failure timelines from saved evidence.
+
+The [candidate release notes](releases/v0.2.0rc1.md) describe the guarantees and
+live findings. M06/M07 were accepted for progression. M08/M09 learning checkpoints
+and M10's independent diagnostic review remain pending; publication does not close
+these gates. [PROGRESS.md](../PROGRESS.md) records technical evidence and next actions.
 
 ## Later, with concrete experiments
 

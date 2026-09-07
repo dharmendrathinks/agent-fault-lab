@@ -7,6 +7,9 @@ environment, not a plugin system or general agent framework.
 |---|---|---|
 | Task persistence | [tasks.py](../src/agent_fault_lab/tasks.py) | Validate input; commit before reporting success |
 | Model-facing tools | [tools.py](../src/agent_fault_lab/tools.py) | Allowlisted calls with validated arguments |
+| M06 response contracts | [contracts.py](../src/agent_fault_lab/contracts.py) | Strict response syntax, schema and request consistency; no storage proof |
+| M06 execution policy | [reliability.py](../src/agent_fault_lab/reliability.py) | Raw response faults and pass-through/validated delivery; argument checks in both policies |
+| M06 evidence | [reliability_reports.py](../src/agent_fault_lab/reliability_reports.py) | Contract counts separate from independent task and claim grades |
 | Bounded execution | [agent.py](../src/agent_fault_lab/agent.py) | Preserve call order, raw output, limits and partial evidence |
 | Local provider | [ollama_adapter.py](../src/agent_fault_lab/ollama_adapter.py) | Fixed loopback endpoint and explicit model preflight |
 | Scripted client | [scripted.py](../src/agent_fault_lab/scripted.py) | Exercise machinery without claiming model behavior |
@@ -39,4 +42,20 @@ See [artifacts](artifacts.md) and [limitations](known-limitations.md).
 
 For a contribution, start with a reproducible failure and regression. Identify
 which component owns the contract; keep evaluation independent of the proposed
-fix. Discuss new faults and providers first. M05 adds packaging, not treatments.
+fix. Discuss new faults and providers first. M06 adds response delivery policies;
+the legacy M04 prompt comparison keeps its existing behavior. M07's
+[retry executor](../src/agent_fault_lab/retries.py) assigns operation IDs and makes
+at most two attempts. Its protected storage method commits a task and operation
+record atomically; separate model calls retain distinct identities. The evaluator
+still reads only actual task state through its own connection. See the
+[M07 walkthrough](milestones/M07.md).
+
+M08–M10 use [supervision.py](../src/agent_fault_lab/supervision.py) and the allowlisted
+[worker.py](../src/agent_fault_lab/worker.py) for owned process attempts.
+[durable_run.py](../src/agent_fault_lab/durable_run.py) saves a sequential conversation
+through [journal.py](../src/agent_fault_lab/journal.py), reserving budgets before
+external actions. Task and run databases remain separate. The operation ledger
+reconciles uncertain task writes, while an inherited OS lock prevents overlapping
+resume. [diagnostics.py](../src/agent_fault_lab/diagnostics.py) reads saved artifacts
+and never invokes the evaluator for fresh grading. Existing v0.1/M06/M07 loops and
+report readers remain available without implicit migration.

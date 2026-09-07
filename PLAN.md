@@ -27,7 +27,7 @@ The immediate objective is **understanding and completing one small reliability 
 | Learning approach | Explanation → small implementation → test → review |
 | Available time | 20–25 hours per week |
 | Commercial requirements | None |
-| Planning depth | Implementation-ready milestones M01–M05; complete objectives and acceptance gates for M06–M18 |
+| Planning depth | Detailed plans for M01–M10; objectives and acceptance gates for M11–M18 |
 
 Codex helps develop and explain the software. It is **not the model runtime inside the initial lab**. Codex subscription access and API-key billing are separate; the design assumes no included API credit. [Official authentication documentation](https://learn.chatgpt.com/docs/auth)
 
@@ -378,7 +378,9 @@ Prepare the v0.1 release materials. Creating a remote repository, pushing, or pu
 
 ## 4. Complete later roadmap
 
-These milestones are retained from the broader discussion. Their objectives and gates are fixed planning records; detailed implementation is refined at the start of each phase.
+These milestones are retained from the broader discussion. Their objectives and
+gates are fixed planning records. Phase 2 was expanded with the user's agreed
+decisions on 2026-09-07; later phases receive detailed plans when they become active.
 
 They are **not instructions to build everything after M05 automatically**.
 
@@ -393,6 +395,598 @@ They are **not instructions to build everything after M05 automatically**.
 | **M10** | Diagnostic traces | Extend existing traces into a useful failure timeline | Another engineer can explain a failure from the evidence without recreating your development session |
 
 **Checkpoint:** v0.2, with a small collection of reproducible execution-failure cases.
+
+#### Phase 2 objective and agreed scope — 2026-09-07
+
+Build on v0.1.0 to answer:
+
+> When a tool returns malformed data, loses its reply, exceeds a deadline, or is
+> interrupted by a crash, can the executor preserve the intended effect and
+> produce enough evidence to explain what happened?
+
+Continue using the synthetic task workflow, local Ollama adapter, independent
+SQLite evaluator, and CLI. The intended result remains **exactly one task with the
+exact requested title**.
+
+The user selected these decisions during Phase 2 planning:
+
+- Deterministic offline tests establish each mechanism's behavior. Small,
+  explicitly invoked live checks examine how the agent responds.
+- Retry protection covers repeated execution of **one logical operation**.
+  Separate model requests remain separate operations, including identical titles.
+- M09 restores the full sequential agent run: messages, pending calls, operation
+  IDs, results, and budgets.
+- Implement and review each milestone separately. The full plan is not an
+  instruction to implement M06–M10 in one step or build future interfaces early.
+- Learning review uses an explained example and discussion; no formal quiz is
+  required. Record technical and learning status separately without inventing
+  acceptance. The M05 learning checkpoint remains pending; it did not prevent
+  this Phase 2 planning work.
+- The phase checkpoint is a **v0.2.0 release candidate** with reproducible
+  execution-failure experiments. Publication remains a separate user decision.
+
+The original M04 comparison changes only the prompt instruction. Phase 2 adds
+explicitly declared **execution-policy comparisons**: hold the prompt, tools,
+model settings, fault schedule, limits and grading fixed within each comparison,
+except for the named execution-policy difference. Do not mix prompt changes with
+executor safeguards or reinterpret historical M04 results.
+
+#### Shared design and compatibility
+
+**Execution boundary**
+
+Evolve the existing loop incrementally around this flow:
+
+```text
+Model requests a tool
+        ↓
+Validate tool name and arguments
+        ↓
+Assign a logical operation ID                 M07
+        ↓
+Execute an attempt under the selected policy
+        ↓
+Capture the raw response
+        ↓
+Validate response shape and request consistency
+        ↓
+Deliver the result to the model
+        ↓
+Independently inspect storage and assess the terminal claim
+```
+
+M08 adds process supervision around tool execution. M09 adds durable state
+transitions around the loop. Neither requires an agent framework, network tool
+service, or concurrent task processing.
+
+**Responsibilities and interfaces**
+
+- Tool contracts validate inputs and results without querying storage to establish
+  whether a reported write actually happened.
+- The executor owns attempts, retry decisions, operation IDs, deadlines, and
+  cancellation.
+- Task storage owns writes and the idempotency ledger. It remains independent of
+  providers and evaluation.
+- The run journal, introduced in M09, owns resumable conversation and execution
+  state. Do not implement it during M06 or M07.
+- The evaluator retains its own read-only SQL path. Execution receipts and success
+  responses are evidence to inspect, never substitutes for actual task state.
+- The reporter keeps execution, stored outcome, report validity, and claim support
+  separate.
+
+Count model requests, logical tool calls, execution attempts, retries, and
+confirmed stored effects separately. Missing evidence remains unknown. Fault
+metadata stays in external evidence, never in model-facing tool results.
+
+**Public commands**
+
+Keep the existing `demo`, `run`, `compare`, and `report` behavior available for
+reproducing v0.1 experiments. Introduce a finite Phase 2 command group:
+
+```text
+aflab reliability list
+aflab reliability run CASE --policy POLICY --offline|--live [--output DIRECTORY]
+aflab reliability compare CASE --offline|--live [--trials N] [--output DIRECTORY]
+```
+
+- Require an explicit execution mode; `--offline` and `--live` are mutually
+  exclusive. Neither is an implicit fallback for the other.
+- Default comparisons to one trial; permit 1–5.
+- Each case declares its supported policies and comparison pairs. Unsupported
+  combinations fail before creating experiment state.
+- Alternate policy order across repeated trials. Record the planned schedule,
+  actual entries, partial runs, and unattempted entries.
+- Reuse the runner, evaluator, and rendering functions where their contracts fit;
+  do not build a plugin registry.
+
+Add only in their owning milestones:
+
+```text
+aflab resume RUN_DIRECTORY --offline|--live           # M09
+aflab diagnose RUN_DIRECTORY [--format markdown|json] # M10
+```
+
+**Artifact compatibility**
+
+- Preserve v0.1 fixtures, historical runs, schema readers, and the published tag.
+- Give Phase 2 observations an explicit artifact discriminator and schema version.
+- Retain the task and terminal-claim grading rules. New execution statuses must
+  not silently change their meaning.
+- Extend `report` through explicit schema dispatch. Unknown versions fail without
+  modifying evidence. Report regeneration continues to use saved JSON only.
+- Do not migrate historical task databases or make old runs resumable implicitly.
+
+#### M06 — Tool contracts and malformed data
+
+**Question:** Can the executor distinguish a malformed response, a response
+inconsistent with the request, and a plausible response that lies about storage?
+
+**Learning example:** A create response can contain valid JSON and the correct
+fields while reporting the wrong title. Conversely, a response can satisfy every
+structural check while referring to a task that was never saved.
+
+**Implementation**
+
+1. Add a narrow executor interface to the loop, retaining the current executor as
+   the compatibility default.
+2. Define a versioned Phase 2 response envelope containing schema version,
+   success/error status, task value or explicit not-found value, and structured
+   error code with readable message.
+3. Keep execution accounting outside the model-facing envelope.
+4. Validate required fields, strict types, allowed fields and supported version;
+   consistency between success, value and error; nonblank identifiers and exact
+   title preservation; create result title against requested title; and returned
+   lookup identifier against requested identifier.
+5. Add a serialized response boundary so experiments can inject malformed JSON
+   before validation. Preserve the original bytes in external evidence.
+6. Compare `pass-through`, which delivers the raw response, with `validated`,
+   which delivers a validated response or an ordinary contract error.
+7. Keep input validation enabled under both policies. Add no automatic retries.
+
+Validation errors must not mention the configured fault or reveal hidden storage
+facts. A malformed response after a committed write does **not** imply that the
+write was rejected or undone.
+
+**Required offline cases**
+
+| Case | Expected evidence |
+|---|---|
+| Invalid arguments or unknown tool | No storage operation entered; database unchanged |
+| Valid create and lookup | Exact values preserved |
+| Genuine lookup not-found | Valid `null` result |
+| Malformed JSON, duplicate keys, non-finite values | Contract rejection; raw response retained |
+| Missing, extra, or wrong-type fields | Schema rejection |
+| Unsupported response version | Explicit compatibility error |
+| Wrong create title or lookup identifier | Request-consistency rejection |
+| Malformed response after commit | Contract failure alongside independently completed storage |
+| Plausible dropped-write response | May pass contract validation; evaluator still detects missing storage |
+
+**Live check:** Four runs: healthy and wrong-create-title cases under both
+policies. Use the same baseline prompt, tools, model settings, and limits.
+
+**Completion evidence**
+
+- All invalid-input cases leave storage unchanged.
+- Reports distinguish structural validation, request consistency, and independently
+  verified outcome.
+- A walkthrough explains why passing response validation does not prove a write
+  occurred.
+
+#### M07 — Retry and duplicate-effect safety
+
+**Question:** What happens when the executor cannot tell whether a create
+committed, and how does an operation ID change the outcome of retrying?
+
+**Learning example:** "No reply" can mean either "nothing was written" or "the
+write committed but its reply was lost."
+
+**Implementation**
+
+1. Assign an executor-owned operation ID when accepting each logical tool call.
+2. Reuse that ID across execution retries. Assign a fresh ID to every separate
+   model request, including identical titles.
+3. Add a storage operation accepting an operation ID and validated arguments.
+4. Store the operation ID, exact request arguments, and resulting task in the
+   **same SQLite transaction** as the task write.
+5. Repeating an ID with identical arguments returns the original result.
+6. Reusing an ID with different arguments returns a conflict without another write.
+7. Retain operation records for the lifetime of the experiment database; no expiry
+   or cleanup policy in Phase 2.
+8. Introduce attempt IDs and distinguish logical calls from their attempts.
+
+This applies SQLite's atomic transaction boundary to the task and its
+deduplication record. See [SQLite atomic commit documentation](https://www.sqlite.org/atomiccommit.html).
+
+**Experiment matrix**
+
+Run three conditions: no fault, one failure before the write, and one lost reply
+after a committed write. Compare three policies:
+
+| Policy | Behavior |
+|---|---|
+| `single-attempt` | No retry |
+| `retry-unprotected` | One immediate retry without deduplication |
+| `retry-idempotent` | The same retry rule with operation-ID deduplication |
+
+The two retry policies share attempt limits and fault schedules; their only
+treatment difference is deduplication. Retries respond to observable failure
+categories, not the injector's knowledge of whether a write committed.
+
+**Required offline cases**
+
+- Before-write failure followed by a successful retry.
+- Lost reply followed by duplicate creation under unprotected retry.
+- Lost reply followed by the original result under idempotent retry.
+- Same key/different title conflict; different keys/same title remain separate.
+- Validation and permanent storage errors are not retried.
+- Task insertion and operation-record insertion roll back together.
+- Reopening the database preserves duplicate protection.
+- Attempt exhaustion retains partial evidence without inventing a successful reply.
+
+**Live check:** Six runs: the three conditions under the two retry policies.
+
+**Completion evidence**
+
+- Reproduce duplicate effects under unprotected retry.
+- Demonstrate one stored effect for repeated delivery of a protected operation.
+- Document the precise guarantee: **at most one task effect per operation ID within
+  the retained database**, not exactly-once delivery or protection against repeated
+  model intent.
+- Explain why equal arguments alone do not establish that two requests represent
+  the same intended action. See [AWS guidance on idempotent requests](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
+
+**M07 implementation decisions — 2026-09-07**
+
+- CLI cases are `retry-healthy`, `before-write-once`, and `lost-reply-once`.
+  The distinct healthy name avoids changing M06's case/policy combinations.
+- `compare` defaults to the two retry policies, matching the six-run live check.
+  `--include-control` includes `single-attempt`; individual `run` accepts all three.
+  Offline regressions cover the full three-by-three matrix.
+- Both failure positions return the same observable delivery error. Only the
+  first valid create per run activates the configured fault. One immediate retry
+  is admitted only for delivery failure; argument, contract, operation conflict,
+  and SQLite errors are terminal for that logical call.
+- The explicit keyed storage method lazily initializes `task_operations` and uses
+  `BEGIN IMMEDIATE` before reading a key. Task and ledger insertion commit together;
+  commit failure rolls both back. Ordinary task calls preserve their old behavior.
+- The ledger stores exact title and returned task ID for the database lifetime.
+  It assumes this lab's append-only task operations; external edits to database
+  state are outside its guarantee. Opening a database does not resume a run.
+- Operation and attempt IDs, replay receipts, and commit-position evidence stay in
+  external traces. The model receives the version 1 task envelope, extended with
+  `delivery_error` and `operation_conflict` categories. No model-provided key is accepted.
+- M07 artifacts use distinct `retry-run`/`retry-comparison` discriminators and schema
+  1; run manifests use version 5. Counts separate accepted logical operations,
+  attempts, scheduled retries, storage entries, replays, errors and fault activation.
+  Existing logical-call limits therefore allow at most twelve M07 attempts per run.
+  This is an attempt bound, not a deadline or cancellation guarantee.
+- The independent evaluator still checks task rows through read-only SQL. It does
+  not use the ledger or replay flag as proof of completion. M08–M10 remain separate.
+
+#### M08 — Delays, recovery, and limits
+
+**Question:** When should execution retry, stop waiting, or terminate a tool
+worker—and what storage effects remain afterward?
+
+**Learning example:** A deadline expiring is an observation by the caller. It does
+not undo an earlier commit or prove the worker stopped.
+
+**Implementation**
+
+1. Run Phase 2 tool attempts in a dedicated local subprocess using an allowlisted
+   worker entry point and JSON communication.
+2. Open database connections inside the worker; do not share live connections
+   across processes. Keep one active tool attempt at a time.
+3. Introduce the following explicit default execution limits:
+
+| Limit | Default |
+|---|---|
+| Per-attempt deadline | 2 seconds |
+| Logical-operation execution budget | 8 seconds, including waits and cleanup |
+| Maximum attempts | 3, including the initial attempt |
+| Deterministic backoff | 100 ms, then 200 ms |
+| Termination grace | 500 ms, followed by kill and exit confirmation |
+| Total attempt ceiling per run | 18 |
+
+4. Use a monotonic clock during execution. Inject a clock and sleeper for policy
+   tests. Preserve the existing model-call and logical-tool-call limits.
+5. Retry only declared transient failures and ambiguous outcomes when the
+   operation is idempotent. Do not retry invalid arguments, contract errors, or
+   permanent failures.
+6. Never start another attempt while a previous worker may still mutate storage.
+
+A `Popen` communication timeout does not itself kill its child. The supervisor
+must terminate and reap it explicitly. See [Python subprocess documentation](https://docs.python.org/3.12/library/subprocess.html#subprocess.Popen.communicate).
+
+**Two separate comparisons**
+
+- Recovery: single attempt versus bounded retry, both using idempotent storage.
+- Cancellation: stop waiting while observing the worker versus terminate the
+  worker, both using one attempt.
+
+The observation-only control uses a finite delay and waits for worker exit before
+final grading. It is an explicit experiment policy, not the operational default.
+
+**Required offline cases**
+
+- Transient failure once and twice, then success.
+- Permanent failure and retry exhaustion.
+- Delay before write and delay after commit.
+- Deadline expires during backoff.
+- Worker exits without a reply or returns malformed output.
+- Worker ignores termination and requires kill.
+- Commit races with cancellation.
+- Keyboard interruption cleans up owned workers.
+- No new attempt or final storage snapshot while a worker remains active.
+
+Record deadline expiry, cancellation request, confirmed worker exit, late
+response, final stored state, attempts, and elapsed time separately. When commit
+ordering cannot be established, report that uncertainty.
+
+**Live check:** Six runs: transient recovery under two policies, plus before-write
+and after-commit delay under the two cancellation policies.
+
+**Completion evidence**
+
+- Measured recovery and extra execution cost.
+- No duplicate effect under protected retry.
+- Demonstrated difference between timing out, terminating a worker, and observing
+  committed state.
+- Explicit limitation: tool-process supervision does not prove cancellation of an
+  Ollama server request or arbitrary external effects.
+
+#### M09 — Crash and restart recovery
+
+**Question:** Can a new process continue a partially completed agent conversation
+without forgetting committed effects, repeating delivered results, or resetting
+limits?
+
+**Learning example:** The task database may contain a committed task while the
+agent's last durable checkpoint still says "waiting for the tool."
+
+**Implementation**
+
+1. Add a separate SQLite run journal for control state. Keep the task operation
+   ledger in the task database.
+2. Persist the original configuration and execution compatibility fingerprint;
+   complete messages and provider metadata; pending assistant tool calls and
+   their order; current tool cursor, operation IDs, attempts and budgets; raw
+   responses and delivered tool messages; fault-schedule consumption; terminal
+   result; and artifact-finalization status.
+3. Commit each transition before its corresponding external action:
+   - Reserve a model request and its budget before inference.
+   - Save an assistant response before executing its tools.
+   - Save an operation and attempt before dispatch.
+   - Save a tool result before requesting another model turn.
+4. If a model response was received but never checkpointed, request another
+   response from the saved conversation. Count both attempts; do not claim
+   identical model output.
+5. If a write may have committed but no tool result was checkpointed, retry the
+   same operation ID through the protected executor.
+6. Persist execution budgets without resetting them on resume. Charge an
+   interrupted attempt its full reserved time when elapsed time is unavailable;
+   record offline downtime separately.
+7. Use an OS-backed run lock held by the runner and inherited by tool workers.
+   Refuse resume while an older process still holds it.
+8. Resume existing compatible Phase 2 runs only. Missing, corrupt, unsupported,
+   or incompatible state fails before execution.
+9. For live resume, verify the saved model digest and settings. Do not substitute
+   a checkpoint.
+10. Replace iterator-only scripted recovery fixtures with named, serializable
+    scripts and durable cursors.
+
+The journal and task database are deliberately separate transactions. Recovery
+reconciles that gap through M07's operation ledger; it does not pretend both files
+committed atomically.
+
+**Crash injection points**
+
+Use a parent test controller and explicit barriers, not timing guesses:
+
+- After assistant response checkpoint, before tool dispatch.
+- After attempt checkpoint, before worker execution.
+- During the task transaction, before commit.
+- After task commit, before the reply is checkpointed.
+- After tool-result checkpoint, before the next model request.
+- After terminal-result checkpoint, before reports are finalized.
+
+For each point, compare an uninterrupted run with crash-and-resume execution.
+Allow SQLite to perform normal journal recovery through the owning persistence
+layer before independent read-only evaluation. Never make the evaluator repair
+or initialize a database.
+
+**Additional tests**
+
+- Repeated resume of a completed run performs no inference or writes.
+- Two simultaneous resume attempts admit only one owner.
+- An orphaned worker prevents overlapping resume until it exits.
+- Budgets, operation IDs, fault consumption, message order, and tool cursors survive.
+- Missing responses do not become fabricated model claims.
+- Legacy v0.1 runs are refused for resume without modification.
+- Truncated JSONL does not overwrite authoritative journal state.
+- Failure during final artifact creation can resume finalization without rerunning
+  the agent.
+
+**Live check:** Two uninterrupted/crash-resume pairs: before tool dispatch and
+after task commit before reply checkpoint (four runs total).
+
+**Completion evidence**
+
+- Full conversation resumes with consistent messages and budgets.
+- Ambiguous protected writes produce one stored task.
+- Recovery limitations distinguish process crashes from power-loss, filesystem
+  corruption, or arbitrary external-service recovery.
+
+#### M10 — Diagnostic traces
+
+**Question:** Can someone explain the failure and recovery using only the saved
+artifact bundle?
+
+**Implementation**
+
+1. Standardize event fields for run, session, logical call, operation, attempt,
+   sequence, event kind, and timing.
+2. Record lifecycle events when their owning milestone is implemented. M10
+   consolidates their schema and presentation; it does not reconstruct missing
+   history.
+3. Use journal sequence numbers for authoritative ordering across resumes. Keep
+   monotonic timing local to each process session and record restart downtime
+   separately.
+4. Make JSONL a readable projection of committed journal events. Diagnose missing
+   or partial projection data explicitly.
+5. Implement read-only `aflab diagnose` with Markdown and JSON output.
+6. Show the requested action; attempts and observed responses; contract failures
+   and retry decisions; deadline and cancellation events; last durable checkpoint
+   and resume action; available independent storage evaluation; terminal claim and
+   its support; evidence references; and unresolved gaps.
+7. Diagnose from saved artifacts. Do not call the model, execute tools, or silently
+   recompute task grades.
+8. Distinguish configured fault intent from observed activation and consequences.
+
+**Required diagnostic bundles**
+
+- Malformed response after a successful write.
+- Duplicate creation after an unprotected retry.
+- Successful protected retry after reply loss.
+- Deadline expiry before a write.
+- Cancellation after commit.
+- Crash after commit followed by successful resume.
+- Missing or inconsistent evidence requiring an unknown conclusion.
+
+**Completion evidence**
+
+- Golden output tests verify the timeline and evidence references.
+- Conflicting timestamps, incomplete traces, unsupported schemas, and absent
+  evaluation are handled explicitly.
+- A reviewer receives the bundle without the development conversation and
+  explains the trigger, stored effect, safeguard behavior, and uncertainty.
+- Record reviewer observations and documentation fixes. Automated checks do not
+  count as independent human reproduction.
+- No new live inference is required; reuse reviewed M06–M09 evidence.
+
+#### Phase 2 validation and evidence policy
+
+**Implementation decisions and scope update — 2026-09-07**
+
+The user explicitly authorized completing all remaining Phase 2 work after M07.
+This expands the implementation scope to M08–M10 in one session; their technical
+checks and learning/reviewer gates remain separate. No Phase 3 work or publication
+is implied. The local package checkpoint is `0.2.0rc1`; the published v0.1.0 tag
+and historical evidence stay unchanged.
+
+- M08 uses an allowlisted `python -m agent_fault_lab.worker` child, with its own
+  SQLite connection and explicit socket blocking. Parent and worker communicate
+  with JSON; separate worker JSONL captures actual storage receipts. All M08/M09
+  creates use the retained M07 operation ledger.
+- Recovery cases support `process-single` and `bounded-retry`; delay cases support
+  `observe` and `terminate`. Both cancellation policies admit one attempt. Only
+  bounded retry admits up to three. An explicit per-run ceiling remains 18.
+- Time reservations include termination grace. Backoff and cleanup consume the
+  operation budget. After a crash, the full unknown reservation is charged. A
+  process must be reaped before another dispatch or grading; exit confirmation
+  takes precedence if OS scheduling/kill completion exceeds the reserved budget.
+  This is not a universal hard real-time or external-service cancellation guarantee.
+- New process runs use M09 journaling, including M08 experiments after integration.
+  Older M06/M07 and v0.1 runs remain readable but are not migrated or resumable.
+  Run manifests use schema 6; `execution-run` and `execution-comparison` artifacts
+  use schema 1. Existing schemas retain their readers.
+- The separate `journal.sqlite3` atomically commits each control-state checkpoint
+  with its event. It stores the full latest provider turn as well as messages,
+  named script/cursor, pending tools, operation state, consumed budgets, terminal
+  result, evaluation snapshot and finalization status. Task effects commit only
+  in the task database; reconciliation uses the original operation ID.
+- Resume checks immutable manifest configuration, a source/package compatibility
+  fingerprint, mode and—before further live inference—the saved model digest and
+  settings. The project remains constrained to the locked Python 3.12 environment.
+- `flock` ownership is inherited by workers through a passed file descriptor.
+  Closing the runner's copy does not explicitly unlock an orphan's copy. This
+  implementation targets the existing macOS/Linux CI matrix, not Windows.
+- Named `create-read-report-v1` and `batch-two-v1` scripts replace iterator state
+  only for journaled fixtures. Production model tool order is never forced.
+- `--pause-at` is an explicit controller barrier, not a normal runtime policy.
+  `scripts/check_restart.py` compares two uninterrupted runs with two real
+  SIGKILL/resume runs at the planned before-dispatch and after-commit boundaries.
+  Offline tests additionally exercise all six planned crash boundaries.
+- M10 uses journal sequence as authoritative ordering. JSONL is an append-only
+  projection; partial/missing projection bytes are diagnosed without overwriting
+  the journal. Surviving worker events are imported with their original local
+  timing and file reference; absent events are never reconstructed.
+- Restart downtime cannot be exactly measured after an abrupt death. Record it
+  as unknown and expose the wall-clock gap since the last checkpoint separately;
+  that gap includes unobserved execution. Report elapsed time sums observed
+  session durations. Worker/parent timestamps do not establish commit/cancel order.
+- `aflab diagnose` reads saved evidence only. It supports legacy M06/M07 bundles
+  and new journaled runs, reports schema/sequence/timing/projection gaps, and
+  distinguishes an available independent grade from an incomplete causal timeline.
+- Automated golden expectations and implementation self-review do not satisfy
+  M10's independent reviewer requirement. The reviewer worksheet is prepared;
+  human observations remain pending until supplied. No reviewer acceptance is invented.
+
+For every milestone:
+
+1. Explain the new concept with one task example.
+2. Implement the smallest experiment and its control.
+3. Run focused tests, then `make check`.
+4. Run `make package-check` when interfaces, subprocess entry points, or packaging
+   change.
+5. Inspect database state through the independent evaluator.
+6. Record configuration, policy, fault activation, outcomes, limitations, and the
+   next action.
+7. Review the result before starting the next milestone.
+
+Default tests remain offline with socket blocking. Subprocess tests must
+explicitly preserve the offline restriction inside child workers; the parent
+pytest plugin alone is insufficient.
+
+Use fake time for retry-policy tests and real subprocess barriers for cancellation
+and crash tests. Run the process tests on Ubuntu and macOS CI.
+
+The proposed live exercises total **20 runs across M06–M09**, invoked separately
+when each milestone is ready:
+
+| Milestone | Live runs | Purpose |
+|---|---:|---|
+| M06 | 4 | Healthy/wrong-create-title under two response policies |
+| M07 | 6 | Three failure conditions under two retry policies |
+| M08 | 6 | Transient recovery and two delay positions under paired policies |
+| M09 | 4 | Two uninterrupted/crash-resume pairs |
+| M10 | 0 new | Diagnose reviewed existing evidence |
+
+These are smoke evidence, not statistical comparisons. Retain malformed claims,
+wrong IDs, provider failures, and unexercised faults. Do not repeat unfavorable
+runs until they pass. Scripted behavior is labeled test machinery, not AI evidence.
+
+Do not change the model, prompt, grader, and execution safeguard together. Phase 2
+uses the baseline prompt consistently; the original read-back comparison remains
+a separate experiment.
+
+#### Planning records and v0.2 handoff
+
+When implementation begins, update `PROGRESS.md` with M06 as the implementation
+milestone and M07–M10 as planned. Add milestone walkthroughs as their experiments
+are implemented. Keep the public roadmap aligned with demonstrated capabilities.
+
+Prepare v0.2.0 only after the five technical gates pass and review status is
+accurately recorded. The candidate must include:
+
+- Installable wheel and source archive.
+- Green Ubuntu/macOS checks.
+- Reproducible offline cases and reviewed diagnostic bundles.
+- Focused live findings, including failures and uncertainty.
+- v0.1 report compatibility.
+- Explicit guarantees for retry identity, cancellation, and resume.
+- Updated release notes and limitations.
+
+Publication decision, 2026-09-07: the user explicitly requested commit, push and
+release updates for the implemented Phase 2 work. Publish `v0.2.0rc1` as a
+prerelease after local and hosted checks pass, retaining `v0.1.0` as stable.
+This exposes the candidate for review; it does not close M08/M09 learning
+checkpoints or M10's independent diagnostic-review gate, or authorize Phase 3.
+
+Defaults remain Python 3.12, locked `uv` dependencies, local SQLite, local Ollama,
+and standard-library process control. No hosted provider, model download,
+dashboard, distributed queue, arbitrary code-execution service, or Phase 3
+functionality is included.
 
 ### Phase 3 — Agent boundaries and state
 
@@ -536,8 +1130,9 @@ The long-term quality target is:
 Neither completing all 18 milestones nor accumulating features guarantees a “10/10” project. A smaller project with trustworthy evidence and adopted checks can be the stronger outcome.
 
 **The initial implementation target was M01 only. The user has since authorized
-M02–M05 and the v0.1.0 release; see `PROGRESS.md`. M05's learning review remains
-pending. M06 and later milestones remain recorded and gated.**
+M02–M05, the v0.1.0 release, and the Phase 2 plan. M06 is the next implementation
+milestone; see `PROGRESS.md`. M05's learning review remains pending. M07 and later
+milestones require their preceding evidence and separate milestone review.**
 
 ### Implementation decisions — 2026-09-06
 
@@ -774,3 +1369,36 @@ pending. M06 and later milestones remain recorded and gated.**
   by vulnerable temporary-directory handling. Raise the development constraint to
   the first patched line (`pytest>=9.0.3,<10`), relock, and retain the same offline
   test policy. This changes test machinery only, not runtime dependencies.
+
+### M06 implementation decisions — 2026-09-07
+
+- User requested starting Phase 2 after recording the detailed plan. Implement
+  M06 only; M07–M10 stay planned for their separate evidence and review gates.
+- Add an optional tool executor to the shared sequential loop. The legacy default
+  preserves its tool messages and trace format; M06 injects a response executor.
+- M06's model-facing envelope requires `schema_version`, `ok`, `value`, and `error`,
+  including explicit nulls. Version 1 accepts an integer only, not boolean/float
+  aliases. Execution accounting is external to that envelope.
+- Apply response faults to every successful task-valued eligible call: lookups
+  for `wrong-get-id`, creates for other response cases. Tool errors and truthful
+  lookup not-found responses remain unchanged. Reuse the existing dropped-write
+  injector for the plausible-but-unsaved control.
+- Both delivery policies validate arguments. Validated delivery checks the whole
+  JSON response, strict schema, exact create title and exact lookup ID without
+  calling storage. Valid raw bytes are delivered unchanged; rejected responses
+  become ordinary `invalid_result` errors without the configured fault name.
+- Preserve exact raw response bytes as base64 in trace events. Record valid,
+  syntax/schema/request errors, unchecked responses and fault activations separately.
+- M06 manifests use schema 4. Observation/comparison artifact discriminators use
+  schema 2; independent evaluation remains `m03-v1`/schema 1. Initial M06 schema 1
+  remains readable: its generic fault flag inherited dropped-write-only accounting,
+  although contract fault counts were correct. Schema 2 counts all activated
+  faults in that flag. Preserve the original smoke files and explain the correction;
+  do not rerun inference or rewrite observations to hide the accounting defect.
+- Saved report dispatch preserves legacy readers and performs no new SQL
+  inspection/inference.
+- Offline cells share one declared create/read scripted client independent of
+  case/policy. It trusts success-shaped task responses and reports uncertainty
+  after an unusable result. This is test machinery, not a live tool sequence rule.
+- No retry, operation ledger, process cancellation, resume, new provider,
+  dependency, model setting, package publication or release tag is added in M06.

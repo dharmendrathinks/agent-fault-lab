@@ -9,7 +9,25 @@ from uuid import uuid4
 from agent_fault_lab.comparison import Comparison, render_comparison
 from agent_fault_lab.evaluation import Evaluation
 from agent_fault_lab.experiments import Observation
+from agent_fault_lab.process_reports import (
+    ProcessComparison,
+    ProcessObservation,
+    render_process_comparison,
+    render_process_report,
+)
+from agent_fault_lab.reliability_reports import (
+    ReliabilityComparison,
+    ReliabilityObservation,
+    render_reliability_comparison,
+    render_reliability_report,
+)
 from agent_fault_lab.reporting import render_run_report
+from agent_fault_lab.retry_reports import (
+    RetryComparison,
+    RetryObservation,
+    render_retry_comparison,
+    render_retry_report,
+)
 
 type ReportKind = Literal["run", "comparison"]
 
@@ -55,11 +73,44 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
         )
 
     if has_comparison:
-        comparison = Comparison.model_validate_json(_read_evidence(comparison_path))
+        raw = _read_evidence(comparison_path)
+        parsed = json.loads(raw)
+        if (
+            isinstance(parsed, dict)
+            and parsed.get("artifact") == "execution-comparison"
+        ):
+            return "comparison", render_process_comparison(
+                ProcessComparison.model_validate_json(raw)
+            )
+        if isinstance(parsed, dict) and parsed.get("artifact") == "retry-comparison":
+            retry_comparison = RetryComparison.model_validate_json(raw)
+            return "comparison", render_retry_comparison(retry_comparison)
+        if isinstance(parsed, dict) and "artifact" in parsed:
+            reliability_comparison = ReliabilityComparison.model_validate_json(raw)
+            return "comparison", render_reliability_comparison(reliability_comparison)
+        comparison = Comparison.model_validate_json(raw)
         return "comparison", render_comparison(comparison)
 
     evaluation = Evaluation.model_validate_json(_read_evidence(evaluation_path))
     observation_path = directory / "observation.json"
+    if _present(observation_path):
+        raw = _read_evidence(observation_path)
+        parsed = json.loads(raw)
+        if isinstance(parsed, dict) and parsed.get("artifact") == "execution-run":
+            process = ProcessObservation.model_validate_json(raw)
+            if process.evaluation != evaluation:
+                raise ValueError("Observation and evaluation evidence do not match")
+            return "run", render_process_report(process)
+        if isinstance(parsed, dict) and parsed.get("artifact") == "retry-run":
+            retry = RetryObservation.model_validate_json(raw)
+            if retry.evaluation != evaluation:
+                raise ValueError("Observation and evaluation evidence do not match")
+            return "run", render_retry_report(retry)
+        if isinstance(parsed, dict) and "artifact" in parsed:
+            reliability = ReliabilityObservation.model_validate_json(raw)
+            if reliability.evaluation != evaluation:
+                raise ValueError("Observation and evaluation evidence do not match")
+            return "run", render_reliability_report(reliability)
     observation = (
         Observation.model_validate_json(_read_evidence(observation_path))
         if _present(observation_path)

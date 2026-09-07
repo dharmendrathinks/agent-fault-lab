@@ -14,9 +14,23 @@ asking the agent to read the task back improve its completion claims?**
 [Architecture](docs/architecture.md) · [Contribute](CONTRIBUTING.md) ·
 [Roadmap](docs/roadmap.md)
 
-Status: v0.1.0. Python 3.12. MIT licensed. Local verification is
+Phase 2 release candidate: [v0.2.0rc1](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0rc1).
+Latest stable: [v0.1.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.1.0).
+Python 3.12. MIT licensed. Local verification is
 recorded in [PROGRESS.md](PROGRESS.md); see the
 [Ubuntu/macOS CI runs](https://github.com/dharmendrathinks/agent-fault-lab/actions/workflows/ci.yml).
+
+New in the candidate: [M06 response-contract experiments](docs/milestones/M06.md)
+compare raw tool responses with validation while grading actual storage separately.
+The [M07 retry experiments](docs/milestones/M07.md) compare failures before a write
+with lost replies after commit, and test operation-ID protection against duplicates.
+The [M08 process experiments](docs/milestones/M08.md), [M09 restart recovery](docs/milestones/M09.md)
+and [M10 diagnostic timeline](docs/milestones/M10.md) add worker supervision, durable
+conversation state and read-only failure diagnosis on macOS/Linux.
+Run `uv run --offline --no-sync aflab reliability list` from this checkout to see
+the cases. These commands require v0.2.0rc1; v0.1.0 retains the original experiment.
+Learning checkpoints and independent diagnostic review remain open. See the
+[candidate release notes](docs/releases/v0.2.0rc1.md) for evidence and limits.
 
 ## Quickstart
 
@@ -27,6 +41,7 @@ without Ollama, an API key, or a GPU.
 ```sh
 git clone https://github.com/dharmendrathinks/agent-fault-lab.git
 cd agent-fault-lab
+git checkout v0.2.0rc1
 uv sync --locked --all-groups
 
 mkdir -p runs
@@ -49,6 +64,26 @@ These are programmed examples of the machinery. They do not measure a model's
 response to a prompt. [Inspect the captured example](examples/evidence/dropped-write/README.md)
 without installing anything.
 
+### Try Phase 2 offline
+
+```sh
+uv run --offline --no-sync aflab reliability list
+uv run --offline --no-sync aflab reliability compare lost-reply-once --offline --include-control --output runs/retry-comparison
+uv run --offline --no-sync aflab report runs/retry-comparison --check
+uv run --offline --no-sync aflab reliability compare delay-after-commit --offline --output runs/cancellation-comparison
+```
+
+The retry comparison reproduces a committed write whose reply is lost. An
+unprotected retry creates a duplicate; reusing an operation ID replays the original
+result. The delay comparison shows why stopping a worker cannot undo a committed
+write. Open each comparison's `report.md`, then use `aflab diagnose CHILD_RUN`
+on a child run directory for its saved failure timeline. These scripted examples
+demonstrate the machinery; they do not establish model reliability.
+
+Follow the [restart walkthrough](docs/milestones/M09.md) to interrupt and resume
+a persisted run, and the [diagnostic worksheet](docs/milestones/M10.md) to review
+the evidence without rerunning an experiment.
+
 ## What you can investigate
 
 - A tool's success response versus independently observed storage.
@@ -58,8 +93,10 @@ without installing anything.
 - The extra calls, tokens and elapsed time associated with an instruction.
 - Partial runs and provider/evaluator failures, alongside ordinary task failures.
 
-Today the lab covers one synthetic task, two tools, one dropped-write fault,
-and two prompt variants. It is intended for learning, failure reproduction and
+The lab uses one synthetic task and two tools. The original experiment compares
+two prompts under a dropped-write fault; Phase 2 compares execution policies under
+malformed results, lost replies, delays, temporary failures and process crashes.
+It is intended for learning, failure reproduction and
 evaluation experiments; it is not a production agent runtime or a broad benchmark.
 
 ## How the experiment works
@@ -132,6 +169,14 @@ Read the [experiment and lessons](docs/experiment.md),
 [replacement results](docs/milestones/M04-instruct-smoke.md).
 The historical live raw artifacts remain local; the checked-in example is synthetic.
 
+Phase 2 smoke runs reproduced duplicate effects under unprotected retry and one
+stored task under operation-ID replay. Cancellation after commit still left a
+task; crash recovery retained its original operation identity. These storage
+results did not fix the model's claims: all four M09 completion reports copied the
+wrong ID, and M08 included a false non-completion after a committed write. Read the
+[M07](docs/milestones/M07-live-smoke.md), [M08](docs/milestones/M08-live-smoke.md)
+and [M09](docs/milestones/M09-live-smoke.md) notes for the small, exploratory samples.
+
 ## Commands and evidence
 
 Use `uv run --offline --no-sync aflab` before each command below.
@@ -144,6 +189,11 @@ Use `uv run --offline --no-sync aflab` before each command below.
 | `run --variant baseline\|read-back --fault none\|dropped-write` | One live experiment |
 | `compare --trials 1..5` | 4–20 live experiments |
 | `report RUN_DIRECTORY [--check]` | Rebuild Markdown or compare it with saved JSON |
+| `reliability list` | List Phase 2 cases and execution policies |
+| `reliability run CASE --policy POLICY --offline` | One scripted Phase 2 run |
+| `reliability compare CASE --offline` | Compare execution policies with scripted inputs |
+| `resume RUN_DIRECTORY --offline` | Resume a compatible persisted process run |
+| `diagnose RUN_DIRECTORY [--format markdown\|json]` | Explain saved evidence without executing tools or a model |
 | `--version` | Installed package version |
 
 The `1..5` notation means an integer from 1 through 5.
@@ -181,8 +231,10 @@ AI-assisted contributions are welcome when you can explain and verify the change
 
 ## Where this is going
 
-Next: malformed tool results, retry/duplicate-effect safety, and recovery
-experiments. Later: permissions, untrusted content, context/memory, stronger
+The Phase 2 release candidate includes malformed results, retry/duplicate-effect
+safety, process limits, restart recovery and diagnosis. Remaining gates are learning
+review and independent diagnostic review before full Phase 2 acceptance. Later: permissions,
+untrusted content, context/memory, stronger
 evaluators, and reproduction of external failures.
 See the [public roadmap](docs/roadmap.md) for scope and contribution opportunities.
 

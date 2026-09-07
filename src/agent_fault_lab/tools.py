@@ -2,6 +2,7 @@
 
 import sqlite3
 from dataclasses import asdict
+from typing import Protocol
 
 from pydantic import JsonValue, ValidationError, field_validator
 
@@ -52,6 +53,17 @@ class ToolResult(Record):
     error: str | None = None
     # True means a validated tool operation was entered, not a committed write.
     executed: bool = False
+
+
+class ToolDelivery(Record):
+    """Content delivered to the model, with separate execution accounting."""
+
+    content: str
+    executed: bool
+
+
+class ToolExecutor(Protocol):
+    def execute(self, call: ToolCall, call_id: str) -> ToolDelivery: ...
 
 
 def execute_tool(

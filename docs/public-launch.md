@@ -50,7 +50,9 @@ Setup downloads pinned tools and locked dependencies; inference is not part of C
 
 ## Release only after review
 
-Complete the [v0.1 checklist](releases/v0.1.0.md). Tag and publish only after explicit
+Follow the [release workflow](development.md#publish-a-release-candidate) and review
+the [v0.2.0rc1 notes](releases/v0.2.0rc1.md); the
+[v0.1 checklist](releases/v0.1.0.md) records the original release. Tag and publish only after explicit
 approval and successful CI. Review package metadata before any package-index
 publication; the quickstart currently supports source installation and makes no
 claim of a PyPI release. A public repository does not require publishing to PyPI.

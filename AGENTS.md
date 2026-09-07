@@ -45,8 +45,10 @@ is the design authority; the progress record identifies the current learning ste
 - Never fabricate logs, benchmark results, failures, or improvements.
 - Scripted tests demonstrate the test machinery, not live-model behavior.
 - Fault metadata belongs in external evidence, never in model-facing tool results.
-  Both comparison variants share tools, settings, limits and grading; change only
-  the declared prompt instruction. Never force the treatment's tool sequence.
+  M04 variants change only the declared prompt instruction. Phase 2 comparisons
+  change only the declared execution policy, holding prompts, tools, settings,
+  fault schedules, limits and grading fixed except for that named policy difference.
+  Never force a live treatment's tool sequence.
 - Report invalid/absent claims and unexercised faults alongside outcome counts.
   Zero scored false-success claims with zero assessable completion claims is not
   evidence of reliability. Detecting a failed write is not recovering the task.

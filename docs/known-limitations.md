@@ -1,7 +1,8 @@
-# Known limitations of v0.1
+# Known limitations
 
-- This is one synthetic create/read workflow, one dropped-write fault, and one
-  prompt-level read-back treatment. It is not an agent framework or broad benchmark.
+- This is one synthetic create/read workflow. v0.1 has a dropped-write fault and
+  prompt-level read-back treatment; v0.2.0rc1 adds the M06–M10 execution experiments.
+  It is not an agent framework or broad benchmark.
 - Local results from one 4B quantized checkpoint do not generalize to other models,
   prompts, runtimes, languages, tasks, or deployment environments.
 - The first 20-run comparison used a thinking-only checkpoint by mistake and was
@@ -12,10 +13,18 @@
 - The evaluator checks final SQLite state and one terminal claim. It does not prove
   causal history, semantic quality beyond the exact contract, or every natural-
   language statement made during a run.
-- SQLite evidence and JSONL traces are local mutable files, not signed, tamper-proof,
-  transactionally coupled, or crash-safe audit records.
-- HTTP timeout is not hard process cancellation. There is no retry/idempotency,
-  concurrency, crash recovery, resume, or duplicate-effect protection yet.
+- Evidence remains mutable and unauthenticated. M09 couples run checkpoints and
+  events in one journal transaction; the task database is a separate transaction.
+  M07's ledger reconciles repeated delivery of an operation ID, not repeated intent.
+- HTTP timeout is not model-server cancellation. M08 terminates only its local
+  allowlisted tool worker. M09 covers selected process crashes, not arbitrary
+  power-loss, storage corruption, remote effects or external database mutation.
+- M08/M09 admit one worker at a time. Cleanup reserves time but prioritizes confirmed
+  exit over the time budget if OS scheduling or kill completion takes longer.
+- M09 resumes only compatible journaled process runs. Source/package/configuration
+  changes can require the original checkout; old v0.1/M06/M07 artifacts are not migrated.
+- M10's automated checks and implementation self-review have passed; an independent
+  engineer's diagnostic-bundle review remains pending.
 - The adapter trusts the local Ollama daemon and its metadata. Loopback restriction,
   cloud-disabled checks, and non-forwarded credentials are not an OS sandbox.
 - Model metadata identity is checked for the approved baseline, but the digest is
@@ -23,8 +32,9 @@
 - Report regeneration validates saved JSON and rewrites Markdown; it deliberately
   does not re-open the database. It verifies presentation consistency, not the
   authenticity of the saved JSON.
-- Python 3.12 is the only supported runtime in v0.1. Local verification is macOS;
-  Linux status depends on the repository CI run. Windows is untested.
+- Python 3.12 is the supported runtime. Local verification is macOS; Linux status
+  depends on CI for these exact changes. The new process runner uses Unix `flock`
+  and inherited descriptors; Windows is unsupported.
 - No hosted provider, MCP server, dashboard, real integration, security benchmark,
   performance guarantee, or production support commitment is included.
 

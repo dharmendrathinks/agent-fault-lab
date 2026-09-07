@@ -15,7 +15,7 @@ from agent_fault_lab.model import (
     RunResult,
 )
 from agent_fault_lab.tasks import TaskStore
-from agent_fault_lab.tools import TOOL_SPECS, execute_tool
+from agent_fault_lab.tools import TOOL_SPECS, ToolExecutor, execute_tool
 from agent_fault_lab.trace import Recorder
 
 SYSTEM_PROMPT = (
@@ -41,6 +41,7 @@ def run_agent(
     settings: ModelSettings | None = None,
     limits: Limits | None = None,
     config: ExperimentConfig | None = None,
+    executor: ToolExecutor | None = None,
 ) -> RunResult:
     if not request.strip():
         raise ValueError("request must not be blank")
@@ -130,15 +131,22 @@ def run_agent(
             recorder.emit(
                 "tool_requested", call_id=call_id, call=call.model_dump(mode="json")
             )
-            result = execute_tool(store, call, injector=injector, call_id=call_id)
-            tool_executions += int(result.executed)
-            recorder.emit(
-                "tool_returned", call_id=call_id, result=result.model_dump(mode="json")
-            )
+            if executor is None:
+                result = execute_tool(store, call, injector=injector, call_id=call_id)
+                content = result.model_dump_json()
+                executed = result.executed
+                recorded = result.model_dump(mode="json")
+            else:
+                delivery = executor.execute(call, call_id)
+                content = delivery.content
+                executed = delivery.executed
+                recorded = delivery.model_dump(mode="json")
+            tool_executions += int(executed)
+            recorder.emit("tool_returned", call_id=call_id, result=recorded)
             messages.append(
                 Message(
                     role="tool",
-                    content=result.model_dump_json(),
+                    content=content,
                     call_id=call_id,
                     tool_name=call.name,
                 )

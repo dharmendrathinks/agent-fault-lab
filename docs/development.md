@@ -37,7 +37,8 @@ make package-check
 This builds the wheel, syncs runtime dependencies directly from `uv.lock` into a
 fresh temporary environment offline, and installs the built wheel there. It
 checks installed-package identity outside the checkout, exercises the version
-entry point, three scripted demos, a comparison and saved reports. Python socket
+entry point, three scripted demos, the original comparison, M06/M07 comparisons,
+an M08 process comparison, finalized-run resume, diagnosis and saved reports. Python socket
 construction is blocked during the scripted application calls. Temporary files
 are cleaned automatically. Initial dependency setup must have populated uv's cache.
 Using the lock directly avoids requiring cached package-index metadata in addition
@@ -78,3 +79,17 @@ uv run --offline --no-sync aflab report runs/YOUR-RUN
 validates either `evaluation.json` (plus matching `observation.json`, when present)
 or `comparison.json`, then atomically replaces only the Markdown. It does not read
 SQLite, rerun evaluation, contact a model, or rewrite raw evidence.
+
+## Publish a release candidate
+
+With explicit publication authorization, update the package version, lockfile,
+changelog, README, release notes, roadmap and progress record together. Run
+`make check` and `make package-check`, inspect both distribution archives, then
+commit and push. Wait for both hosted CI jobs on the intended release commit.
+
+Create an annotated version tag on that verified commit. Attach its wheel, source
+archive and `SHA256SUMS` to the GitHub release; verify downloaded checksums and the
+remote tag's commit. Mark candidates as prereleases and retain the previous stable
+release as latest. Record the actual commit, CI run and publication outcome in
+`PROGRESS.md`. Publication does not satisfy learning or independent-review gates.
+This workflow does not publish to PyPI.

@@ -66,7 +66,10 @@ def check_distribution() -> None:
 
 
 def check_installed(version: str) -> None:
+    import json
+    from contextlib import redirect_stdout
     from importlib.metadata import version as installed_version
+    from io import StringIO
     from unittest.mock import patch
 
     import agent_fault_lab
@@ -99,6 +102,66 @@ def check_installed(version: str) -> None:
         (output / "report.md").unlink()
         assert main(["report", str(output)]) == 0
         assert main(["report", str(output), "--check"]) == 0
+        contracts = work / "contracts"
+        assert (
+            main(
+                [
+                    "reliability",
+                    "compare",
+                    "wrong-create-title",
+                    "--offline",
+                    "--output",
+                    str(contracts),
+                ]
+            )
+            == 0
+        )
+        assert main(["report", str(contracts), "--check"]) == 0
+        for child in sorted(contracts.iterdir()):
+            if child.is_dir():
+                assert main(["report", str(child), "--check"]) == 0
+        retries = work / "retries"
+        assert (
+            main(
+                [
+                    "reliability",
+                    "compare",
+                    "lost-reply-once",
+                    "--offline",
+                    "--include-control",
+                    "--output",
+                    str(retries),
+                ]
+            )
+            == 0
+        )
+        assert main(["report", str(retries), "--check"]) == 0
+        for child in sorted(retries.iterdir()):
+            if child.is_dir():
+                assert main(["report", str(child), "--check"]) == 0
+        processes = work / "processes"
+        assert (
+            main(
+                [
+                    "reliability",
+                    "compare",
+                    "transient-once",
+                    "--offline",
+                    "--output",
+                    str(processes),
+                ]
+            )
+            == 0
+        )
+        assert main(["report", str(processes), "--check"]) == 0
+        for child in sorted(processes.iterdir()):
+            if child.is_dir():
+                assert main(["resume", str(child), "--offline"]) == 0
+                assert main(["report", str(child), "--check"]) == 0
+                captured = StringIO()
+                with redirect_stdout(captured):
+                    assert main(["diagnose", str(child), "--format", "json"]) == 0
+                assert json.loads(captured.getvalue())["gaps"] == []
     print(f"PASS: installed wheel {version}; scripted runs, comparison and reports")
 
 

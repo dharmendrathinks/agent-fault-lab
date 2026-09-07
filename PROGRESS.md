@@ -2,9 +2,21 @@
 
 ## Resume here
 
-- Phase: 1 — Understand agents and demonstrate one reliability problem.
-- Current milestone: **M05 — Package a reproducible first release**.
-- Status: **in_progress**.
+- Phase: 2 — Tool-execution reliability.
+- Current milestone: **M10 — Diagnostic traces**, closing Phase 2.
+- Status: **technical implementation complete; review gates pending**. M08 process
+  supervision, M09 durable recovery and M10 diagnosis are implemented in
+  `0.2.0rc1`. User explicitly expanded scope to all remaining Phase 2 work after M07.
+- Latest evidence: 440 offline tests passed, one gated live test skipped; package
+  checks pass. Six M08 and four M09 planned live runs finished. Stored effects match
+  their experiments, while wrong-ID and false non-completion claims remain visible.
+  See `docs/milestones/M08-live-smoke.md` and `docs/milestones/M09-live-smoke.md`.
+- M06 implementation: response contracts, eleven cases, explicit offline/live CLI,
+  paired policies, raw response evidence and compatible report regeneration exist.
+  Local `make check` passes with 345 tests and one gated live test skipped;
+  installed-wheel checks pass. Live smoke is recorded in
+  `docs/milestones/M06-live-smoke.md`. User explicitly requested M07 after the M06
+  handoff, accepting M06 for progression; no formal quiz is claimed.
 - Local M05 verification: **passed**; 248 offline tests, one explicitly gated live
   test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
   extracted-source checks and repeatable isolated wheel verification. Hosted
@@ -30,10 +42,12 @@
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
 - M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
   (`feat: add first agent fault comparison`), now pushed with M05.
-- Exact next action: complete the M05 learning review: explain why an installed
-  wheel check catches packaging failures that checkout tests can miss, and why
-  regenerated reports do not authenticate saved evidence. The user explicitly
-  authorized releasing v0.1.0 with this checkpoint pending. Do not start M06 yet.
+- Exact next action: review M08/M09's stored effects versus model claims and give
+  an independent engineer the M10 diagnostic bundle/worksheet. Record their actual
+  observations before declaring Phase 2 fully accepted. Candidate publication is
+  explicitly authorized and being verified in the release session below;
+  Phase 3 remains planned. The M05 learning
+  checkpoint remains pending; Phase 2 authorization did not claim its completion.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
@@ -41,7 +55,7 @@
   merged through `a8810fe`. Repository is public with launch protections enabled;
   [v0.1.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.1.0)
   is published from release commit `30ba746` with an annotated tag.
-- Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
+- Next implementation phase: Phase 3 only after separate authorization and review.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
 ## Implementation session — 2026-09-06
@@ -598,6 +612,200 @@ left local for review, not staged to bypass the assessment.
   and updated the public roadmap's candidate label. This is a post-release docs
   clarification; the published tag and package assets remain at `30ba746`.
 
+## Phase 2 detailed planning — 2026-09-07
+
+- User requested a detailed M06–M10 plan, selected focused live checks, full agent
+  conversation recovery, and executor-owned operation IDs for retry protection.
+  They then requested implementation and specifically expanded documentation in
+  `PLAN.md`. This step records the plan; no M06 runtime code is implemented yet.
+- Expanded Phase 2 directly in the design authority with shared boundaries, CLI
+  commands, artifact compatibility, milestone experiments, implementation steps,
+  offline cases, live matrices, review gates, and v0.2 candidate requirements.
+- Recorded M08's attempt/deadline/backoff limits, M09's durable state, locking and
+  crash boundaries, and M10's saved-evidence diagnostics and independent review.
+- Explicitly separated Phase 2 execution-policy treatments from the historical
+  M04 prompt-only comparison. No prior experiment is reinterpreted.
+- The 20 planned live runs are bounded milestone smoke checks, not measurements
+  already obtained or an instruction to invoke all milestones together.
+- Documentation verification: `make check` PASS with 248 offline tests passed,
+  one live test skipped, lockfile, Ruff, strict mypy and package build passing.
+  PR Ready analyzer: **PR READY**; build, test, lint and static checks passed,
+  with no suspicious files or blockers. No live inference, staging, commit or push
+  was performed in this documentation step.
+- M06 is `planned`; M05 learning review stays pending. Next action is the M06
+  implementation above, with no automatic M07 progression.
+
+## M06 implementation and focused live smoke — 2026-09-07
+
+- User requested starting Phase 2. Implemented M06 only, preserving the pending
+  planning edits and historical evidence. M07–M10 remain planned.
+- Added the optional executor boundary, required version 1 response envelope,
+  syntax/schema/request validation, eleven finite cases, and raw-byte trace capture.
+  Both policies validate arguments; valid bytes are preserved. Storage and the
+  independent evaluator keep their existing behavior. No automatic retry was added.
+- Added explicit offline/live reliability list/run/compare commands and versioned
+  reports with invalid/absent claims, unknown outcomes, partial runs and unexercised
+  faults. Legacy CLI and report readers pass their existing regressions.
+- Added offline regressions for malformed responses, unchanged storage on invalid
+  input, committed writes followed by rejected responses, false claims that pass
+  response validation, partial failures, explicit mode selection, and regeneration
+  from saved JSON without a database. Installed-wheel checks exercise M06 too.
+- Verified the local checkpoint metadata and digest match the approved Instruct
+  baseline. Ran exactly four planned local smoke runs: healthy and wrong-create-title
+  under both policies. All four tasks were correctly stored; three final completion
+  claims used wrong IDs, while validated wrong-title returned prose plus JSON and
+  failed strict terminal validation. Eight model calls, four creates, no lookups.
+- Both configured response faults activated. The validator detected the request
+  mismatch after the correct write committed. No provider, evaluator or output-limit
+  error occurred. No retry, output cleanup, model setting change or discarded run.
+- Review found an inherited metric flag counted dropped writes only, despite
+  correct separate response-fault counts. Reliability schema 2 fixes the generic
+  flag and validates consistency; schema 1 readers preserve the original smoke.
+  No original evidence was rewritten and no inference was repeated for the fix.
+- Detailed provenance, exact wrong IDs, counts and limitations are in
+  `docs/milestones/M06-live-smoke.md`. Raw artifacts remain ignored under `runs/`.
+- Final `make check` PASS: 345 offline tests passed, one live test skipped,
+  lockfile, Ruff, strict mypy over 39 source/test/example/script files, and package
+  build. `make package-check` PASS with the M06 comparison installed outside the
+  checkout. All six original schema 1 smoke reports still pass `report --check`.
+- Final PR Ready analyzer verdict: **NOT PR READY**. Build, test, lint and static
+  checks all PASS; no suspicious files. The sole blocker is seven intended new
+  files remaining untracked. No staging was performed to bypass that state.
+- M06 stays `in_progress` for separate review. No staging, commit, push, tag,
+  package publication, new dependency, model download, daemon change or M07 work.
+
+## M07 implementation and focused live smoke — 2026-09-07
+
+- User requested `impl m7`, accepting M06 for progression. Implemented M07 only,
+  preserving all earlier uncommitted changes. M05 learning review remains pending.
+- Added explicit keyed task creation with exact argument matching, atomic task and
+  operation-record writes, durable replay, conflict detection and database-lifetime
+  retention. Ordinary task calls retain their old behavior and do not create a ledger.
+- Added executor-owned operation IDs, per-attempt IDs, two-attempt bounded retries,
+  and identical delivery errors for before-write failure and lost committed reply.
+  Separate model calls get new IDs. Validation, storage and contract errors do not retry.
+- Added three cases/three policies, default paired comparisons plus optional control,
+  trace-derived attempt accounting and versioned reports. Independent SQL still
+  grades task rows rather than trusting replay receipts. Recorded decisions in PLAN.md.
+- Offline tests cover the nine cells, repeated/concurrent keys, exact inputs,
+  different-argument conflicts, persistence, insert and commit rollback, missing
+  databases, retry admission/exhaustion, partial evidence and report regeneration.
+  Installed-wheel checks exercise all lost-reply policies outside the checkout.
+- Verified the approved checkpoint metadata/digest with `make doctor`; ran exactly
+  six planned local smoke runs. Lost-reply unprotected retry produced two rows;
+  protected retry produced one row and one replay. Both before-write retries recovered
+  one task. All six model claims copied task IDs incorrectly and were contradicted.
+- Six runs: 12 model calls, 6 logical creates, 10 attempts, 4 retries, 8 storage
+  entries, 1 replay, 4/4 configured faults exercised. No lookups, invalid/absent claims,
+  provider/evaluator failures or output-limit stops. Five stored outcomes completed;
+  the duplicate run did not satisfy exactly-one-task grading.
+- See `docs/milestones/M07.md` and `docs/milestones/M07-live-smoke.md` for commands,
+  exact ID mismatches, dirty source provenance and guarantee limits. All nine M07
+  reports and all six historical M06 reports match saved JSON regeneration.
+- Final `make check` PASS: 393 offline tests passed, one gated live test skipped,
+  lockfile check, Ruff lint/format, strict mypy over 43 source/test/example/script
+  files, and sdist/wheel build. The added real SQLite commit-lock regression passes.
+  `make package-check` PASS, including installed M07 comparisons and child reports
+  with socket construction blocked. No new dependencies or model downloads.
+- Final PR Ready analyzer: **NOT PR READY**. Build, test, lint and static checks
+  all PASS; no suspicious files or remaining risks reported. Its sole blocker is
+  the 13 intended M06/M07 files remaining untracked. No staging to bypass the verdict.
+- M07 learning checkpoint: explain the atomic ledger boundary, why identical titles
+  do not establish shared intent, and why returning the original task does not fix
+  a wrong terminal ID. Not marked fully complete before that review.
+- Exact next action: review the walkthrough and preserved smoke, then authorize M08
+  separately. No staging, commit, push, tag or publication performed in this step.
+
+## M08–M10 implementation and Phase 2 candidate — 2026-09-07
+
+- User authorized completing all remaining Phase 2 work after the M07 handoff,
+  then said continue. M07 is accepted for progression; M08–M10 learning and M10's
+  independent human diagnostic review remain separate. No Phase 3 implementation.
+- M08: added one owned allowlisted subprocess per attempt, socket blocking inside
+  each worker, transient retry admission, deadlines/backoff/operation budgets,
+  finite late-result observation, terminate/grace/kill and confirmed-exit cleanup.
+  All creates use the retained operation ledger. No evaluator snapshot or next
+  attempt while an owned worker remains active.
+- Offline M08 evidence covers once/twice/continuous transient failure, permanent
+  failure, malformed/absent replies, before/after delays, ignored termination,
+  KeyboardInterrupt cleanup, fake-time backoff and a real commit/cancel race. A
+  race can leave zero or one task; tests assert atomicity instead of invented order.
+- M09: added a separate transactional run journal for full conversation/provider
+  turns, pending tool order/cursor, named scripts, operation IDs, attempts, remaining
+  time, fault consumption, terminal result, evaluation and artifact-finalization
+  state. Reservations commit before external actions. Unknown interrupted elapsed
+  time charges the full reservation; exact downtime stays unknown.
+- Added inherited Unix run ownership, immutable configuration and compatibility
+  checks, saved-model digest verification, `aflab resume`, and the explicit
+  `scripts/check_restart.py` crash controller. Legacy runs remain read-only and
+  are refused for resume. No implicit migrations or remote fallback.
+- M09 offline tests kill real processes at all six planned barriers. They also
+  verify orphan lock retention, competing resume ownership, multi-tool order,
+  operation/fault/budget persistence, lost model-response accounting, terminal
+  response recovery, completed-run no-op, corrupt-state rejection and finalization
+  after report-write failure. The standalone four-run controller passed offline.
+- M10: added `aflab diagnose --format markdown|json`, standardized journal events,
+  worker evidence references, last-checkpoint/resume explanations, saved evaluation
+  and terminal support, plus explicit schema/timing/projection gaps. Diagnosis
+  performs no fresh grading or tool/model calls. Golden tests cover event order,
+  exact source references and unknown conclusions.
+- Verified the existing local checkpoint/digest with `make doctor`. M08's six live
+  runs recorded 12 model calls, six creates, seven attempts, one retry, four deadline
+  expirations, two cancellations and six activated faults. Four tasks completed;
+  two remained absent. Three wrong-ID completion claims and one false non-completion
+  were contradicted; two non-completion claims were supported. No lookups or missing
+  reports. No force-kill was needed live; its mechanism is covered offline.
+- M09's four live runs recorded eight model calls, four creates and five attempts.
+  All stored one task. Both explicit crash barriers were reached; after-commit
+  resume charged one reservation and replayed once under the original operation ID.
+  All four valid completion claims used wrong IDs and were contradicted. No lookups,
+  provider/evaluator failures or output-limit stops. No additional M10 inference.
+- M10 self-review diagnosed all ten M08/M09 children and ten historical M06/M07
+  children. All reports still match saved JSON; local diagnostic exports accompany
+  the new ignored bundles. Automated evidence is not an independent reviewer.
+- Prepared local package `0.2.0rc1`; only the project's own version changed in
+  `uv.lock`, with no new dependency. Added M08/M09/M10 walkthroughs, live evidence
+  notes, artifact/architecture/limitation updates and the pending reviewer worksheet.
+- Full `make check` PASS: 440 offline tests, one gated live test skipped, locked
+  dependencies, lint/format, strict mypy over 57 source/test/example/script files,
+  and candidate sdist/wheel build. Installed-wheel checks passed with process
+  comparison, no-op resume and both diagnostic/report readers outside the checkout.
+- Hosted Ubuntu/macOS CI is configured to discover these process tests, but has
+  not run this uncommitted candidate. Local checks ran on macOS ARM64; no Linux
+  result is claimed for these exact changes.
+- Final PR Ready analyzer verdict: **NOT PR READY**. Build, test, lint and static
+  checks all PASS; no suspicious files or remaining risks reported. Its sole
+  blocker is 32 intended Phase 2 files remaining untracked. No staging to bypass
+  that verdict. Final `make package-check` also PASS for the installed `0.2.0rc1`
+  wheel, including process comparison, completed resume, reports and diagnosis.
+- No staging, commit, push, tag, package publication, model download or daemon
+  change in this implementation step. The candidate is local and unreleased.
+- Exact next action: review the M08/M09 findings, obtain the M10 independent
+  engineer's explanation from the bundle alone, record ambiguities/fixes, then
+  decide separately whether to publish the candidate. M05 learning review stays open.
+
+## Phase 2 release publication session — 2026-09-07
+
+- User explicitly requested commit, push, release, README and related-file updates.
+  Publication target is `v0.2.0rc1`, marked as a prerelease; stable `v0.1.0` is retained.
+- Updated the README with candidate installation, Phase 2 commands and actual live
+  limitations; added candidate release notes and aligned the changelog, public
+  roadmap, milestone introduction, publication workflow and plan decision.
+- M08/M09 learning checkpoints, M10 independent diagnostic review and the M05
+  learning checkpoint remain open. No new inference or Phase 3 implementation.
+- Release verification: `make check` PASS (440 offline tests, one gated live test
+  skipped; lockfile, lint/format, strict typing and build passed). `make package-check`
+  PASS for the installed candidate outside the checkout. Both archives contain the
+  required code/license; the source archive includes the plan, progress, docs, tests
+  and restart controller. No private runs, databases or environment files are bundled.
+- Staged all 52 intended Phase 2/release files under the user's explicit request.
+  `git diff --cached --check` PASS. Pattern inspection found only previously reviewed
+  maintainer paths, no credential matches. PR Ready analyzer: **PR READY**; build,
+  test, lint and static checks PASS, no suspicious files, blockers or remaining risks.
+- Hosted CI and publication outcome will be recorded after they occur. Exact next
+  release action: commit/push, wait for Ubuntu/macOS CI, then tag and publish verified
+  artifacts. This release record does not assert the pending human reviews passed.
+
 ## Remaining roadmap
 
 | Milestones | Status | Entry condition |
@@ -607,7 +815,11 @@ left local for review, not staged to bypass the assessment.
 | M03: independent evaluation | complete | Explained; user explicitly authorized M04 |
 | M04: first fault comparison | complete | Original inconclusive batch and replacement smoke recorded; user reviewed summary and authorized M05 |
 | M05: reproducible first release | in_progress | v0.1.0 published; local and hosted Ubuntu/macOS checks pass; separate learning review remains |
-| M06–M10: execution reliability | planned | Review the first release and plan the next phase |
+| M06: tool contracts and malformed data | complete | Technical evidence recorded; user explicitly authorized M07 after the handoff |
+| M07: retry and duplicate-effect safety | complete | Technical/live evidence recorded; user authorized all remaining Phase 2 after the handoff |
+| M08: delays, recovery and limits | in_progress | Technical implementation/checks and six live runs recorded; learning review pending |
+| M09: crash and restart recovery | in_progress | Technical implementation/checks and four live runs recorded; learning review pending |
+| M10: diagnostic traces | in_progress | Technical checks and saved-bundle self-review recorded; independent reviewer gate pending |
 | M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |
 | M17–M18: external reproduction and reuse | planned | A relevant external problem or collaborator is available |
