@@ -8,7 +8,8 @@
 - Local M05 verification: **passed**; 248 offline tests, one explicitly gated live
   test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
   extracted-source checks and repeatable isolated wheel verification. Hosted
-  Ubuntu/macOS CI is configured but unrun.
+  Ubuntu/macOS CI passed `make check` on its first run but exposed an offline
+  distribution-cache assumption; the correction awaits hosted verification.
 - Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
   reports invalid; all 10 read-back runs hit the output limit before executing a
   tool. No valid claims or live read-back behavior to assess; see the live note.
@@ -27,15 +28,15 @@
   in all four cells. Both no-fault comparison claims were contradicted; read-back
   under the fault reported non-completion but queried the wrong ID. Do not claim
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
-- M04 checkpoint: committed locally as `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
-  (`feat: add first agent fault comparison`). It is not pushed.
-- Exact next action: commit and push M05 as explicitly requested on 2026-09-07,
-  then inspect Ubuntu/macOS CI. Follow `docs/public-launch.md`, including
+- M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
+  (`feat: add first agent fault comparison`), now pushed with M05.
+- Exact next action: verify the distribution-cache correction in Ubuntu/macOS CI,
+  then review the M05 learning checkpoint. Follow `docs/public-launch.md`, including
   private vulnerability reporting when public. Do not tag/release or start M06 yet.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
-- Publication: M01–M03 is pushed as `b71f583`; M04 is committed locally as
-  `43c0ab3`. M05 is uncommitted. Nothing after M03 has been pushed.
+- Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
+  pushed to `origin/main`. Repository visibility remains private; no tag/release.
 - Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -357,9 +358,8 @@ left local for review, not staged to bypass the assessment.
   worktree based on that commit. They do not pretend it is a committed M04 revision.
 - Two local-model experiments ran across M02/M03; the separate M04 batch is
   recorded above. No hosted/paid API used.
-- This verification covers the macOS development machine. Offline Linux CI is
-  configured in M05 but cannot run until its commit is pushed; it has not been
-  claimed as passed.
+- Local verification covers macOS. The first hosted Ubuntu/macOS jobs passed
+  `make check` but failed isolated package setup; see the M05 push record below.
 
 ## M05 implementation session — 2026-09-07
 
@@ -473,6 +473,19 @@ left local for review, not staged to bypass the assessment.
   checks PASS; no suspicious files or blockers detected.
 - M05 remains `in_progress`: hosted CI and the separate learning checkpoint
   remain pending. Commit/push authorization does not establish learning completion.
+
+- Committed M05 as `de73f82` and pushed it together with M04. Remote ref was
+  verified as `de73f823b42f85aa4e562f2cb97ede3dc119e0f7`.
+- Hosted run `34083484567`: Ubuntu 24.04 and macOS 14 both passed `make check`,
+  then failed `make package-check` because offline requirements resolution lacked
+  cached package-index metadata. Existing local caches had masked this assumption.
+- Corrected isolated package setup to use `uv sync --locked --offline --no-dev
+  --no-install-project` against its own temporary environment, then install the
+  built wheel. Dependency versions, application behavior and offline checks stay
+  unchanged. Hosted verification of this correction is pending.
+- Separate Dependabot run `34083489248` failed with "Github Dependabot job token
+  is not set". This is an unresolved service-side job issue; no token/settings
+  changes were attempted.
 
 ## Remaining roadmap
 

@@ -34,12 +34,14 @@ start Ollama. `make test` resets both live opt-in flags to zero.
 make package-check
 ```
 
-This builds the wheel, exports hash-pinned runtime dependencies from `uv.lock`,
-and installs them plus the wheel into a fresh temporary environment offline. It
+This builds the wheel, syncs runtime dependencies directly from `uv.lock` into a
+fresh temporary environment offline, and installs the built wheel there. It
 checks installed-package identity outside the checkout, exercises the version
 entry point, three scripted demos, a comparison and saved reports. Python socket
 construction is blocked during the scripted application calls. Temporary files
 are cleaned automatically. Initial dependency setup must have populated uv's cache.
+Using the lock directly avoids requiring cached package-index metadata in addition
+to the downloaded wheels; the source project is excluded from this sync.
 
 The source checkout's tests also verify the checked-in scripted reports and local
 Markdown links. They do not validate GitHub rendering or remote workflow execution.

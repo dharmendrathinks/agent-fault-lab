@@ -756,3 +756,7 @@ M02, M03, and M04; see `PROGRESS.md`. All later milestones remain recorded and g
   not authenticated evidence or a hostile-filesystem security boundary.
 - Add architecture, artifact, troubleshooting, community and public-launch guidance.
   Commit, push, visibility changes and publication remain explicit user decisions.
+- First hosted CI exposed an offline cache assumption in the distribution check.
+  Sync its isolated runtime directly from the unchanged lockfile, excluding the
+  source project, then install the built wheel. Do not re-resolve exported package
+  requirements or enable network access during verification.

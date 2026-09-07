@@ -26,46 +26,24 @@ def check_distribution() -> None:
     env.update(AFLAB_RUN_LIVE_TESTS="0", AFLAB_LIVE_TEST_COMMAND="0")
     with TemporaryDirectory(prefix="aflab-wheel-") as temporary:
         work = Path(temporary)
-        requirements = work / "requirements.txt"
+        venv = work / "venv"
+        # Sync directly from the lock: cached wheels alone do not provide the
+        # index metadata needed to resolve an exported requirements file offline.
         run(
             [
                 "uv",
-                "export",
-                "--frozen",
+                "sync",
+                "--locked",
                 "--offline",
                 "--no-dev",
-                "--no-emit-project",
-                "--format",
-                "requirements.txt",
-                "--output-file",
-                str(requirements),
-                "--quiet",
+                "--no-install-project",
+                "--python",
+                sys.executable,
             ],
             cwd=root,
-            env=env,
-        )
-        venv = work / "venv"
-        run(
-            ["uv", "venv", "--offline", "--python", sys.executable, str(venv)],
-            cwd=work,
-            env=env,
+            env={**env, "UV_PROJECT_ENVIRONMENT": str(venv)},
         )
         python = venv / "bin" / "python"
-        run(
-            [
-                "uv",
-                "pip",
-                "install",
-                "--offline",
-                "--require-hashes",
-                "--python",
-                str(python),
-                "-r",
-                str(requirements),
-            ],
-            cwd=work,
-            env=env,
-        )
         run(
             [
                 "uv",
