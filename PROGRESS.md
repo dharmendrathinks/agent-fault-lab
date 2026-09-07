@@ -30,15 +30,16 @@
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
 - M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
   (`feat: add first agent fault comparison`), now pushed with M05.
-- Exact next action: decide whether existing Git history may expose the maintainer's
-  commit email and recorded local paths. If accepted, make the repository public,
-  immediately enable private vulnerability reporting and required CI checks, and
-  verify the public rendering. Do not tag/release or start M06 yet.
+- Exact next action: complete the M05 learning review: explain why an installed
+  wheel check catches packaging failures that checkout tests can miss, and why
+  regenerated reports do not authenticate saved evidence. Do not tag/release or
+  start M06 yet.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
   pushed to `origin/main`, with CI correction `6354745` and both action updates
-  merged through `a8810fe`. Repository visibility remains private; no tag/release.
+  merged through `a8810fe`. Repository is public with launch protections enabled;
+  no tag/release.
 - Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -528,6 +529,28 @@ left local for review, not staged to bypass the assessment.
   queued run was cancelled by the intended concurrency policy. The repository is
   clean and has no open pull requests; visibility remains private pending the
   explicit history-privacy decision above.
+
+## M05 public repository launch — 2026-09-07
+
+- User explicitly accepted exposure of the existing commit email and recorded
+  local paths, preserving historical commit identifiers and experiment provenance.
+- Changed `dharmendrathinks/agent-fault-lab` from private to public. No tag,
+  GitHub release, package publication or M06 work was performed.
+- Enabled private vulnerability reporting; the API reports `enabled: true` and
+  the public advisory route returns HTTP 200.
+- Protected `main` with strict required checks `offline checks (ubuntu-24.04)` and
+  `offline checks (macos-14)`, both bound to GitHub Actions. Force pushes and branch
+  deletion are disabled, and review conversations must be resolved. Admins are not
+  enforced so the sole maintainer retains an emergency bypass.
+- Enabled dependency vulnerability alerts, Dependabot security updates, secret
+  scanning and secret-scanning push protection.
+- Public HTTP checks returned 200 for the repository, raw README, issue chooser and
+  private-advisory form. MIT license, About text, nine topics and Issues are visible
+  through the public API. No open PRs, tags or releases exist.
+- The in-app browser was unavailable, so README diagram/layout and issue-form UI
+  rendering were not visually inspected. This is the only remaining launch UI
+  check; public accessibility and configuration were verified independently.
+- M05 remains `in_progress` solely for the separate user learning checkpoint.
 
 ## Remaining roadmap
 

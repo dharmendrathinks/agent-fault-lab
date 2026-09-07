@@ -4,6 +4,12 @@ This is a maintainer checklist, not an automated publication workflow. Making th
 repository public does not push local commits or create a release. The user owns
 those decisions. Local test results are recorded in [PROGRESS.md](../PROGRESS.md).
 
+Launch status: the repository was made public on 2026-09-07. Private vulnerability
+reporting, secret scanning, push protection, Dependabot security updates, and
+strict Ubuntu/macOS status checks on `main` are enabled. Public HTTP access to the
+repository, README, issue chooser, and advisory form was verified; final visual
+rendering inspection remains a maintainer browser check.
+
 ## Before pushing
 
 - Review `git status`, the complete diff and the intended commit history. Include
