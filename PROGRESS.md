@@ -3,8 +3,9 @@
 ## Resume here
 
 - Phase: 3 — Agent boundaries and state.
-- Release: **v0.3.0 publication authorized**, local checks and PR Ready pass;
-  commit/push and hosted Ubuntu/macOS verification precede publication.
+- Release: **v0.3.0 published as stable/latest** on 2026-09-07.
+  GitHub confirms `draft=false` and `prerelease=false`. The annotated tag points
+  to `ff458539f68ff5700d4c7a325d574f24dcca0f0f`; both hosted platforms pass.
   Notes are in `docs/releases/v0.3.0.md`.
 - Current milestones: **M12 and M13**, implemented locally under the user's
   explicit request to complete the remaining Phase 3 implementation.
@@ -28,10 +29,41 @@
 - Pending: separately opted-in 16-run Phase 3 local-model smoke; M12/M13 learning
   reviews. These remain follow-ups under the explicit publication request, not
   claimed results. No new inference or daemon change is part of publication.
-- Exact next action: finish local package validation, commit/push,
-  verify both hosted jobs, then publish stable v0.3.0 with checked packages and
-  record remote verification. Preserve the remaining learning/live follow-ups;
-  M14 is not started.
+- Exact next action: review M12/M13 learning evidence and explicitly opt in to the
+  planned 16-run local-model smoke if desired. Publication is complete; those
+  follow-ups and any M14 scope remain separate. No automatic inference or next
+  milestone is authorized.
+
+## v0.3.0 stable publication evidence — 2026-09-07
+
+- Published [v0.3.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.3.0)
+  at `2026-09-07T17:55:28Z` with `--latest --prerelease=false --draft=false`.
+  The GitHub latest-release API confirms v0.3.0, non-draft and non-prerelease.
+- Release commit: `ff458539f68ff5700d4c7a325d574f24dcca0f0f` (macOS cleanup fix,
+  following Phase 3 implementation commit `ecf142e`). Both commits use Dharmendra
+  `<dharmendra.code@gmail.com>` as author/committer. Remote annotated tag object
+  `3223c173931d8adc1a796c4df310e86ab2f981d5` peels to that verified release commit.
+- [Hosted CI run 34149280979](https://github.com/dharmendrathinks/agent-fault-lab/actions/runs/34149280979)
+  passed Ubuntu 24.04 and macOS 14, including all 773 offline tests (one gated live
+  skip), typing/lint/format, package checks and real-scanner acceptance. The initial
+  failed macOS run is retained below rather than counted as successful evidence.
+- Uploaded the wheel, source archive and SHA256SUMS; downloaded all three again.
+  Both checksum checks pass and all downloaded bytes match the local release assets.
+  GitHub's asset digests also match. Wheel SHA-256:
+  `604f3eb83ded8294aa52c1e813efc478ddfd0236bb0790ef6ca4b386bc472ddf`.
+  Source SHA-256:
+  `4252452c45a8cce73a5a95efa4a88623209291bf07e2be86e942de393684c571`.
+- Source archive entries were compared with all 152 included committed files;
+  wheel modules match the tagged source. No local environments, databases, models
+  or raw evidence were included. Final immutable release assets, downloads, CI/API
+  snapshots and local check logs remain in ignored `runs/v030-publication/`.
+- README, changelog, roadmap, release notes and milestone/setup/limitation docs
+  describe v0.3.0. This publication-evidence update is a follow-up documentation
+  commit; the release tag and asset bytes remain tied to `ff45853`. Previous tags
+  and releases are preserved. No PyPI publication or model inference occurred.
+- M12/M13 learning acceptance and the separately opted-in Phase 3 live smoke remain
+  disclosed follow-ups. Stable publication does not turn scripted results into
+  model evidence or mark learning milestones fully complete.
 
 ## v0.3.0 publication authorization — 2026-09-07
 
@@ -1147,9 +1179,9 @@ left local for review, not staged to bypass the assessment.
 | M08: delays, recovery and limits | complete | Technical checks and six live runs recorded; maintainer confirmed review complete on 2026-09-07 |
 | M09: crash and restart recovery | complete | Technical checks and four live runs recorded; maintainer confirmed review complete on 2026-09-07 |
 | M10: diagnostic traces | complete | Technical checks recorded; maintainer confirmed remaining review complete and authorized stable promotion on 2026-09-07 |
-| M11: permissions and approval | in_progress | Local checks pass; learning accepted for progression; separately opted-in live smoke and hosted checks pending |
-| M12: untrusted content | in_progress | Implementation and local real-scanner checks pass; live smoke, hosted checks and learning review pending |
-| M13: context and memory | in_progress | Implementation and local real-scanner checks pass; live smoke, hosted checks and learning review pending |
+| M11: permissions and approval | in_progress | Released in v0.3.0; local/hosted checks pass; learning accepted for progression; separately opted-in live smoke pending |
+| M12: untrusted content | in_progress | Released in v0.3.0; local/hosted real-scanner checks pass; live smoke and learning review pending |
+| M13: context and memory | in_progress | Released in v0.3.0; local/hosted real-scanner checks pass; live smoke and learning review pending |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |
 | M17–M18: external reproduction and reuse | planned | A relevant external problem or collaborator is available |
 

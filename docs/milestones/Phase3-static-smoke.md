@@ -71,5 +71,7 @@ local-model smoke remains separately opted in and has not been run here.
 The existing M11 real-scanner acceptance additionally checks benign admission,
 the stronger suspicious fixture's observed block, missing-grant audit/enforcement
 and explicit approve/resume. `make scanner-check` now runs both acceptance scripts;
-both CI platforms are configured to require them. Hosted acceptance for these local
-changes has not been observed.
+both CI platforms require them. The v0.3.0 release commit `ff45853` passed this
+acceptance on Ubuntu 24.04 and macOS 14 in
+[CI run 34149280979](https://github.com/dharmendrathinks/agent-fault-lab/actions/runs/34149280979),
+after fixing the macOS zombie-group cleanup error described in PROGRESS.md.
