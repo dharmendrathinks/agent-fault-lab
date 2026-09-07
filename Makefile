@@ -1,4 +1,5 @@
 .PHONY: check lockcheck test lint typecheck build package-check demo agent-demo doctor live-test
+.PHONY: scanner-setup scanner-check
 
 UV ?= uv
 RUN = $(UV) run --offline --no-sync
@@ -23,6 +24,14 @@ build:
 
 package-check: build
 	$(RUN) python scripts/check_distribution.py
+
+scanner-setup:
+	$(UV) sync --project integrations/skillspector --locked
+
+scanner-check:
+	$(UV) lock --project integrations/skillspector --check --offline
+	$(RUN) python scripts/check_scanner.py
+	$(RUN) python scripts/check_context.py
 
 demo:
 	$(RUN) python examples/task_workflow.py

@@ -81,6 +81,38 @@ an unsuccessful experiment. Inspect the evaluation, not just the shell status.
 
 ## Sharing evidence
 
+M11 uses the distinct schema-1 `boundary-manifest`, `boundary-state`,
+`boundary-scan`, `boundary-evaluation`, `boundary-comparison` and
+`boundary-diagnosis` family. Its `boundary.sqlite3` contains the checkpoint and
+ordered events; task authorization tables stay in `tasks.sqlite3`. The `scan/`
+directory retains input bytes, pin/lock provenance, raw and normalized findings,
+warnings and input/report hashes. There is no M11 JSONL projection or legacy
+journal migration. See [M11](milestones/M11.md) for the full inventory.
+
+An approval wait is a checkpoint with absent terminal output, not a completed
+agent run. Exit 3 means waiting for an explicit operator decision/resume. Model
+requests, tool calls, attempted writes, replay requests, actual authorized and
+unauthorized effects, and whether the scenario was exercised remain separate.
+An unknown storage inspection cannot establish that a permission boundary held.
+
+Boundary report regeneration remains JSON-only. Diagnosis reads saved checkpoint,
+ordered SQL events and saved evaluation; it does not scan or recompute grades.
+These are local evidence files, not authenticated audit logs. Source fingerprints
+and exact input/raw-report hashes are checked before approval or resume.
+
+M12/M13 extend this unreleased boundary family with typed `context` setup and
+assessment fields and explicit comparison `axes`. Seeded rows are part of the
+immutable experiment setup. The original read and injected tool response are
+recorded separately; successful tool-context attachment is checkpointed atomically
+with its delivered message. The `model_requested` event records exact selected
+messages; it reserves an attempted request, not proof of provider receipt.
+
+M13's `scan-original/` retains the pre-replacement note snapshot and scan. Current
+notes use `scan/`; both scans are verified on resume. Supplied synthetic history
+is labeled in `context_fixture_prepared`, while `history_shortened` records removed
+messages. Refreshes and model-requested state reads have separate events/counters.
+Legacy M04–M10 JSON readers remain available; no old journal is migrated.
+
 Review prompts, titles, responses, traces, absolute paths, model metadata and Git
 provenance. Use synthetic data; never upload credentials, customer data or weights.
 Keep originals locally and label public excerpts and omissions.

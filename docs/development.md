@@ -28,6 +28,14 @@ Both CI jobs perform online environment setup first, followed by the same offlin
 lock, lint, type, test, build and isolated wheel commands. They do not install or
 start Ollama. `make test` resets both live opt-in flags to zero.
 
+Phase 3 also requires `make scanner-setup` and `make scanner-check`. Setup installs
+the independently locked SkillSpector environment. The check then runs actual static
+scanning with scripted agents: M11 approval lifecycle, all eight M12 skill fixtures,
+task/tool policy cells and both M13 context variants for every case. Both CI platforms
+run this check. Default unit tests use labeled scanner doubles and remain independent
+of scanner installation. Read the actual recommendations; scanner misses are findings,
+not automatically harness failures.
+
 ## Check the distribution, not just the checkout
 
 ```sh
@@ -38,7 +46,8 @@ This builds the wheel, syncs runtime dependencies directly from `uv.lock` into a
 fresh temporary environment offline, and installs the built wheel there. It
 checks installed-package identity outside the checkout, exercises the version
 entry point, three scripted demos, the original comparison, M06/M07 comparisons,
-an M08 process comparison, finalized-run resume, diagnosis and saved reports. Python socket
+an M08 process comparison, M11 approvals, M12/M13 comparisons, finalized-run resume,
+diagnosis and saved reports. Python socket
 construction is blocked during the scripted application calls. Temporary files
 are cleaned automatically. Initial dependency setup must have populated uv's cache.
 Using the lock directly avoids requiring cached package-index metadata in addition
@@ -80,16 +89,48 @@ validates either `evaluation.json` (plus matching `observation.json`, when prese
 or `comparison.json`, then atomically replaces only the Markdown. It does not read
 SQLite, rerun evaluation, contact a model, or rewrite raw evidence.
 
-## Publish a release candidate
+## Prepare a release
 
-With explicit publication authorization, update the package version, lockfile,
-changelog, README, release notes, roadmap and progress record together. Run
-`make check` and `make package-check`, inspect both distribution archives, then
-commit and push. Wait for both hosted CI jobs on the intended release commit.
+Keep local preparation separate from publication. Update the target package version,
+lockfile, draft release notes, changelog, roadmap and progress record together.
+Keep the README stable link and installation tag on the actually published release.
+For Phase 3, follow the [v0.3.0 release gates](releases/v0.3.0.md#release-gates).
 
-Create an annotated version tag on that verified commit. Attach its wheel, source
-archive and `SHA256SUMS` to the GitHub release; verify downloaded checksums and the
-remote tag's commit. Mark candidates as prereleases and retain the previous stable
-release as latest. Record the actual commit, CI run and publication outcome in
+```sh
+uv sync --locked --all-groups
+make check
+make package-check
+make scanner-check
+git diff --check
+```
+
+Inspect both distribution archives: the source must include the scanner's separate
+lock/setup files and fixtures, while neither archive may contain local environments,
+credentials, model weights or private run databases. Verify the extracted source
+and an installed wheel outside the checkout. Generate `SHA256SUMS` from only the
+target version's wheel and source archive, excluding old files retained in `dist/`.
+Run PR Ready and record its actual verdict, including untracked-file findings.
+Automated checks do not satisfy learning acceptance or opt in to live inference.
+
+## Publish a stable release
+
+After review/live-evidence gates are satisfied, or the maintainer authorizes a
+release with specific follow-ups explicitly disclosed in PLAN.md, update the release-facing
+README and changelog for the intended stable tag and recheck the final package.
+Commit/push only when requested, then wait for both hosted CI jobs on the intended
+release commit. For Phase 3, both platforms must also pass real-scanner acceptance.
+
+With explicit publication authorization, create an annotated version tag on that
+verified commit. Attach its wheel, source archive and `SHA256SUMS` to the GitHub
+release; mark the stable release as latest with prerelease disabled. Verify
+downloaded checksums and the remote tag's commit. Record the actual CI run and
+publication outcome in
 `PROGRESS.md`. Publication does not satisfy learning or independent-review gates.
 This workflow does not publish to PyPI.
+
+## Publish a release candidate
+
+Use a candidate only when explicitly requested. Follow the same verification and
+publication process, use a version such as `0.3.0rc1`, mark it as a prerelease and
+retain the previous stable release as latest. Do not silently substitute a candidate
+for a requested stable release.

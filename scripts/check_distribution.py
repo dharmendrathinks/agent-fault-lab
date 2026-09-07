@@ -66,6 +66,7 @@ def check_distribution() -> None:
 
 
 def check_installed(version: str) -> None:
+    import hashlib
     import json
     from contextlib import redirect_stdout
     from importlib.metadata import version as installed_version
@@ -73,7 +74,27 @@ def check_installed(version: str) -> None:
     from unittest.mock import patch
 
     import agent_fault_lab
+    from agent_fault_lab.boundaries import load_boundary
     from agent_fault_lab.cli import main
+    from agent_fault_lab.journal import atomic_json
+    from agent_fault_lab.scanner import ScanResult
+
+    def scripted_scan(content: bytes, directory: Path) -> ScanResult:
+        directory.mkdir()
+        (directory / "SKILL.md").write_bytes(content)
+        result = ScanResult(
+            engine="SCRIPTED installed-wheel scanner double, NOT SkillSpector",
+            commit="test fixture",
+            version="test fixture",
+            input_sha256=hashlib.sha256(content).hexdigest(),
+            status="admitted",
+            recommendation="SAFE",
+            complete=True,
+            exit_code=0,
+            elapsed_seconds=0,
+        )
+        atomic_json(directory / "scan.json", result.model_dump(mode="json"))
+        return result
 
     location = Path(agent_fault_lab.__file__).resolve()
     assert location.is_relative_to(Path(sys.prefix).resolve()), location
@@ -162,6 +183,52 @@ def check_installed(version: str) -> None:
                 with redirect_stdout(captured):
                     assert main(["diagnose", str(child), "--format", "json"]) == 0
                 assert json.loads(captured.getvalue())["gaps"] == []
+        with patch(
+            "agent_fault_lab.scanner.SkillSpector.scan", side_effect=scripted_scan
+        ):
+            boundary = work / "boundary"
+            assert (
+                main(
+                    [
+                        "boundaries",
+                        "run",
+                        "manual",
+                        "--offline",
+                        "--output",
+                        str(boundary),
+                    ]
+                )
+                == 3
+            )
+            operation = load_boundary(boundary).state.operation_id
+            assert operation
+            assert main(["approval", "approve", str(boundary), operation]) == 0
+            assert main(["resume", str(boundary), "--offline"]) == 0
+            assert main(["report", str(boundary), "--check"]) == 0
+            captured = StringIO()
+            with redirect_stdout(captured):
+                assert main(["diagnose", str(boundary), "--format", "json"]) == 0
+            assert json.loads(captured.getvalue())["gaps"] == []
+            for case in ("injection-override", "memory-stale-title"):
+                context = work / case
+                assert (
+                    main(
+                        [
+                            "boundaries",
+                            "compare",
+                            case,
+                            "--offline",
+                            "--output",
+                            str(context),
+                        ]
+                    )
+                    == 0
+                )
+                assert main(["report", str(context), "--check"]) == 0
+                evidence = json.loads((context / "comparison.json").read_text())
+                assert len(evidence["entries"]) == (
+                    4 if case.startswith("injection-") else 2
+                )
     print(f"PASS: installed wheel {version}; scripted runs, comparison and reports")
 
 

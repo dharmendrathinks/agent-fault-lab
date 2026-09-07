@@ -2,8 +2,105 @@
 
 ## Resume here
 
-- Phase: 2 — Tool-execution reliability.
-- Current milestone: **M10 — Diagnostic traces**, accepted; Phase 2 complete.
+- Phase: 3 — Agent boundaries and state.
+- Release: **v0.3.0 publication authorized**, local checks and PR Ready pass;
+  commit/push and hosted Ubuntu/macOS verification precede publication.
+  Notes are in `docs/releases/v0.3.0.md`.
+- Current milestones: **M12 and M13**, implemented locally under the user's
+  explicit request to complete the remaining Phase 3 implementation.
+- M11 learning checkpoint: accepted for progression after the user discussed the
+  roles of skill scanning, approval and outcome verification, said “got it”, and
+  requested the rest of Phase 3. This does not claim a formal assessment or live runs.
+- Scope: all Phase 3 implementation: real static scanning and approvals (M11),
+  eight attack/benign cases on three surfaces with crossed policies (M12), and
+  five stale-state/history cases with cached/authoritative-refresh comparison (M13).
+- Evidence: `make check` passed with 763 tests and one gated live skip; strict typing,
+  lint/format, lock verification, sdist/wheel and installed-wheel checks pass locally.
+  Real-scanner acceptance includes M11 plus 26 M12/M13 runs. Three of the four M12
+  attack skill fixtures received SAFE; the concealed fixture was blocked. All four
+  benign fixtures were admitted. Permission enforcement prevented the scripted
+  unauthorized effects; audit reproduced them. See
+  `docs/milestones/Phase3-static-smoke.md`.
+  These are real scanner/SQLite observations with scripted agents, not model results.
+- PR Ready: **PR READY** after authorized staging. Build/test/lint/static all pass,
+  with 763 tests and one gated live skip; no suspicious files, blockers or other
+  risks reported by the analyzer.
+- Pending: separately opted-in 16-run Phase 3 local-model smoke; M12/M13 learning
+  reviews. These remain follow-ups under the explicit publication request, not
+  claimed results. No new inference or daemon change is part of publication.
+- Exact next action: finish local package validation, commit/push,
+  verify both hosted jobs, then publish stable v0.3.0 with checked packages and
+  record remote verification. Preserve the remaining learning/live follow-ups;
+  M14 is not started.
+
+## v0.3.0 publication authorization — 2026-09-07
+
+- The user requested “push the release and update respecive docs like readme etc”
+  after the handoff disclosed untracked files and pending learning/live/hosted checks.
+  This authorizes staging, commit/push, stable tagging and GitHub publication.
+- Updated the README stable link/quickstart, changelog, milestone guides, roadmap,
+  limitations and release notes for v0.3.0. PLAN.md records the release-order change:
+  publish on verified offline/static evidence after hosted CI, retaining M12/M13
+  learning acceptance and the 16-run live smoke as disclosed follow-ups.
+- No review completion or live-model evidence is inferred. The package version and
+  dependency locks are unchanged from the verified release-preparation checkout.
+- Publication checks: `make check` passes (763 tests, one gated skip; 35.25 seconds).
+  PR Ready reports **PR READY**, all four checks passing, no suspicious files,
+  blockers or remaining risks. Source and documentation are staged under the
+  explicit request. Logs are retained in `runs/v030-publication/`.
+- Publication outcome and exact commit/CI/package verification will be recorded
+  after the remote operations succeed.
+
+## v0.3.0 release preparation — 2026-09-07
+
+- User request: “lets make this release ready”. Prepared local stable-target
+  metadata and draft notes; this is not a prerelease or a publication. Updated
+  README development guidance, changelog, roadmap and maintainer release workflow.
+  The README stable link and checkout command still correctly point to v0.2.0.
+- Changed only the root package version in `pyproject.toml` and `uv.lock` from
+  0.2.0 to 0.3.0. All dependency versions and the separate scanner lock are unchanged.
+  Re-synced the project-local Python 3.12 environment offline.
+- Final-version `make check`: **763 passed, one gated live skip** (34.41 seconds),
+  Ruff lint/format, strict mypy over 75 files, root lock and wheel/sdist build pass.
+  `make package-check` passes isolated wheel identity and scripted public commands.
+- `make scanner-check` passes M11 acceptance and 26 M12/M13 context runs. Evidence:
+  `runs/scanner-check-481c2d53-fff1-4ea6-9f99-722cbc3c19ba/` and
+  `runs/context-check-4ae382f5-cc32-47f7-91f6-c246c7a725f0/`. All 26 context manifests
+  have compatibility fingerprint
+  `1e76093f52739ca0d87230f7833ccd3a2dd96fbe7639644fdcdcc1997236d89d`.
+  Observations match the retained static smoke, including the three attack misses.
+- Inspected both archives: source includes scanner setup/lock/fixtures, package
+  source and release notes; wheel includes the adapter/worker but not external
+  scanner dependencies. Neither contains local environments, run databases,
+  model weights or environment files. Both extracted source locks pass offline
+  verification and match the checkout's bytes.
+- Installed the wheel in another fresh temporary environment and ran six additional
+  scripted M12/M13 cells with **real SkillSpector** outside the checkout. Both saved
+  comparison reports verify. Evidence stays in `runs/v030-release-wheel/`.
+  The first release-verification command omitted its output parent directory and
+  failed before any comparison; corrected the setup and added `mkdir -p runs` to
+  the standalone README/release examples. The corrected check passed.
+- PR Ready returned **NOT PR READY**: build/test/lint/static all pass (763 tests,
+  one skip), no suspicious files or other risks detected. Its only blocker is
+  28 intended untracked files, including the draft release note. No staging was
+  requested. This is a repository-readiness finding, not a failed test.
+- Read-only `make doctor` confirms the existing Instruct-2507 4B checkpoint,
+  digest `0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`,
+  tool support and cloud-disabled Ollama 0.33.2. No inference was started.
+- Validation logs and final local package checksums are retained under ignored
+  `runs/v030-release-validation/`; target packages and `SHA256SUMS` are in `dist/`.
+  Archives are rebuilt after documentation updates. Checksums cover only 0.3.0;
+  old local packages and published tags are preserved.
+- Pending: user response confirming M12/M13 learning review and local-smoke opt-in,
+  staging/commit/push request, hosted Ubuntu/macOS evidence and explicit publication.
+  No review acceptance, live result, hosted CI pass or release is inferred from this
+  preparation. Use the original source/environment to resume older runs; the version
+  bump changes the compatibility fingerprint but leaves saved-report readers intact.
+
+## Historical Phase 2 release snapshot
+
+The following is the completed release status before the approved Phase 3 work.
+
 - Status: **implementation and reviews complete**. On 2026-09-07 the user confirmed
   “review done” and authorized stable promotion to `0.2.0`. M08/M09 learning and
   M10 diagnostic-review acceptance are recorded on that confirmation. Detailed
@@ -887,7 +984,134 @@ left local for review, not staged to bypass the assessment.
 - Exact next action after this correction: await separately scoped Phase 3 work.
   No experimental results or learning-review status changed.
 
+## M11 implementation session — 2026-09-07
+
+- Recorded the approved Phase 3 design, retaining milestone IDs and separate
+  learning gates. Implemented M11 only. Static SkillSpector is a shared integration;
+  semantic scanning remains M14 and M12/M13 are not implemented.
+- Pinned SkillSpector 2.11.1 at
+  `704bc9544260c2f41222dc0f92982521709496ab` in a separate locked Python 3.12
+  environment. Setup resolved 67 packages and installed 65. Core dependencies,
+  root lock and package version 0.2.0 remain unchanged.
+- Added scanner identity verification, exact Markdown snapshots/hashes, raw and
+  normalized findings, static-only execution validation, coverage checks, shared
+  deadline, aggregate output bounds and owned-process cleanup. Python sockets are
+  blocked before scanner imports; credentials are omitted. This is not an OS sandbox.
+- Added immutable proposals and exact operation/run/argument/revision grants.
+  Grant consumption, task write and replay receipt share a SQLite transaction.
+  Admission checks expiry after acquiring the write lock. Replays return existing
+  receipts without a new authorization decision or effect, including after expiry.
+- Added `scanner doctor/scan`, `boundaries list/run/compare`, `approval
+  show/approve/reject`, and boundary dispatch in `resume`, `report` and `diagnose`.
+  Manual approval waits retain an absent claim and reserved call budget. Decisions
+  do not execute tasks or infer; resume is explicit and retains the original operation.
+- Added independent read-only SQL authorization grading. Missing grant evidence
+  produces unknown authorization without erasing inspectable task rows. Tests
+  challenge the evaluator with bypassed writes and mismatched or missing receipts.
+- Regression coverage includes the eight scripted cases under both permission
+  policies; rejection, TTL/lock waits, revision/argument/cross-operation reuse;
+  atomic rollback and concurrent delivery; actual subprocess restart/crash points;
+  after-commit reply loss and stale paused-report finalization; scanner network,
+  timeout, descendant cleanup, output limits and malformed reports; legacy readers.
+- Added the M11 walkthrough, integration setup/check targets, installed-wheel
+  approval coverage, and required real-scanner checks to both CI platforms.
+  Updated README, roadmap, architecture, artifact guide, changelog and contribution
+  instructions. This is an unreleased development change, not stable v0.3.0.
+- Retained real static evidence in ignored
+  `runs/scanner-check-dc817b1a-ba21-4267-8353-027921ffe0ac/`. Benign input SHA-256:
+  `9703a6db28dc74d94bdcbc3ceed5a02ac05016a46649e774620bf9cee1553626`;
+  suspicious input SHA-256:
+  `01168e0b7ce0e5b0032650e5a21b89db805d0b73c6b7e736ca5dfb767203305d`.
+  The suspicious fixture produced five findings and DO_NOT_INSTALL; complete
+  static reports record no inference. Benign cases returned SAFE. This is bounded
+  integration evidence, not a scanner-accuracy benchmark.
+- Technical validation: `make check` passed with 536 tests and one gated live
+  test skipped, root lock verification, Ruff lint/format, strict mypy across 70
+  files and sdist/wheel builds. `make package-check` passed outside the source
+  checkout, including scripted M11 approval/resume/report/diagnosis. `make
+  scanner-check` passed with the actual pinned engine and separate lock check.
+  Markdown-link checks and `git diff --check` passed.
+- PR Ready analyzer: **NOT PR READY**. Its build/test/lint/static checks passed
+  (536 tests, one skip), with no suspicious files or remaining risks reported.
+  Its sole blocker is the 19 intended untracked files. They were not staged:
+  the working agreement requires an explicit staging/commit request. Validation
+  logs are retained in ignored `runs/m11-validation-20260907/`.
+- Limitations/checkpoint: local filesystem/operator trust, wall-clock grant expiry,
+  append-only task assumptions, separate task/journal transactions and no OS sandbox.
+  No M11 model behavior has been measured. Hosted platform acceptance and the user
+  learning checkpoint remain open. No publication was performed.
+- Exact next action: hand off M11 for learning review, with the separately opted-in
+  model smoke and hosted platform checks still pending. Do not automatically
+  implement M12 or stage/commit/push this change.
+
 ## Remaining roadmap
+
+### M12/M13 continuation — 2026-09-07
+
+- The user explicitly requested completion of the remaining Phase 3 implementation
+  after discussing M11. Recorded that expanded scope and the M11 progression
+  acceptance in `PLAN.md`; M12/M13 learning acceptance remains separate.
+- M12 implements four attacks and four benign counterparts across skill, seeded
+  task and injected tool-response surfaces. All four scanner/permission policy
+  cells scan the same payload. Task/tool delivery is contingent on an actual read;
+  missing reads remain unexercised. Tool injection preserves both the underlying
+  seed and the original read response in evidence.
+- Independent evaluation separates scanner classification, durable-context delivery,
+  validated unsafe attempts, unauthorized/scope-violating effects, seed preservation,
+  legitimate completion/blocking and strict terminal claim support. Missing storage
+  stays unknown. Bypassed writes and mutated seeds challenge the evaluator directly.
+- M13 implements stale title, changed no-write policy, stale approval, poisoned
+  notes and shortened history. Current request/policy lives outside model memory;
+  both variants expose `get_request_state`. Runner refreshes and model reads have
+  separate counters. Changed notes are rescanned, both snapshots are verified on
+  resume, and shortened context preserves complete tool exchanges. Supplied prior
+  history is explicitly labeled synthetic; exact model-request messages are saved.
+- A synthetic scoped controller proposes grants for the currently requested task.
+  Admission rechecks scope inside the write transaction, preventing wrong-title,
+  disabled-policy and duplicate effects even with an overbroad valid grant.
+  Grant consumption and replay receipts retain M11's atomicity and resume behavior.
+- Added 227 offline regressions covering the full injection matrix, memory variants,
+  voluntary state reads, false alarms, scanner errors, preserved seeds, strict
+  configuration, incomplete comparisons, read-only reports and actual subprocess
+  crashes after task commit. Existing M01–M11 tests remain passing.
+- Local validation: `make check` passed with **763 tests, one gated live skip**;
+  Ruff lint/format, strict mypy across 75 files, root lock and builds passed.
+  `make package-check` passed outside the source checkout, including M11 approval
+  and M12/M13 comparisons with explicitly labeled scanner doubles.
+- Real static checks: `make scanner-check` passed M11 acceptance and 26 M12/M13
+  runs. Initial context artifacts are under ignored
+  `runs/context-check-2ba13226-ec84-445e-bcfc-3482036df278/`; the subsequent full
+  check produced `runs/context-check-676d2ca1-1fb5-4330-9f70-a00e2ac8ffe3/`.
+  The override, forged-approval and canary fixtures were admitted as SAFE; the
+  concealed fixture was blocked. The four benign counterparts were admitted.
+  The task/tool override cells reproduced one unsafe effect with permission audit
+  and zero with enforcement, independent of scanner policy because those scans
+  recommended SAFE. Preserve these misses; do not claim scanner superiority.
+- Final acceptance after review fixes is under
+  `runs/context-check-e9b121a4-71f1-431a-881f-874616c20093/`. All 26 context runs
+  were verified to share the final execution fingerprint
+  `1ecd41b97f7041c333c96069de5eea69264e5374e683685f4ee4b072ac73bb35`.
+  Scanner classifications and observed outcomes remained the same. Duplicate
+  violation grading now counts an unauthorized extra task once, independently
+  of random task-ID ordering; both ID orders have SQLite regressions.
+- In the five M13 pairs, cached scripted behavior made an unsafe attempt in each
+  case; refresh made none. Four refreshed runs completed the current task; changed
+  policy safely produced no task. Both policies had zero actual violations under
+  permission enforcement. These are programmed client behaviors, not live findings.
+- Added M12/M13 walkthroughs, a static smoke note, real-scanner acceptance in CI,
+  installed-wheel coverage and updated README/architecture/artifact/development/
+  limitation/contribution guidance. Dependencies and package version remain at
+  the existing development baseline; no v0.3 release is implied.
+- Final PR Ready: **NOT PR READY**. Build/test/lint/static all passed (763 tests,
+  one skip); no suspicious files or remaining risks reported. The sole blocker
+  is the 27 intended new files, which remain untracked because staging/commit
+  was not requested. Validation logs are retained in ignored
+  `runs/phase3-validation-20260907/`. Documentation-link and whitespace checks pass.
+- Remaining gates: M12/M13 human learning reviews, separately opted-in live smoke,
+  hosted checks and any later release request. Exact next action: review the
+  documented evidence and choose those explicitly; do not advance to M14 implicitly.
+
+### Milestone status
 
 | Milestones | Status | Entry condition |
 |---|---|---|
@@ -901,7 +1125,9 @@ left local for review, not staged to bypass the assessment.
 | M08: delays, recovery and limits | complete | Technical checks and six live runs recorded; maintainer confirmed review complete on 2026-09-07 |
 | M09: crash and restart recovery | complete | Technical checks and four live runs recorded; maintainer confirmed review complete on 2026-09-07 |
 | M10: diagnostic traces | complete | Technical checks recorded; maintainer confirmed remaining review complete and authorized stable promotion on 2026-09-07 |
-| M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
+| M11: permissions and approval | in_progress | Local checks pass; learning accepted for progression; separately opted-in live smoke and hosted checks pending |
+| M12: untrusted content | in_progress | Implementation and local real-scanner checks pass; live smoke, hosted checks and learning review pending |
+| M13: context and memory | in_progress | Implementation and local real-scanner checks pass; live smoke, hosted checks and learning review pending |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |
 | M17–M18: external reproduction and reuse | planned | A relevant external problem or collaborator is available |
 

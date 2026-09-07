@@ -35,8 +35,23 @@
 - Python 3.12 is the supported runtime. Local verification is macOS; Linux status
   depends on CI for these exact changes. The new process runner uses Unix `flock`
   and inherited descriptors; Windows is unsupported.
-- No hosted provider, MCP server, dashboard, real integration, security benchmark,
+- No hosted provider, MCP server, dashboard, production task integration, security benchmark,
   performance guarantee, or production support commitment is included.
+
+Phase 3 uses a real pinned static SkillSpector integration, but its recommendation
+is not a guarantee. The local synthetic corpus contains three attack fixtures it
+admitted as SAFE; see [the actual smoke results](milestones/Phase3-static-smoke.md).
+Skills are inert Markdown. Python socket blocking is not an OS sandbox, and the
+scanner dependency code is trusted. There is no arbitrary third-party skill execution.
+
+A scoped scenario controller supplies M12/M13 approval decisions; they are not
+human decisions. “Delivered” records attachment to the durable agent conversation, not
+provider receipt or obedience. Scripted clients deliberately follow reference or
+cached titles; their results cannot establish model susceptibility or robustness.
+M13 starts from controlled stale snapshots and supplied fixture history rather
+than a concurrent collaborative-memory service. No Phase 3 live-model smoke has
+run for v0.3.0; M12/M13 learning reviews remain pending. Publication uses the
+documented offline/static evidence and does not imply those activities occurred.
 
 See the [M04 live comparison](milestones/M04-live-comparison.md),
 [checkpoint diagnosis](milestones/M04-qwen-diagnosis.md), and

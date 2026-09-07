@@ -688,6 +688,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--version", action="version", version=f"%(prog)s {version('agent-fault-lab')}"
     )
     commands = parser.add_subparsers(dest="command", required=True)
+    from agent_fault_lab.boundary_cli import add_commands
+
+    add_commands(commands)
     commands.add_parser("doctor", help="Check local Ollama; never download or infer.")
     demo = commands.add_parser("demo", help="Scripted test machinery, NOT AI evidence.")
     demo.add_argument("--offline", action="store_true", required=True)
@@ -789,7 +792,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     try:
+        from agent_fault_lab.boundary_cli import command as boundary_command
+        from agent_fault_lab.boundary_cli import is_boundary
+
+        if args.command in ("scanner", "boundaries", "approval"):
+            return boundary_command(args)
         if args.command == "diagnose":
+            if is_boundary(args.run_directory):
+                from agent_fault_lab.boundary_reports import (
+                    diagnose as boundary_diagnose,
+                )
+
+                result, rendered = boundary_diagnose(args.run_directory)
+                print(
+                    json.dumps(result, indent=2) if args.format == "json" else rendered
+                )
+                return 0
             from agent_fault_lab.diagnostics import diagnose, render_diagnosis
 
             diagnosis = diagnose(args.run_directory)
@@ -800,6 +818,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             return 0
         if args.command == "resume":
+            if is_boundary(args.run_directory):
+                from agent_fault_lab.boundaries import resume_boundary
+                from agent_fault_lab.boundary_cli import show as show_boundary
+
+                return show_boundary(
+                    resume_boundary(
+                        args.run_directory, mode="live" if args.live else "offline"
+                    )
+                )
             from agent_fault_lab.durable_run import resume_process
             from agent_fault_lab.process_cli import failed, show
 

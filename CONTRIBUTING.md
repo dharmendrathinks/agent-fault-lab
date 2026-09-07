@@ -44,6 +44,11 @@ make check
 make package-check
 ```
 
+For M11 scanner/approval changes, also run `make scanner-setup` once (downloads the
+separately locked scanner) and `make scanner-check`. The latter runs real static
+SkillSpector and scripted agent/approval checks without model inference. Both CI
+platforms require it. Core `make check` stays independent of scanner installation.
+
 A local-model smoke is separate and deliberately inconvenient to trigger:
 
 ```sh

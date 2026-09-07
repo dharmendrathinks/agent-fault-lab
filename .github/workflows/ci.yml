@@ -41,3 +41,7 @@ jobs:
         run: make check
       - name: Exercise the installed wheel outside the source tree
         run: make package-check
+      - name: Install the separately locked static scanner
+        run: make scanner-setup
+      - name: Exercise real static scanning and approval on this platform
+        run: make scanner-check

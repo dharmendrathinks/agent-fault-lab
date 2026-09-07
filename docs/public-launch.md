@@ -14,7 +14,8 @@ rendering inspection remains a maintainer browser check.
 
 - Review `git status`, the complete diff and the intended commit history. Include
   the new source, tests, docs, CI and scripted example; do not omit untracked files.
-- Run `make check`, `make package-check` and `git diff --check`.
+- Run `make check`, `make package-check`, `make scanner-check` and `git diff --check`
+  for Phase 3; retain the real scanner results separately from scripted agent behavior.
 - Inspect distributable contents for unwanted files. Check for credentials,
   personal paths and unreviewed raw data in both proposed files and Git history.
   Automated pattern scans are not a complete security review.
@@ -50,8 +51,9 @@ Setup downloads pinned tools and locked dependencies; inference is not part of C
 
 ## Release only after review
 
-Follow the [release workflow](development.md#publish-a-release-candidate) and review
-the [v0.2.0 notes](releases/v0.2.0.md); the
+Follow the [release workflow](development.md#prepare-a-release) and the
+[v0.3.0 release scope](releases/v0.3.0.md#release-gates). The
+[v0.3.0 notes](releases/v0.3.0.md) describe the current stable release; the
 [v0.1 checklist](releases/v0.1.0.md) records the original release. Tag and publish only after explicit
 approval and successful CI. Review package metadata before any package-index
 publication; the quickstart currently supports source installation and makes no

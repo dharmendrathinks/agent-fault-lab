@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0 — 2026-09-07
+
+- Added M11 static SkillSpector integration in a separately pinned environment,
+  strict content admission, bounded scanner execution and retained raw evidence.
+- Added operation-bound approvals, explicit approve/reject/resume commands, atomic
+  grant consumption and task receipts, and independent authorization evaluation.
+- Added scripted permission comparisons, boundary reports/diagnosis, restart and
+  rollback regressions, installed-wheel coverage and real-scanner CI checks.
+- Added M12's four attack/benign pairs on skill, task and tool surfaces, crossed
+  scanner/permission policies and independent delivery, seed and effect accounting.
+- Added M13's stale title/policy/approval, poisoned notes and shortened history
+  cases, with cached/authoritative-refresh comparisons, read-only request-state tools,
+  rescan provenance and durable restart behavior.
+- Recorded real static-scanner misses in bounded scripted integration evidence.
+  M11 is accepted for progression; M12/M13 learning reviews and separately opted-in
+  Phase 3 live smoke remain pending; the maintainer authorized stable publication
+  with those limits disclosed.
+- Updated 0.3.0 package metadata and [release notes](docs/releases/v0.3.0.md).
+  The version change also changes the resume fingerprint: resume older runs with
+  their original checkout/environment; saved reports and diagnostics remain readable.
+
 ## 0.2.0 — 2026-09-07
 
 - Promoted the reviewed Phase 2 candidate to a stable release after the maintainer

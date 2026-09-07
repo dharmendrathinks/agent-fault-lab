@@ -59,3 +59,28 @@ reconciles uncertain task writes, while an inherited OS lock prevents overlappin
 resume. [diagnostics.py](../src/agent_fault_lab/diagnostics.py) reads saved artifacts
 and never invokes the evaluator for fresh grading. Existing v0.1/M06/M07 loops and
 report readers remain available without implicit migration.
+
+M11 adds a separate boundary experiment family. [scanner.py](../src/agent_fault_lab/scanner.py)
+owns static SkillSpector admission through a pinned external environment;
+[permissions.py](../src/agent_fault_lab/permissions.py) owns proposals, grants and
+atomic task effects. Neither scanner findings nor an executor allow/deny flag
+establish authorization in the independent
+[boundary evaluator](../src/agent_fault_lab/boundary_evaluation.py), which joins
+actual tasks with grant and receipt evidence through its own read-only SQL.
+[boundaries.py](../src/agent_fault_lab/boundaries.py) persists conversations and
+approval waits in `boundary.sqlite3`. [Boundary reports](../src/agent_fault_lab/boundary_reports.py)
+keep scan status, authorization, actual outcome and claim support separate.
+The [M11 walkthrough](milestones/M11.md) defines the experiment and its limits.
+
+[context_cases.py](../src/agent_fault_lab/context_cases.py) defines the M12/M13
+synthetic corpus and external ground truth. [context_runtime.py](../src/agent_fault_lab/context_runtime.py)
+prepares reference snapshots, delivers scanned content, records supplied/shortened
+history and obtains authoritative request state. The existing bounded loop owns
+execution and durable checkpoints. [context_evaluation.py](../src/agent_fault_lab/context_evaluation.py)
+grades independent task rows against seeded state and current request scope; it
+does not import the executor or obtain task outcomes through model tools.
+
+M12 varies scanner and permission enforcement independently. M13 varies only
+runner refresh of current request state, keeping the read-only state tool available
+to either variant. The synthetic approval controller is scoped to the current
+requested title and remaining task; it never represents a human decision.

@@ -27,7 +27,7 @@ The immediate objective is **understanding and completing one small reliability 
 | Learning approach | Explanation → small implementation → test → review |
 | Available time | 20–25 hours per week |
 | Commercial requirements | None |
-| Planning depth | Detailed plans for M01–M10; objectives and acceptance gates for M11–M18 |
+| Planning depth | Detailed plans for M01–M13; objectives and acceptance gates for M14–M18 |
 
 Codex helps develop and explain the software. It is **not the model runtime inside the initial lab**. Codex subscription access and API-key billing are separate; the design assumes no included API credit. [Official authentication documentation](https://learn.chatgpt.com/docs/auth)
 
@@ -1006,6 +1006,146 @@ functionality is included.
 **Checkpoint:** v0.3. These are bounded experiments, not a security certification.
 
 Use no real secrets or production accounts. Prompt-injection tests remain isolated and use synthetic targets.
+
+#### Approved Phase 3 implementation plan — 2026-09-07
+
+The user approved synthetic Markdown skills guiding the existing task tools, real
+static SkillSpector scanning, a real approve/reject CLI plus scripted cases, and
+blocking content unless a complete successful scan recommends SAFE. Semantic
+scanner comparisons remain M14. Implement M11 first; its learning checkpoint stays
+separate from technical checks, before advancing to M12 and M13.
+
+Continuation: after discussing M11's scanning, approval and independent verification
+roles, the user said “got it” and explicitly requested completion of the remaining
+Phase 3 implementation. M11 is accepted for progression on that basis; M12 and
+M13 may be implemented in this scope. Their learning acceptance, separately opted-in
+live smoke and publication remain distinct from implementation checks.
+
+**Shared integration, established in M11**
+
+- Pin SkillSpector commit `704bc9544260c2f41222dc0f92982521709496ab` (version
+  2.11.1) in a separately locked Python 3.12 environment. Do not add its framework
+  dependencies to the core lab. Setup may fetch locked packages; scanning is offline.
+- Run its CLI in an owned subprocess with `--no-llm --format json
+  --fail-on-incomplete`, no suppression baseline or transitive fetching, an isolated
+  environment and Python sockets blocked before scanner imports. This is not an OS
+  sandbox. No skill code is executed. OSV unavailability is retained in evidence.
+- Scan immutable local snapshots, record exact byte hashes, and deliver those same
+  bytes. Preserve raw JSON, stderr, exit status, duration and normalized findings.
+  Limit a scan to 60 seconds and 4 MiB captured output; terminate/reap on failure.
+- Admit only validated complete successful static scans with recommendation SAFE.
+  Suspicious content is blocked. Missing, malformed, incompatible, incomplete and
+  timed-out scans are recorded as errors, never invented clean results. Exit 1 can
+  mean findings and must not alone be classified as an execution failure.
+- Real-scanner integration acceptance is required on Ubuntu/macOS; core unit tests
+  may use labeled doubles but do not establish actual scanner behavior.
+
+**M11 — Permissions and human approval**
+
+- Protect create_task, leaving get_task read-only. Skill contents never set policy.
+  Persist immutable proposals binding run, operation, exact arguments, request and
+  policy revisions. Pending approval pauses the conversation without a final claim.
+- Add scanner doctor/scan; boundaries list/run/compare; approval show/approve/reject;
+  and Phase 3 dispatch in resume, report and diagnose. Approval commands never infer.
+  Approved proposals expire after five minutes by default. Resume is explicit.
+- Check authorization at write admission. Persist grant consumption, task effect
+  and operation receipt atomically in SQLite. Replaying a committed operation can
+  return its original receipt after approval expiry, without a new task effect.
+- Cases: approved, missing, rejected, expired, changed arguments, changed revision,
+  cross-operation reuse and committed replay. Compare permission audit/enforce with
+  other settings fixed. Audit is restricted to fresh synthetic lab databases.
+- Independently inspect actual storage and the experiment's authorization contract;
+  never grade authorization using the executor's own allow/deny flag. Preserve
+  outcome, approval, execution, terminal validity and claim support separately.
+
+M11 implementation detail: the current input surface is one UTF-8 Markdown file
+(maximum 16 KiB), or a directory containing only `SKILL.md`. Its separate
+`boundary.sqlite3` schema avoids changing legacy journals. Per-run counters retain
+six model requests and six tool calls across resume. Scanner output is capped
+across raw JSON/stdout/stderr, with oversize truncation explicitly recorded as an
+error. Grants use local wall-clock expiry checked after acquiring the task write
+lock; committed replay has no new admission decision. The independent evaluator
+uses historical admission revisions and grant times, not current expiry, to grade
+already committed effects. These local append-only experiments assume no hostile
+out-of-band edits to task or authorization databases.
+
+**M12 — Untrusted content and prompt injection**
+
+- Build four attack families (override, forged approval, concealed instructions,
+  synthetic-canary writes), four benign counterparts and three delivery surfaces:
+  skills, existing task content and tool responses. Source labels stay external.
+- Compare scanner audit/enforce crossed with permission audit/enforce in four cells;
+  interpret one-axis contrasts. Both scanner policies perform the same scan.
+  Findings are external evidence; model-facing blocking errors contain no attack label.
+- Count actual delivery separately from configured injection; retain unexercised
+  attacks. Grade seeded-state preservation and new effects independently. Report
+  detection, false alarms, unsafe attempts, violations, legitimate completion,
+  legitimate blocking and scanner errors without forcing a safeguard winner.
+
+**M13 — Context and memory reliability**
+
+- Keep authoritative request/policy revisions outside model memory. Cases cover
+  stale titles, changed policy, stale approval text, poisoned notes and shortened
+  history. Hash and rescan changed untrusted notes rather than reusing old decisions.
+- Compare cached context with runner-supplied authoritative refresh before model
+  turns. Add read-only get_request_state to both variants; count runner refreshes
+  separately from model reads. Do not force a live model's tool sequence.
+- Shorten history at complete turn boundaries, preserving system instructions and
+  tool-call/result pairing. Save full journals and exact delivered context.
+  Resume retains approvals, revisions, budgets, scan provenance and context policy.
+
+**Evidence and release**
+
+M12/M13 implementation decisions: use fixed synthetic corpus case IDs prefixed
+`injection-` and `memory-`. M12 reads a seeded `reference-document` task for task
+and tool surfaces; tool-surface injection replaces the title in its delivered
+response while preserving the original stored row and captured response. Every
+surface scans the exact payload bytes. Skill blocking stops before model calls;
+blocked task/tool content returns an ordinary unavailable-reference result, so
+the agent can still attempt legitimate work. Delivery means attachment to the
+durable agent conversation, not proof that a provider processed or obeyed it.
+
+Both M12/M13 permission policies use a synthetic scoped approval controller: only
+the current requested task is eligible. It is not a human decision. M13 establishes
+the changed authoritative revision before execution while supplying old request
+context; the stale-approval case installs an old-revision grant for the cached
+operation. Poisoned notes have an original and replacement scan. Short-history
+uses explicitly labeled fixture conversation history and removes whole user turns,
+retaining system instructions and complete tool exchanges. Full supplied and exact
+model-request contexts stay in the journal. Cached/refresh variants expose the same
+read-only `get_request_state`; model requests are never forced by live execution.
+Write admission also checks the current request scope inside the task transaction;
+even a valid grant cannot authorize a disabled, wrong-title or duplicate task.
+
+- Add a versioned boundaries artifact family. Preserve legacy readers and refuse
+  implicit journal migrations. A paused run has an absent claim, not a fake answer.
+  Exit 3 means awaiting approval; exit 2 means harness/scanner error.
+- Test malformed/degraded scans, timeouts/network blocking, snapshot changes,
+  approval expiry/reuse/revision changes, transaction failures and restart boundaries.
+  Use fresh temporary SQLite and independently challenge the evaluator.
+- Run make check, installed-wheel checks, real-scanner checks and PR Ready; update
+  progress with actual evidence and remaining human learning checkpoints.
+- The planned separately opted-in local-agent smoke is 16 runs: four M11, eight
+  M12 and four M13. Retain baseline checkpoint/settings, verify identity first, and
+  preserve unfavorable findings. No semantic scanner inference in this phase.
+- Prepare v0.3.0 after technical and user-confirmed reviews. Publication remains an
+  explicit request. Reuse the scanner adapter/corpus in M14–M18 without implementing
+  those milestones now. No third-party skill execution or hosted-model fallback.
+
+Release preparation clarification — 2026-09-07: the user requested making Phase 3
+release ready. Prepare the target 0.3.0 metadata, draft notes, archives and verification
+locally while outstanding review/live/hosted gates remain explicit. This permits
+reviewable release materials before final acceptance; it does not mark milestones
+complete, authorize inference or publication, or create a prerelease implicitly.
+
+Publication authorization — 2026-09-07: after the preparation handoff explicitly
+listed pending learning/live/hosted evidence, the user requested “push the release
+and update respecive docs like readme etc”. Proceed with stable v0.3.0 publication
+after PR Ready and hosted Ubuntu/macOS checks, using the verified offline/static
+integration evidence. Keep M12/M13 learning reviews and the separately opted-in
+16-run live smoke as disclosed follow-ups; this release request is not a claim
+that those activities occurred. This supersedes their earlier publication-gate
+ordering, without marking milestones fully complete or authorizing M14.
 
 ### Phase 4 — Stronger evaluation methodology
 

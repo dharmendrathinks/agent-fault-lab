@@ -1,0 +1,10 @@
+[project]
+name = "aflab-skillspector-environment"
+version = "0.0.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "skillspector @ git+https://github.com/NVIDIA/SkillSpector.git@704bc9544260c2f41222dc0f92982521709496ab",
+]
+
+[tool.uv]
+package = false

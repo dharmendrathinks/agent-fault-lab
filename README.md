@@ -14,12 +14,20 @@ asking the agent to read the task back improve its completion claims?**
 [Architecture](docs/architecture.md) · [Contribute](CONTRIBUTING.md) ·
 [Roadmap](docs/roadmap.md)
 
-Latest stable: [v0.2.0 — Phase 2 reliability](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0).
+Latest stable: [v0.3.0 — Agent boundaries and state](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.3.0).
 Python 3.12. MIT licensed. Local verification is
 recorded in [PROGRESS.md](PROGRESS.md); see the
 [Ubuntu/macOS CI runs](https://github.com/dharmendrathinks/agent-fault-lab/actions/workflows/ci.yml).
 
-New in v0.2.0: [M06 response-contract experiments](docs/milestones/M06.md)
+New in v0.3.0: [M11 permissions and approval](docs/milestones/M11.md),
+[M12 untrusted content](docs/milestones/M12.md) and [M13 stale context](docs/milestones/M13.md).
+Real static SkillSpector scanning, operation-specific write grants, injection
+comparisons and authoritative request refresh extend the existing task lab.
+This release has offline and real-scanner integration evidence; Phase 3 live-model
+smoke and M12/M13 learning reviews remain follow-up work. See the
+[release notes](docs/releases/v0.3.0.md) for evidence and limitations.
+
+Also included from v0.2.0: [M06 response-contract experiments](docs/milestones/M06.md)
 compare raw tool responses with validation while grading actual storage separately.
 The [M07 retry experiments](docs/milestones/M07.md) compare failures before a write
 with lost replies after commit, and test operation-ID protection against duplicates.
@@ -40,7 +48,7 @@ without Ollama, an API key, or a GPU.
 ```sh
 git clone https://github.com/dharmendrathinks/agent-fault-lab.git
 cd agent-fault-lab
-git checkout v0.2.0
+git checkout v0.3.0
 uv sync --locked --all-groups
 
 mkdir -p runs
@@ -85,6 +93,26 @@ the evidence without rerunning an experiment.
 
 ## What you can investigate
 
+### Try Phase 3 offline
+
+```sh
+uv sync --locked --all-groups
+make scanner-setup
+mkdir -p runs
+uv run --offline --no-sync aflab boundaries compare injection-override --surface tool --offline --output runs/injection-comparison
+uv run --offline --no-sync aflab boundaries compare memory-stale-title --offline --output runs/memory-comparison
+```
+
+Setup downloads a separately locked scanner. The experiments then use real static
+scanning and scripted agents. Our [static smoke](docs/milestones/Phase3-static-smoke.md)
+retains scanner misses: three of four synthetic attack fixtures received SAFE.
+Permission enforcement still blocked their unauthorized writes in the scripted runs.
+This is bounded integration evidence, not a live-model or scanner-accuracy claim.
+The [v0.3.0 notes](docs/releases/v0.3.0.md) cover installation, compatibility
+and the remaining learning and live-evidence follow-ups.
+
+### Questions the lab separates
+
 - A tool's success response versus independently observed storage.
 - A completed task with an incorrect or malformed final report.
 - Whether a configured fault was actually exercised.
@@ -95,6 +123,8 @@ the evidence without rerunning an experiment.
 The lab uses one synthetic task and two tools. The original experiment compares
 two prompts under a dropped-write fault; Phase 2 compares execution policies under
 malformed results, lost replies, delays, temporary failures and process crashes.
+Phase 3 adds content admission, approval, untrusted reference material and stale
+request/context comparisons, with seed preservation and new effects graded separately.
 It is intended for learning, failure reproduction and
 evaluation experiments; it is not a production agent runtime or a broad benchmark.
 

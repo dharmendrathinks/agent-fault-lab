@@ -75,6 +75,15 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
     if has_comparison:
         raw = _read_evidence(comparison_path)
         parsed = json.loads(raw)
+        if isinstance(parsed, dict) and parsed.get("artifact") == "boundary-comparison":
+            from agent_fault_lab.boundary_reports import BoundaryComparison
+            from agent_fault_lab.boundary_reports import (
+                render_comparison as render_boundary_comparison,
+            )
+
+            return "comparison", render_boundary_comparison(
+                BoundaryComparison.model_validate_json(raw)
+            )
         if (
             isinstance(parsed, dict)
             and parsed.get("artifact") == "execution-comparison"
@@ -91,7 +100,18 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
         comparison = Comparison.model_validate_json(raw)
         return "comparison", render_comparison(comparison)
 
-    evaluation = Evaluation.model_validate_json(_read_evidence(evaluation_path))
+    raw_evaluation = _read_evidence(evaluation_path)
+    parsed = json.loads(raw_evaluation)
+    if isinstance(parsed, dict) and parsed.get("artifact") == "boundary-evaluation":
+        from agent_fault_lab.boundary_records import BoundaryEvaluation
+        from agent_fault_lab.boundary_reports import (
+            render_report as render_boundary_report,
+        )
+
+        return "run", render_boundary_report(
+            BoundaryEvaluation.model_validate_json(raw_evaluation)
+        )
+    evaluation = Evaluation.model_validate_json(raw_evaluation)
     observation_path = directory / "observation.json"
     if _present(observation_path):
         raw = _read_evidence(observation_path)
