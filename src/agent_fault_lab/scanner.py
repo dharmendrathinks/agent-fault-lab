@@ -7,6 +7,7 @@ import signal
 import subprocess
 import time
 from pathlib import Path
+from sys import platform
 from typing import Literal, Protocol
 
 from pydantic import Field, JsonValue
@@ -72,21 +73,47 @@ def read_skill(path: Path) -> bytes:
     return content
 
 
-def stop(process: subprocess.Popen[bytes]) -> None:
-    # The leader may have exited while a descendant still owns its pipes.
+def _group_exited(pgid: int) -> bool:
+    """Confirm a Darwin EPERM refers only to zombies or a vanished group."""
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        result = subprocess.run(
+            ["/bin/ps", "-axo", "pgid=,stat="],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=0.5,
+            env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+        )
+        rows = [line.split() for line in result.stdout.splitlines()]
+        # Empty/malformed output cannot establish that cleanup succeeded.
+        if not rows or any(len(row) != 2 or not row[0].isdigit() for row in rows):
+            return False
+        return all(int(group) != pgid or state.startswith("Z") for group, state in rows)
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def _signal_group(pgid: int, sig: signal.Signals) -> None:
+    try:
+        os.killpg(pgid, sig)
     except ProcessLookupError:
         pass
+    except PermissionError:
+        # Darwin filters zombies out of killpg's targets and can return EPERM
+        # for a group with no live members. Never ignore an actual live target.
+        if platform != "darwin" or not _group_exited(pgid):
+            raise
+
+
+def stop(process: subprocess.Popen[bytes]) -> None:
+    # The leader may have exited while a descendant still owns its pipes.
+    _signal_group(process.pid, signal.SIGTERM)
     try:
         process.wait(timeout=0.5)
     except subprocess.TimeoutExpired:
         pass
     finally:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        _signal_group(process.pid, signal.SIGKILL)
         process.wait()
 
 
@@ -139,7 +166,6 @@ def invoke(
                                 break
                         else:
                             selector.unregister(key.fileobj)
-                stop(process)
         finally:
             stop(process)
         code = process.wait()

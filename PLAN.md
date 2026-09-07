@@ -1147,6 +1147,13 @@ integration evidence. Keep M12/M13 learning reviews and the separately opted-in
 that those activities occurred. This supersedes their earlier publication-gate
 ordering, without marking milestones fully complete or authorizing M14.
 
+Hosted release verification exposed a Darwin cleanup edge case: signalling a group
+whose remaining members are zombies may raise EPERM. On Darwin only, the scanner
+now checks `/bin/ps` group/state output under a 0.5-second inspection timeout before
+treating that error as an exited group. Live members, malformed/unavailable
+inspection and other platforms retain the permission error. Remove duplicate
+cleanup signalling; retain the terminate/kill/reap sequence and side-effect test.
+
 ### Phase 4 — Stronger evaluation methodology
 
 | ID | Milestone | New experiment and learning | Completion evidence |

@@ -14,7 +14,7 @@
 - Scope: all Phase 3 implementation: real static scanning and approvals (M11),
   eight attack/benign cases on three surfaces with crossed policies (M12), and
   five stale-state/history cases with cached/authoritative-refresh comparison (M13).
-- Evidence: `make check` passed with 763 tests and one gated live skip; strict typing,
+- Evidence: `make check` passed with 773 tests and one gated live skip; strict typing,
   lint/format, lock verification, sdist/wheel and installed-wheel checks pass locally.
   Real-scanner acceptance includes M11 plus 26 M12/M13 runs. Three of the four M12
   attack skill fixtures received SAFE; the concealed fixture was blocked. All four
@@ -23,8 +23,8 @@
   `docs/milestones/Phase3-static-smoke.md`.
   These are real scanner/SQLite observations with scripted agents, not model results.
 - PR Ready: **PR READY** after authorized staging. Build/test/lint/static all pass,
-  with 763 tests and one gated live skip; no suspicious files, blockers or other
-  risks reported by the analyzer.
+  with 773 tests and one gated live skip after the hosted cleanup fix; no suspicious
+  files, blockers or other risks reported by the analyzer.
 - Pending: separately opted-in 16-run Phase 3 local-model smoke; M12/M13 learning
   reviews. These remain follow-ups under the explicit publication request, not
   claimed results. No new inference or daemon change is part of publication.
@@ -50,6 +50,28 @@
   explicit request. Logs are retained in `runs/v030-publication/`.
 - Publication outcome and exact commit/CI/package verification will be recorded
   after the remote operations succeed.
+- The user additionally confirmed “approving for full release, dont mark it prerelease”.
+  The intended GitHub release is stable/latest with `prerelease=false`.
+- Initial release commit `ecf142e` was pushed. Hosted run `34148757294` exposed a
+  macOS failure in `test_descendant_cannot_hold_pipe_after_leader_exits`: cleanup's
+  SIGKILL raised EPERM after the group leader had exited. No tag/release was published.
+  [Apple's kernel source](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/kern_sig.c)
+  filters zombie targets in `killpg1`, allowing EPERM when no signalable member remains.
+- Fixed cleanup to inspect group/state output on Darwin under a 0.5-second timeout
+  before accepting EPERM for a vanished/zombie-only group. Actual live members and
+  unavailable/malformed inspection preserve the error. Removed redundant cleanup.
+  Added ten regressions covering zombies, live/mixed groups, unknown inspection
+  and other platforms; the existing real fork/late-effect regression remains.
+  The release assets and hosted checks must be refreshed for this source change.
+- Fix verification: 40 focused scanner tests pass; real macOS process-table reads
+  distinguish the active group from an absent group. `make check` passes **773
+  tests, one gated live skip** (33.49 seconds), plus lint/format, strict typing,
+  locks and builds. `make scanner-check` passes again with M11 and 26 context runs
+  under `runs/context-check-acd2bc93-3a94-4345-89dc-e553c220445f/`.
+  The first hosted Ubuntu job passed all checks, including real scanning; both
+  hosted platforms will be checked on the corrected release commit.
+- PR Ready also passes after the cleanup fix: **PR READY**, all four checks pass,
+  773 tests/one gated skip (32.69 seconds), with no suspicious files or blockers.
 
 ## v0.3.0 release preparation — 2026-09-07
 

@@ -8,6 +8,8 @@
   grant consumption and task receipts, and independent authorization evaluation.
 - Added scripted permission comparisons, boundary reports/diagnosis, restart and
   rollback regressions, installed-wheel coverage and real-scanner CI checks.
+- Fixed macOS scanner cleanup when only zombie process-group entries remain;
+  permission errors are tolerated only after confirming there are no live members.
 - Added M12's four attack/benign pairs on skill, task and tool surfaces, crossed
   scanner/permission policies and independent delivery, seed and effect accounting.
 - Added M13's stale title/policy/approval, poisoned notes and shortened history

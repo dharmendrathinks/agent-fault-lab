@@ -2,14 +2,17 @@
 
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from pydantic import JsonValue
 
+import agent_fault_lab.scanner as scanner_module
 from agent_fault_lab.scanner import (
     BENIGN_SKILL,
     MAX_OUTPUT,
@@ -155,6 +158,62 @@ def test_descendant_cannot_hold_pipe_after_leader_exits(tmp_path: Path) -> None:
     assert error == "Scanner deadline exceeded"
     time.sleep(0.6)
     assert not (tmp_path / "late-effect").exists()
+
+
+@pytest.mark.parametrize(
+    ("snapshot", "exited"),
+    [
+        ("321 Z\n999 S\n", True),
+        ("999 S\n", True),
+        ("321 S\n", False),
+        ("321 Z\n321 S\n", False),
+        ("", False),
+        ("unparseable\n", False),
+    ],
+)
+def test_darwin_signal_permission_requires_no_live_group_members(
+    monkeypatch: pytest.MonkeyPatch, snapshot: str, exited: bool
+) -> None:
+    monkeypatch.setattr(scanner_module, "platform", "darwin")
+    monkeypatch.setattr(os, "killpg", Mock(side_effect=PermissionError("denied")))
+    inspect = Mock(return_value=subprocess.CompletedProcess([], 0, snapshot, ""))
+    monkeypatch.setattr(subprocess, "run", inspect)
+    if exited:
+        scanner_module._signal_group(321, signal.SIGKILL)
+    else:
+        with pytest.raises(PermissionError, match="denied"):
+            scanner_module._signal_group(321, signal.SIGKILL)
+    assert inspect.call_args.kwargs["timeout"] == 0.5
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        OSError("ps unavailable"),
+        subprocess.CalledProcessError(1, "ps"),
+        subprocess.TimeoutExpired("ps", 0.5),
+    ],
+)
+def test_darwin_uninspectable_group_preserves_permission_error(
+    monkeypatch: pytest.MonkeyPatch, failure: Exception
+) -> None:
+    monkeypatch.setattr(scanner_module, "platform", "darwin")
+    monkeypatch.setattr(os, "killpg", Mock(side_effect=PermissionError("denied")))
+    monkeypatch.setattr(subprocess, "run", Mock(side_effect=failure))
+    with pytest.raises(PermissionError, match="denied"):
+        scanner_module._signal_group(321, signal.SIGTERM)
+
+
+def test_other_platform_does_not_suppress_signal_permission_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(scanner_module, "platform", "linux")
+    monkeypatch.setattr(os, "killpg", Mock(side_effect=PermissionError("denied")))
+    inspect = Mock(side_effect=AssertionError("Darwin inspection must not run"))
+    monkeypatch.setattr(subprocess, "run", inspect)
+    with pytest.raises(PermissionError, match="denied"):
+        scanner_module._signal_group(321, signal.SIGKILL)
+    inspect.assert_not_called()
 
 
 @pytest.mark.parametrize("destination", ["stdout", "report"])
