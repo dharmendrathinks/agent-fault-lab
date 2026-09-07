@@ -11,7 +11,7 @@ milestone needs a clear failure, an independent check and an honest result.
 - Traces, accounting, saved evidence and reproducible reports.
 - Offline tests, package checks and contribution documentation.
 
-## Added in v0.2.0rc1 (prerelease)
+## Added in v0.2.0
 
 - [M06](milestones/M06.md): malformed tool results and response-contract handling.
 - [M07](milestones/M07.md): retries, duplicate effects and operation-ID replay.
@@ -19,10 +19,10 @@ milestone needs a clear failure, an independent check and an honest result.
 - [M09](milestones/M09.md): durable conversation state and crash/restart recovery.
 - [M10](milestones/M10.md): read-only failure timelines from saved evidence.
 
-The [candidate release notes](releases/v0.2.0rc1.md) describe the guarantees and
-live findings. M06/M07 were accepted for progression. M08/M09 learning checkpoints
-and M10's independent diagnostic review remain pending; publication does not close
-these gates. [PROGRESS.md](../PROGRESS.md) records technical evidence and next actions.
+The [release notes](releases/v0.2.0.md) describe the guarantees and live findings.
+The maintainer confirmed the remaining Phase 2 reviews complete on 2026-09-07
+and authorized stable publication. [PROGRESS.md](../PROGRESS.md) records technical
+evidence, that confirmation and next actions. Phase 3 remains planned.
 
 ## Later, with concrete experiments
 

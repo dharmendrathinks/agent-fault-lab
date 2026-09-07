@@ -3,10 +3,11 @@
 ## Resume here
 
 - Phase: 2 — Tool-execution reliability.
-- Current milestone: **M10 — Diagnostic traces**, closing Phase 2.
-- Status: **technical implementation complete; review gates pending**. M08 process
-  supervision, M09 durable recovery and M10 diagnosis are implemented in
-  `0.2.0rc1`. User explicitly expanded scope to all remaining Phase 2 work after M07.
+- Current milestone: **M10 — Diagnostic traces**, accepted; Phase 2 complete.
+- Status: **implementation and reviews complete**. On 2026-09-07 the user confirmed
+  “review done” and authorized stable promotion to `0.2.0`. M08/M09 learning and
+  M10 diagnostic-review acceptance are recorded on that confirmation. Detailed
+  reviewer notes were not supplied; no additional experimental results are claimed.
 - Latest evidence: 440 offline tests passed, one gated live test skipped; package
   checks pass. Six M08 and four M09 planned live runs finished. Stored effects match
   their experiments, while wrong-ID and false non-completion claims remain visible.
@@ -42,11 +43,9 @@
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
 - M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
   (`feat: add first agent fault comparison`), now pushed with M05.
-- Exact next action: review M08/M09's stored effects versus model claims and give
-  an independent engineer the M10 diagnostic bundle/worksheet. Record their actual
-  observations before declaring Phase 2 fully accepted. The candidate is published;
-  Phase 3 remains planned. The M05 learning
-  checkpoint remains pending; Phase 2 authorization did not claim its completion.
+- Exact next action: verify and publish stable `v0.2.0` under the user's explicit
+  authorization, then await separately scoped Phase 3 work. The historical M05
+  learning checkpoint is unchanged by the Phase 2 review confirmation.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
@@ -56,8 +55,8 @@
   is published from release commit `30ba746` with an annotated tag.
 - Phase 2 publication: [v0.2.0rc1](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0rc1)
   is published as a prerelease from `c95ebe0`. Both hosted CI jobs passed in run
-  `34132647062`; wheel/source downloads match their checksums. Stable latest remains
-  v0.1.0. See the release session below for exact publication evidence.
+  `34132647062`; wheel/source downloads match their checksums. Stable promotion to
+  v0.2.0 is now authorized; see the stable promotion session below.
 - Next implementation phase: Phase 3 only after separate authorization and review.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -825,6 +824,29 @@ left local for review, not staged to bypass the assessment.
   observations before full Phase 2 acceptance; M05 learning review also stays open.
   Publication does not authorize Phase 3 or assert that these human reviews passed.
 
+## Phase 2 stable promotion — 2026-09-07
+
+- After the prerelease explanation, the user confirmed “review done, u promote it
+  to proper release”. This closes the identified M08/M09 learning and M10 review
+  gates on the maintainer's confirmation and authorizes stable publication.
+  The implementation agent did not observe the human review or receive detailed
+  reviewer notes. No review findings, fixes or new live results are invented.
+- Prepared version `0.2.0` and updated README, changelog, roadmap, limitations,
+  milestone review status, plan decision and stable release notes. Dependency
+  versions and runtime source are unchanged. Candidate history is preserved.
+- Documented that the version change affects resume compatibility: use the
+  original candidate environment for its persisted runs. Report/diagnostic readers
+  remain available. No Phase 3, inference, model download or PyPI publication.
+- Local `make check` PASS: 440 offline tests, one gated live test skipped, locked
+  dependencies, lint/format, strict typing and stable wheel/source build.
+  `make package-check` PASS for installed `0.2.0`. Archive contents were inspected;
+  no private runs, databases or environment files are bundled.
+- Staged the 12 intended release files. PR Ready analyzer: **PR READY**; build,
+  test, lint and static checks PASS, no suspicious files, blockers or remaining risks.
+  `git diff --cached --check` PASS. Hosted/publication results follow when observed.
+  Exact next release action: commit/push, wait for Ubuntu/macOS
+  CI on the stable commit, then publish an annotated tag and verified packages.
+
 ## Remaining roadmap
 
 | Milestones | Status | Entry condition |
@@ -836,9 +858,9 @@ left local for review, not staged to bypass the assessment.
 | M05: reproducible first release | in_progress | v0.1.0 published; local and hosted Ubuntu/macOS checks pass; separate learning review remains |
 | M06: tool contracts and malformed data | complete | Technical evidence recorded; user explicitly authorized M07 after the handoff |
 | M07: retry and duplicate-effect safety | complete | Technical/live evidence recorded; user authorized all remaining Phase 2 after the handoff |
-| M08: delays, recovery and limits | in_progress | Technical implementation/checks and six live runs recorded; learning review pending |
-| M09: crash and restart recovery | in_progress | Technical implementation/checks and four live runs recorded; learning review pending |
-| M10: diagnostic traces | in_progress | Technical checks and saved-bundle self-review recorded; independent reviewer gate pending |
+| M08: delays, recovery and limits | complete | Technical checks and six live runs recorded; maintainer confirmed review complete on 2026-09-07 |
+| M09: crash and restart recovery | complete | Technical checks and four live runs recorded; maintainer confirmed review complete on 2026-09-07 |
+| M10: diagnostic traces | complete | Technical checks recorded; maintainer confirmed remaining review complete and authorized stable promotion on 2026-09-07 |
 | M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |
 | M17–M18: external reproduction and reuse | planned | A relevant external problem or collaborator is available |

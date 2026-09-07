@@ -1,7 +1,7 @@
 # Known limitations
 
 - This is one synthetic create/read workflow. v0.1 has a dropped-write fault and
-  prompt-level read-back treatment; v0.2.0rc1 adds the M06–M10 execution experiments.
+  prompt-level read-back treatment; v0.2.0 adds the M06–M10 execution experiments.
   It is not an agent framework or broad benchmark.
 - Local results from one 4B quantized checkpoint do not generalize to other models,
   prompts, runtimes, languages, tasks, or deployment environments.
@@ -23,8 +23,8 @@
   exit over the time budget if OS scheduling or kill completion takes longer.
 - M09 resumes only compatible journaled process runs. Source/package/configuration
   changes can require the original checkout; old v0.1/M06/M07 artifacts are not migrated.
-- M10's automated checks and implementation self-review have passed; an independent
-  engineer's diagnostic-bundle review remains pending.
+- The maintainer confirmed Phase 2 review completion. Detailed reviewer notes are
+  not included in the repository; this confirmation adds no new experimental evidence.
 - The adapter trusts the local Ollama daemon and its metadata. Loopback restriction,
   cloud-disabled checks, and non-forwarded credentials are not an OS sandbox.
 - Model metadata identity is checked for the approved baseline, but the digest is

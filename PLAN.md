@@ -983,6 +983,13 @@ prerelease after local and hosted checks pass, retaining `v0.1.0` as stable.
 This exposes the candidate for review; it does not close M08/M09 learning
 checkpoints or M10's independent diagnostic-review gate, or authorize Phase 3.
 
+Stable promotion decision, 2026-09-07: the user subsequently confirmed “review
+done” and explicitly requested promotion to a proper release. Record M08/M09
+learning and M10 diagnostic-review acceptance on that confirmation and publish
+`v0.2.0` as latest stable after verification. Detailed reviewer notes were not
+supplied; do not invent them. Preserve the candidate tag and historical evidence.
+This changes release/review status, not runtime scope or Phase 3 authorization.
+
 Defaults remain Python 3.12, locked `uv` dependencies, local SQLite, local Ollama,
 and standard-library process control. No hosted provider, model download,
 dashboard, distributed queue, arbitrary code-execution service, or Phase 3

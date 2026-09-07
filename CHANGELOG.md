@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-09-07
+
+- Promoted the reviewed Phase 2 candidate to a stable release after the maintainer
+  confirmed review completion and authorized publication.
+- Updated package metadata, installation instructions, roadmap and review records.
+  Runtime behavior and locked dependency versions are unchanged from v0.2.0rc1.
+- Preserved candidate artifacts and live findings. The package version participates
+  in the resume fingerprint: use the original candidate environment to resume its
+  runs. Saved-report and diagnostic readers remain available in the stable release.
+
 ## 0.2.0rc1 — 2026-09-07 (prerelease)
 
 - Added M06 response-contract experiments: strict versioned envelopes, raw response

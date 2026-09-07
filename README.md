@@ -14,13 +14,12 @@ asking the agent to read the task back improve its completion claims?**
 [Architecture](docs/architecture.md) · [Contribute](CONTRIBUTING.md) ·
 [Roadmap](docs/roadmap.md)
 
-Phase 2 release candidate: [v0.2.0rc1](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0rc1).
-Latest stable: [v0.1.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.1.0).
+Latest stable: [v0.2.0 — Phase 2 reliability](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0).
 Python 3.12. MIT licensed. Local verification is
 recorded in [PROGRESS.md](PROGRESS.md); see the
 [Ubuntu/macOS CI runs](https://github.com/dharmendrathinks/agent-fault-lab/actions/workflows/ci.yml).
 
-New in the candidate: [M06 response-contract experiments](docs/milestones/M06.md)
+New in v0.2.0: [M06 response-contract experiments](docs/milestones/M06.md)
 compare raw tool responses with validation while grading actual storage separately.
 The [M07 retry experiments](docs/milestones/M07.md) compare failures before a write
 with lost replies after commit, and test operation-ID protection against duplicates.
@@ -28,9 +27,9 @@ The [M08 process experiments](docs/milestones/M08.md), [M09 restart recovery](do
 and [M10 diagnostic timeline](docs/milestones/M10.md) add worker supervision, durable
 conversation state and read-only failure diagnosis on macOS/Linux.
 Run `uv run --offline --no-sync aflab reliability list` from this checkout to see
-the cases. These commands require v0.2.0rc1; v0.1.0 retains the original experiment.
-Learning checkpoints and independent diagnostic review remain open. See the
-[candidate release notes](docs/releases/v0.2.0rc1.md) for evidence and limits.
+the cases. v0.1.0 retains the original experiment. Phase 2 reviews are complete
+as confirmed by the maintainer. See the [release notes](docs/releases/v0.2.0.md)
+for evidence and limits.
 
 ## Quickstart
 
@@ -41,7 +40,7 @@ without Ollama, an API key, or a GPU.
 ```sh
 git clone https://github.com/dharmendrathinks/agent-fault-lab.git
 cd agent-fault-lab
-git checkout v0.2.0rc1
+git checkout v0.2.0
 uv sync --locked --all-groups
 
 mkdir -p runs
@@ -231,10 +230,9 @@ AI-assisted contributions are welcome when you can explain and verify the change
 
 ## Where this is going
 
-The Phase 2 release candidate includes malformed results, retry/duplicate-effect
-safety, process limits, restart recovery and diagnosis. Remaining gates are learning
-review and independent diagnostic review before full Phase 2 acceptance. Later: permissions,
-untrusted content, context/memory, stronger
+Phase 2 includes malformed results, retry/duplicate-effect safety, process limits,
+restart recovery and diagnosis. Its implementation and reviews are complete.
+Later: permissions, untrusted content, context/memory, stronger
 evaluators, and reproduction of external failures.
 See the [public roadmap](docs/roadmap.md) for scope and contribution opportunities.
 
