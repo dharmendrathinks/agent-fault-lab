@@ -8,8 +8,8 @@
 - Local M05 verification: **passed**; 248 offline tests, one explicitly gated live
   test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
   extracted-source checks and repeatable isolated wheel verification. Hosted
-  Ubuntu/macOS CI passes both `make check` and `make package-check` on the final
-  launch-prep change `a641f80` (run `34086434727`).
+  Ubuntu/macOS CI passes both `make check` and `make package-check` on the public
+  security update `89e9743` (run `34090765739`).
 - Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
   reports invalid; all 10 read-back runs hit the output limit before executing a
   tool. No valid claims or live read-back behavior to assess; see the live note.
@@ -549,6 +549,9 @@ left local for review, not staged to bypass the assessment.
   `pytest>=9.0.3,<10` and locked pytest 9.1.1. This changes test tooling only;
   runtime dependencies are unchanged. Fresh `make check` PASS with 248 tests and
   one live test skipped; `make package-check` PASS.
+- Committed and pushed the pytest update as `89e9743`. Hosted run `34090765739`
+  passed on Ubuntu 24.04 and macOS 14, and GitHub marked Dependabot alert #1
+  `fixed` without dismissal. The default branch has no open dependency alert.
 - Public HTTP checks returned 200 for the repository, raw README, issue chooser and
   private-advisory form. MIT license, About text, nine topics and Issues are visible
   through the public API. No open PRs, tags or releases exist.
