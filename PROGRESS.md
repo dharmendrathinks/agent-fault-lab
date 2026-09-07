@@ -544,6 +544,11 @@ left local for review, not staged to bypass the assessment.
   enforced so the sole maintainer retains an emergency bypass.
 - Enabled dependency vulnerability alerts, Dependabot security updates, secret
   scanning and secret-scanning push protection.
+- GitHub then opened one moderate alert for pytest temporary-directory handling in
+  the development lock (`pytest<9.0.3`). Raised the declared range to
+  `pytest>=9.0.3,<10` and locked pytest 9.1.1. This changes test tooling only;
+  runtime dependencies are unchanged. Fresh `make check` PASS with 248 tests and
+  one live test skipped; `make package-check` PASS.
 - Public HTTP checks returned 200 for the repository, raw README, issue chooser and
   private-advisory form. MIT license, About text, nine topics and Issues are visible
   through the public API. No open PRs, tags or releases exist.

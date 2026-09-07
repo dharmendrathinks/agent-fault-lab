@@ -763,3 +763,7 @@ M02, M03, and M04; see `PROGRESS.md`. All later milestones remain recorded and g
 - Run `push` CI only for `main`; pull requests retain their own trigger. This keeps
   the same two-platform validation while avoiding duplicate branch-push and
   pull-request runs for dependency updates.
+- The public launch security scan identified the locked pytest version as affected
+  by vulnerable temporary-directory handling. Raise the development constraint to
+  the first patched line (`pytest>=9.0.3,<10`), relock, and retain the same offline
+  test policy. This changes test machinery only, not runtime dependencies.

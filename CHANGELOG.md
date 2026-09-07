@@ -13,3 +13,5 @@
   verification, architecture/artifact guides and community contribution templates.
 - Reject duplicate JSON keys, symlink/non-file evidence and unsupported schemas
   during saved-report regeneration; preserve reports on validation/replacement errors.
+- Updated the development lock to pytest 9.1.1 after GitHub identified vulnerable
+  temporary-directory handling in the previous test-runner version.
