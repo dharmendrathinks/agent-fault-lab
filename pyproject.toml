@@ -27,7 +27,7 @@ aflab = "agent_fault_lab.cli:main"
 dev = [
     "hatchling==1.27.0",
     "mypy>=1.15,<2",
-    "pytest>=8.3,<9",
+    "pytest>=8.3,<10",
     "pytest-socket>=0.7,<1",
     "ruff>=0.11,<1",
 ]
