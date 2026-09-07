@@ -43,8 +43,8 @@
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
 - M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
   (`feat: add first agent fault comparison`), now pushed with M05.
-- Exact next action: verify and publish stable `v0.2.0` under the user's explicit
-  authorization, then await separately scoped Phase 3 work. The historical M05
+- Exact next action: await separately scoped Phase 3 work; stable `v0.2.0` is
+  published and verified. The historical M05
   learning checkpoint is unchanged by the Phase 2 review confirmation.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
@@ -55,8 +55,11 @@
   is published from release commit `30ba746` with an annotated tag.
 - Phase 2 publication: [v0.2.0rc1](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0rc1)
   is published as a prerelease from `c95ebe0`. Both hosted CI jobs passed in run
-  `34132647062`; wheel/source downloads match their checksums. Stable promotion to
-  v0.2.0 is now authorized; see the stable promotion session below.
+  `34132647062`; wheel/source downloads match their checksums. Latest stable is now
+  [v0.2.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0)
+  from corrected commit `ce748c0`, whose tree is identical to the original
+  `6a6a141` release with green Ubuntu/macOS CI and verified downloaded packages.
+  See the stable promotion session below.
 - Next implementation phase: Phase 3 only after separate authorization and review.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -843,9 +846,46 @@ left local for review, not staged to bypass the assessment.
   no private runs, databases or environment files are bundled.
 - Staged the 12 intended release files. PR Ready analyzer: **PR READY**; build,
   test, lint and static checks PASS, no suspicious files, blockers or remaining risks.
-  `git diff --cached --check` PASS. Hosted/publication results follow when observed.
-  Exact next release action: commit/push, wait for Ubuntu/macOS
-  CI on the stable commit, then publish an annotated tag and verified packages.
+  `git diff --cached --check` PASS.
+- Committed/pushed `6a6a1414ec4e5f01271ddaf80ef9dc2f82a1066a`
+  (`release: promote reviewed Phase 2 to v0.2.0`). Both hosted Ubuntu 24.04 and
+  macOS 14 jobs passed full checks and installed-wheel verification in
+  [run 34133725234](https://github.com/dharmendrathinks/agent-fault-lab/actions/runs/34133725234)
+  on that exact commit before publication.
+- Created/pushed annotated `v0.2.0` and verified its remote peeled commit matches
+  `6a6a1414ec4e5f01271ddaf80ef9dc2f82a1066a`. Published at `2026-09-07T14:36:36Z`.
+  GitHub's latest-release API confirms `v0.2.0`, `prerelease=false`, `draft=false`.
+  The original `v0.2.0rc1` annotated tag still peels to `c95ebe0`.
+- Downloaded wheel, source archive and `SHA256SUMS` into a fresh temporary directory;
+  all match the uploaded originals byte for byte. SHA-256:
+  wheel `0c1452dc8d3c5ee53f938b6a82b6bb523e23155e4bce2c62c9434ca6cf9c1c91`;
+  source `ecfedd29723ef14b30ae1286a29cf4a0d64fcf7061fee5e6a65eb4798066ab9c`.
+- Exact next action: await the user's scope for Phase 3. Phase 2 implementation,
+  confirmed review and stable publication are complete; the separate historical
+  M05 learning record is unchanged. No new experimental results are claimed.
+
+## Commit identity correction — 2026-09-07
+
+- User explicitly requested global Git identity `Dharmendra
+  <dharmendra.code@gmail.com>` and correction of both stable-release commits.
+  Updated global `user.name` and `user.email` and verified their effective values
+  in this repository. Both author and committer now use the requested identity.
+- Rewrote the stable release commit from `6a6a141` to `ce748c0`, preserving its
+  complete file tree, message and timestamps. Corrected the following publication
+  record commit as well, retaining its message and updating this record and the
+  release documentation to explain the changed hashes.
+- Retargeted annotated `v0.2.0` to the corrected release commit with the corrected
+  tagger identity. Original history and release metadata were backed up outside the
+  repository. Remote updates use explicit leases for both `main` and the tag so a
+  newer remote change cannot be overwritten silently.
+- Published wheel/source/checksum assets are retained: the release tree, package
+  version and runtime fingerprint are unchanged. Earlier CI references above
+  identify the actual original commits tested before this metadata correction.
+- Local PR Ready analyzer: **PR READY**; 440 tests passed, one gated live test
+  skipped, with build, lint/format and strict typing all passing. No suspicious
+  files, blockers or remaining risks reported; staged whitespace checks pass.
+- Exact next action after this correction: await separately scoped Phase 3 work.
+  No experimental results or learning-review status changed.
 
 ## Remaining roadmap
 
