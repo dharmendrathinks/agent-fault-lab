@@ -8,8 +8,8 @@
 - Local M05 verification: **passed**; 248 offline tests, one explicitly gated live
   test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
   extracted-source checks and repeatable isolated wheel verification. Hosted
-  Ubuntu/macOS CI now passes both `make check` and `make package-check` on
-  `6354745` (run `34083659223`), after correcting an offline cache assumption.
+  Ubuntu/macOS CI passes both `make check` and `make package-check` on the final
+  launch-prep change `a641f80` (run `34086434727`).
 - Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
   reports invalid; all 10 read-back runs hit the output limit before executing a
   tool. No valid claims or live read-back behavior to assess; see the live note.
@@ -523,6 +523,11 @@ left local for review, not staged to bypass the assessment.
 - Private vulnerability reporting and branch rules cannot be configured on this
   private repository under the current plan. Both are immediate post-public steps.
 - Technical launch preparation does not complete the separate M05 learning review.
+- Launch-prep commit `a641f80` was pushed and hosted run `34086434727` passed on
+  Ubuntu 24.04 and macOS 14, including isolated wheel installation. The earlier
+  queued run was cancelled by the intended concurrency policy. The repository is
+  clean and has no open pull requests; visibility remains private pending the
+  explicit history-privacy decision above.
 
 ## Remaining roadmap
 
