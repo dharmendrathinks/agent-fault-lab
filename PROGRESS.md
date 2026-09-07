@@ -3,24 +3,37 @@
 ## Resume here
 
 - Phase: 1 — Understand agents and demonstrate one reliability problem.
-- Current milestone: **M03 — Verify outcomes independently**.
-- Status: **in_progress**.
-- Technical verification: **passed**; 183 offline tests, lint, format, strict
-  typing, lockfile, sdist/wheel build, and an isolated offline installed-wheel smoke.
-- Live integration: **verified**. One genuine M03 qwen3:4b run saved the correct
-  task but emitted prose around JSON. The checker reported completed task, invalid
-  terminal report, and no scored claim. A separate manual SQL read confirmed storage.
-  This is not an end-to-end passing structured agent response or a false-success run.
-- Learning checkpoint: M01 and M02 accepted for progression by the user's explicit
-  requests after explanations. M03 walkthrough pending; no formal quiz claimed.
-- Exact next action: review `docs/milestones/M03.md` and the live `report.md` with
-  the user. Explain why saved work and valid reporting are separate, and why the
-  checker reads SQLite independently. Keep M03 in progress until learning review.
+- Current milestone: **M04 — Reproduce one fault and compare one safeguard**.
+- Status: **complete**.
+- Technical verification: **passed**; 225 offline tests, Ruff lint/format, strict
+  typing, lockfile, sdist/wheel build and isolated offline installed-wheel smoke.
+- Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
+  reports invalid; all 10 read-back runs hit the output limit before executing a
+  tool. No valid claims or live read-back behavior to assess; see the live note.
+- Learning checkpoint: M01–M04 accepted for progression by the user's explicit
+  requests after explanations. The user reviewed the short M04 summary and
+  explicitly authorized M05; no formal quiz claimed.
+- Diagnosis: the old `qwen3:4b` alias was Thinking-2507, which supports thinking only.
+  Our assumption that `think=false` established non-thinking behavior was wrong.
+  Increasing the output budget to 1,024 or adding a non-thinking input prefix did
+  not resolve the first-response failure. The user then authorized replacement.
+- Current model: **`qwen3:4b-instruct-2507-q4_K_M`**, downloaded and metadata-verified;
+  old model removed with explicit approval, historical artifacts preserved. Same
+  512-token budget and strict grader; new checkpoint-identity preflight guard.
+- New live evidence: two no-fault smoke runs had supported claims. A separate
+  four-cell comparison had valid JSON/no length stops but copied IDs incorrectly
+  in all four cells. Both no-fault comparison claims were contradicted; read-back
+  under the fault reported non-completion but queried the wrong ID. Do not claim
+  correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
+- Exact next action: commit the reviewed M04 checkpoint, then implement only M05's
+  reproducible v0.1 packaging. Preserve the wrong-ID evidence; no automatic reruns,
+  ID correction, new model, or M06 reliability work.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
-- Next milestone: M04 only after review and explicit user direction. The live
-  response-format issue must be reviewed before interpreting claim comparisons;
-  do not automatically run the planned 20-trial experiment or strip model output.
+- Publication: M01–M03 baseline committed and pushed with explicit approval as
+  `b71f5835558a490812f0df44b610d37e4cf49896` on `origin/main`. M04 changes are local.
+- Next milestone: M05 explicitly authorized on 2026-09-07. All observed format and
+  ID-copying failures stay in M04; no output stripping or safeguard-win claim.
 
 ## Implementation session — 2026-09-06
 
@@ -200,25 +213,146 @@ static checks all passed; no suspicious files were detected. Blockers are Git
 state: no HEAD commit or resolvable PR base, no tracked changes, and 37 untracked
 files. Nothing was staged, committed, or pushed to bypass these findings.
 
+## M04 implementation session — 2026-09-06
+
+- User authorized the first commit/push, then M04 after the M03 explanation.
+- Rechecked the empty remote, all 183 baseline tests, build/lint/typing, staged
+  file list, whitespace, and common credential patterns. No matching credentials
+  found; ignored runs, SQLite files, virtual environment and build artifacts were
+  excluded. Published 37 baseline files as `b71f583`; remote ref verified identical.
+- Added one validated-create fault injector with external trace events; ordinary
+  lookups and independent SQL evaluation stay truthful and unchanged.
+- Added baseline/read-back experiment config, bounded alternating four-cell
+  schedule, explicit CLI flags, trace-derived metrics and saved comparison reports.
+- Added tests for repeated dropped writes, real no-fault writes, untriggered
+  faults, prompt isolation, voluntary/ignored read-back, fair scheduling, usage
+  accounting, fresh artifacts, and partial/stopped comparisons.
+- Actual offline comparison: `runs/m04-compare-0a24e911-12fd-49bc-8f86-c14e326b67c6`.
+  Eight programmed runs completed; both no-fault cells saved tasks, dropped-write
+  baseline scripts made contradicted claims, read-back scripts reported missing
+  tasks correctly. This tests the harness, not prompt effectiveness on a model.
+- Actual live comparison completed, all 20 runs preserved:
+  `runs/m04-compare-b80c5e4c-978c-4483-b92c-39fb02fdee11`.
+- No model download, daemon change, hosted/paid inference, new dependency, or M05
+  work. M04 source remains uncommitted and unpushed for review.
+
+### M04 acceptance evidence
+
+| Check | Actual result |
+|---|---|
+| `make check` | PASS: lockfile, lint/format, strict typing, 217 offline tests, sdist/wheel |
+| Strict mypy | No issues in 26 source/test/example files |
+| Isolated installed-wheel smoke | PASS, offline: four-cell CLI, artifacts, one deliberately contradicted scripted claim and deterministic comparison rendering |
+| Eight-run scripted comparison | PASS: known no-fault, false-success and detected-failure outcomes; not model evidence |
+| Local prerequisites | PASS: same Ollama/model, tools advertised, cloud disabled |
+| Genuine comparison | 20/20 recorded, five repetitions per cell; no provider/observer failures |
+| Independent SQL spot checks | Correct normal row; zero injected-state rows; zero unexercised-state rows |
+| Intended live claim comparison | INCONCLUSIVE: 0 valid reports; no read-back request in any run |
+
+Live result: baseline/no fault completed 5/5 tasks; baseline/dropped-write
+completed 0/5 and exercised all five faults. Both read-back cells completed 0/5:
+all 10 runs hit 512 output tokens before any tool executed. In the read-back fault
+cell the fault was unexercised 5/5 times, not successfully handled. All 20 terminal
+reports were invalid, claim support was not evaluated, and false_success was null.
+
+Accounting: 30 model calls, 10 tool-operation entries (five injected), no get_task
+requests, 14,701 prompt tokens, 11,119 output tokens, about 288.20 loop seconds
+including about 2.86 provider-reported load seconds. Settings remained unchanged.
+No favorable replacement run was used. The failure is retained and explained in
+`docs/milestones/M04-live-comparison.md`; model setup needs review, not an invented
+claim that verification worked. Temporary installed-wheel smoke data was cleaned
+up; all named live and offline experiment directories remain intact.
+
+The PR-readiness skill returned **NOT PR READY**, with build, test, lint and static
+checks passing and no suspicious files detected. The remaining blocker is new
+untracked M04 files. The first baseline commit/push is complete; M04 is deliberately
+left local for review, not staged to bypass the assessment.
+
+## M04 output investigation — 2026-09-07
+
+- User approved the bounded investigation after the output-limit explanation.
+- Inspected actual checkpoint metadata, template, digest and rendered prompts.
+  The alias points to Qwen3-4B-Thinking-2507; its official model card specifies
+  thinking-only mode. This corrects our earlier model-selection assumption.
+- The 22 adapter tests pass, including real SDK serialization of `think: false`.
+  Raw HTTP probes reproduce the issue, so SDK flag loss is not the explanation.
+- Original 512-token, budget-only 1,024-token, and prefix-only 512-token probes
+  all stopped at length without a structured tool request. The prefix hypothesis
+  failed and was not promoted into the application. No task/tool execution occurred.
+- An initial malformed debug flag caused one extra 512-token generation. Kept
+  its raw response; corrected the version-specific field and used a fresh output
+  directory. Four total diagnostic generations, 2,560 output tokens; no hidden run.
+- Evidence: `runs/m04-output-probe-F7etjA/` and its `corrected/` subdirectory.
+  Full findings and sources: `docs/milestones/M04-qwen-diagnosis.md`.
+- During the diagnostic step, only documentation/working-memory and ignored
+  artifacts changed. No runtime, model, daemon, parser, default-budget, dependency,
+  commit, push or milestone change. The subsequent approval is recorded below.
+
+## M04 approved model replacement — 2026-09-07
+
+- User explicitly requested deletion of the thinking model and download of a
+  suitable non-thinking model. Pulled `qwen3:4b-instruct-2507-q4_K_M`, verified
+  Qwen3 / 4B / Instruct / 2507 metadata, Q4_K_M, and full digest
+  `0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`.
+  Download size: 2,497,293,803 bytes. Removed only `qwen3:4b` via `ollama rm`;
+  final model list contains only Instruct. Old model can be re-downloaded, and all
+  historical reports, traces and databases remain intact.
+- Changed the shared model default and CLI/setup docs. Doctor now verifies and
+  records checkpoint identity before inference, not just generic tools/thinking
+  capability flags. Wrong or missing metadata fails closed. Actual digest is
+  recorded but not hard-pinned; local daemon metadata is trusted.
+- Added eight regression cases. `make check` PASS: 225 offline tests, Ruff,
+  strict mypy (26 source/test files), lockfile and sdist/wheel. `make doctor` READY
+  with Ollama 0.33.2, cloud disabled, tools and expected checkpoint verified.
+- Isolated installed-wheel smoke PASS: new default, four scripted comparison
+  cells and deterministic report roundtrip. No network; temporary artifacts cleaned.
+- Two preliminary live no-fault runs passed both task and claim checks:
+  `runs/m04-f3410717-905e-42b5-88d9-3fd5775eb1ab` (baseline),
+  `runs/m04-8b75dc3c-5db3-4e7b-b518-1c625552b5cd` (read-back).
+  Independently checked the actual SQLite IDs/titles manually.
+- Then ran one four-cell smoke comparison:
+  `runs/m04-compare-15f229da-154d-4fc2-bf6c-fdb98d80af49`.
+  Both no-fault tasks were stored, both injected writes left zero rows. All four
+  reports were valid, but all four model continuations mistyped a returned ID.
+  Baseline/no-fault named the wrong ID; read-back/no-fault looked up a wrong ID and
+  falsely reported non-completion. Baseline/fault falsely claimed completion.
+  Read-back/fault reported non-completion correctly but also queried a wrong ID;
+  this is not evidence of correctly verifying the created identifier.
+- Across the six live tests: 15 model calls, 7,351 prompt tokens, 503 output tokens;
+  all responses stopped normally at 14–53 output tokens. No invalid final JSON,
+  length stop, provider or observer error. No retry or discarded unfavorable run.
+- Limits, prompts, tools, parser and evaluator stayed unchanged. No forced lookup,
+  ID repair, extra output budget, grammar, dependency, daemon change, hosted/paid
+  inference or M05 work. The original 20-run evidence is separate and inconclusive.
+- Full findings: `docs/milestones/M04-instruct-smoke.md`. User learning review is
+  pending; the next useful question is exact-ID handling, not a declared winner.
+- Final PR-readiness skill verdict: **NOT PR READY**. Build/test/lint/static checks
+  all PASS, no suspicious files; nine new M04 files remain untracked. No staging,
+  commit, push or release was performed to bypass this repository-state blocker.
+
 ## Known boundaries
 
 - M02 has one verified task happy path. M03 has one live correct-task/invalid-report
-  observation. No live M03 supported structured completion claim has been observed;
-  repeated reliability and failure recovery have not been measured.
+  observation. M04's live comparison is recorded separately; task success and
+  assessable completion claims must not be conflated.
 - The model emitted verbose reasoning-like content despite `think=false`. Preserve
-  this observation when reviewing the baseline for future comparisons. Do not
-  assume that a requested setting guarantees the observed output format.
+  this observation: the 2026-09-07 diagnosis identified a thinking-only checkpoint.
+  The replacement's preflight now verifies the approved checkpoint identity;
+  a family-level capability label still does not establish mode behavior. These
+  checks and successful format smoke tests do not guarantee correct agent output.
 - Repeating a create makes another task. Retry safety remains M07.
-- Independent evaluation and saved Markdown reports work for the one-task contract.
-  Fault scenarios, comparisons, and a report-regeneration CLI remain unimplemented.
-  `finished` is a loop status, not task success.
+- Independent evaluation, dropped-write injection, comparisons and saved Markdown
+  reports work for the one-task contract. A report-regeneration CLI remains later
+  work. `finished` is a loop/batch status, not task success or safeguard superiority.
 - The observer checks a final small-state snapshot, not causal history, arbitrary
   agent workloads, concurrent execution, or tamper-proof evidence. It reads all
   task rows and is not a hostile-file or large-database security boundary.
 - Trace flushing is not a crash-safe transaction, and an HTTP timeout is not a
   hard runtime/cancellation guarantee. These limitations are documented in M02.
-- There is no Git commit identifier yet; source revision is an uncommitted worktree.
-- Two local-model experiments have run across M02/M03; no hosted/paid API used.
+- M01–M03 has a public commit; current M04 manifests correctly identify a dirty
+  worktree based on that commit. They do not pretend it is a committed M04 revision.
+- Two local-model experiments ran across M02/M03; the separate M04 batch is
+  recorded above. No hosted/paid API used.
 - This verification covers the macOS development machine. Offline Linux CI is
   planned for M05 and has not been run or claimed here.
 
@@ -228,8 +362,9 @@ files. Nothing was staged, committed, or pushed to bypass these findings.
 |---|---|---|
 | M01: ordinary task workflow | complete | User reviewed the basics and explicitly authorized M02 |
 | M02: first agent | complete | Explained; user explicitly authorized M03 |
-| M03: independent evaluation | in_progress | Technical gate passed; user learning review pending |
-| M04–M05: first fault comparison and release | planned | Review M03 and output-format issue; explicit authorization required |
+| M03: independent evaluation | complete | Explained; user explicitly authorized M04 |
+| M04: first fault comparison | complete | Original inconclusive batch and replacement smoke recorded; user reviewed summary and authorized M05 |
+| M05: reproducible first release | planned | Explicitly authorized; begin only after committing the M04 checkpoint |
 | M06–M10: execution reliability | planned | Review the first release and plan the next phase |
 | M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |

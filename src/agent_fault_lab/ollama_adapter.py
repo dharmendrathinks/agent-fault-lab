@@ -4,9 +4,10 @@ from collections.abc import Sequence
 
 import httpx
 from ollama import Client, ResponseError
-from pydantic import BaseModel, ConfigDict, JsonValue
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from agent_fault_lab.model import (
+    DEFAULT_MODEL,
     Message,
     ModelSettings,
     ModelTurn,
@@ -17,6 +18,13 @@ from agent_fault_lab.model import (
 )
 
 LOCAL_HOST = "http://127.0.0.1:11434"
+EXPECTED_CHECKPOINT: dict[str, JsonValue] = {
+    "general.architecture": "qwen3",
+    "general.basename": "Qwen3",
+    "general.finetune": "Instruct",
+    "general.version": "2507",
+    "general.size_label": "4B",
+}
 
 
 class DoctorResult(Record):
@@ -26,6 +34,7 @@ class DoctorResult(Record):
     model_digest: str | None = None
     cloud_disabled: bool | None = None
     tools_supported: bool | None = None
+    checkpoint: dict[str, JsonValue] = Field(default_factory=dict)
     problems: tuple[str, ...] = ()
 
     @property
@@ -60,6 +69,7 @@ class _Tags(_Boundary):
 
 class _Show(_Boundary):
     capabilities: list[str]
+    model_info: dict[str, JsonValue] = Field(default_factory=dict)
     remote_host: str | None = None
     remote_model: str | None = None
 
@@ -95,10 +105,11 @@ class OllamaClient:
         # Injection is for socket-free HTTP contract tests, not provider selection.
         self._transport = transport
 
-    def inspect(self, model: str = "qwen3:4b") -> DoctorResult:
+    def inspect(self, model: str = DEFAULT_MODEL) -> DoctorResult:
         """Read metadata only. Missing/unknown local-only status fails closed."""
         version = digest = None
         disabled = supported = None
+        checkpoint: dict[str, JsonValue] = {}
         problems: list[str] = []
         try:
             with httpx.Client(
@@ -136,6 +147,18 @@ class OllamaClient:
                         problems.append("Model does not advertise tool support.")
                     if details.remote_host or details.remote_model or "cloud" in model:
                         problems.append("Remote/cloud models are not allowed in M02.")
+                    checkpoint = {
+                        key: details.model_info[key]
+                        for key in EXPECTED_CHECKPOINT
+                        if key in details.model_info
+                    }
+                    # Family-level "thinking" flags cannot distinguish the two
+                    # 2507 checkpoints. Verify the approved non-thinking baseline.
+                    if checkpoint != EXPECTED_CHECKPOINT:
+                        problems.append(
+                            "Checkpoint metadata does not match the approved "
+                            "Qwen3-4B-Instruct-2507 baseline; review model selection."
+                        )
         except (httpx.HTTPError, ValueError) as exc:
             problems.append(
                 f"Cannot verify local prerequisites: {type(exc).__name__}: {exc}"
@@ -146,6 +169,7 @@ class OllamaClient:
             model_digest=digest,
             cloud_disabled=disabled,
             tools_supported=supported,
+            checkpoint=checkpoint,
             problems=tuple(problems),
         )
 
@@ -215,6 +239,7 @@ class OllamaClient:
                     "thinking": response.message.thinking,
                     "model": response.model,
                     "model_digest": info.model_digest,
+                    "checkpoint": info.checkpoint,
                     "ollama_version": info.ollama_version,
                     "cloud_disabled": info.cloud_disabled,
                 },

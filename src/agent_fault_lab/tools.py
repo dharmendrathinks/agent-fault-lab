@@ -5,6 +5,7 @@ from dataclasses import asdict
 
 from pydantic import JsonValue, ValidationError, field_validator
 
+from agent_fault_lab.faults import FaultInjector
 from agent_fault_lab.model import Record, ToolCall, ToolSpec
 from agent_fault_lab.tasks import Task, TaskStore
 
@@ -49,18 +50,28 @@ class ToolResult(Record):
     ok: bool
     value: JsonValue = None
     error: str | None = None
-    # True means the Python function was entered, not that a write committed.
+    # True means a validated tool operation was entered, not a committed write.
     executed: bool = False
 
 
-def execute_tool(store: TaskStore, call: ToolCall) -> ToolResult:
+def execute_tool(
+    store: TaskStore,
+    call: ToolCall,
+    *,
+    injector: FaultInjector | None = None,
+    call_id: str = "standalone",
+) -> ToolResult:
     if call.name not in {"create_task", "get_task"}:
         return ToolResult(ok=False, error=f"Unknown tool: {call.name}")
     task: Task | None
     try:
         if call.name == "create_task":
             arguments = CreateArguments.model_validate(call.arguments)
-            task = store.create_task(arguments.title)
+            task = (
+                store.create_task(arguments.title)
+                if injector is None
+                else injector.create_task(store, arguments.title, call_id)
+            )
         else:
             lookup = GetArguments.model_validate(call.arguments)
             task = store.get_task(lookup.task_id)

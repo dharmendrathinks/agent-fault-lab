@@ -4,11 +4,20 @@ Build agents. Reproduce failures. Test the fixes.
 
 An open-source learning lab for investigating agent reliability through small,
 reproducible experiments. This is not yet an agent framework or a reliability
-benchmark. **M03 adds an independent SQLite checker that separates task outcomes
-from the agent's final claims.** It saves machine-readable evaluations and
-Markdown reports. Fault injection is not implemented yet.
+benchmark. **M04 adds a controlled dropped-write fault and a four-cell comparison
+of baseline versus read-back instructions.** The independent SQLite checker keeps
+task outcomes separate from the agent's claims. Saved traces and reports expose
+invalid replies, unexercised faults, and unfavorable results.
 See [PROGRESS.md](PROGRESS.md) for verified live results
 and any remaining setup or learning gates.
+
+The current local baseline is **`qwen3:4b-instruct-2507-q4_K_M`**, an explicitly
+named non-thinking checkpoint. It replaces the ambiguous `qwen3:4b` alias that
+resolved to Thinking-2507. The original unsuccessful comparison is preserved in
+the [setup diagnosis](docs/milestones/M04-qwen-diagnosis.md); selecting a suitable
+checkpoint does not guarantee correct tool calls or reports.
+The [replacement smoke tests](docs/milestones/M04-instruct-smoke.md) produced valid
+JSON but also exposed task-ID copying errors; those failures remain in the evidence.
 
 Repository: [dharmendrathinks/agent-fault-lab](https://github.com/dharmendrathinks/agent-fault-lab).
 
@@ -69,28 +78,69 @@ See [the M03 walkthrough](docs/milestones/M03.md) for the full grading rules,
 relevant files, and a genuine local run that saved the task but failed this
 strict response-format contract.
 
+## Compare one safeguard against one fault
+
+```sh
+uv run --offline --no-sync aflab compare --offline --trials 1
+```
+
+This runs four **scripted** examples on fresh databases: baseline/no fault,
+read-back/no fault, baseline/dropped write, and read-back/dropped write. Under the
+fault, every validated create returns a plausible ID without saving a row; read
+operations stay truthful. Only the external trace records the injection flag.
+Scripted verification behavior is programmed, not evidence that a prompt helps AI.
+
+For a genuine comparison, omit the application's `--offline` flag explicitly:
+
+```sh
+uv run --offline --no-sync aflab compare --trials 5
+```
+
+Five repetitions per cell means 20 local runs, executed one at a time. The default
+is one repetition (four runs); the maximum is five. Variant and fault order reverse
+on alternate repetitions. Provider or evaluator errors stop the remaining batch;
+invalid reports and task failures stay in the results. Ctrl-C preserves partial
+evidence. Existing output directories are never overwritten.
+
+Open the comparison directory's `report.md`. It links each run and records task
+outcomes, claim/report counts, exercised faults, calls, tokens, elapsed time, and
+provider-reported model loading separately. Missing usage remains `null`, not zero.
+A missing task detected by read-back is **detection, not recovery**.
+
+See [M04's walkthrough](docs/milestones/M04.md) before interpreting a result.
+Zero scored false-success claims with no assessable completion claims does not
+demonstrate reliable reporting. Historical failures remain available for review.
+
+## Run the local model
+
 For one live run, first follow [M02 local setup](docs/milestones/M02.md#local-setup)
 and confirm `make doctor` is ready, then explicitly run:
 
 ```sh
 uv run --offline --no-sync aflab run
+uv run --offline --no-sync aflab run --variant read-back --fault dropped-write
 ```
 
 Here `uv --offline` disables Python package downloads; it does **not** disable the
-application's explicit request to local Ollama. Only `aflab demo --offline` uses
-the scripted client. There is no automatic substitution between the two clients.
+application's explicit request to local Ollama. `aflab demo --offline` and
+`aflab compare --offline` use the scripted client. There is no automatic
+substitution between the two clients. Check prerequisites before either live command.
 
-The live runner uses `qwen3:4b`, non-streaming output, thinking disabled, temperature
-0, 4,096 context tokens, 512 output tokens per response, and a 60-second HTTP
-timeout. It permits up to six model requests and six processed tool calls.
+The live runner uses `qwen3:4b-instruct-2507-q4_K_M`, non-streaming output,
+`think=false`, temperature 0, 4,096 context tokens, 512 output tokens per response,
+and a 60-second HTTP timeout. It permits up to six model requests and six processed tool calls.
 Rejected calls also consume the tool budget. It never downloads a model, retries
 a model request, changes daemon settings, or falls back to a cloud model.
 
-`aflab doctor` checks the running daemon's local-only status, model digest, and
-advertised tool capability. A missing or unrecognized check refuses live runs.
+`aflab doctor` checks the running daemon's local-only status, model digest,
+advertised tool capability, and checkpoint identity (Qwen3, 4B, Instruct, 2507).
+Missing or mismatched checkpoint metadata refuses live runs. This is a guard for
+the approved baseline, not a universal model-compatibility test. The actual digest
+and identity are recorded; the digest is not hard-pinned or an attestation of the
+daemon. Changing model families requires an explicit baseline review.
 Run directories are never overwritten; `--output` must name a new directory with
-an existing parent. Saved reports are available now; the `report` regeneration
-command and `compare` command remain later work. Exit code 0 means an experiment
+an existing parent. Saved reports and `compare` are available now; the `report`
+regeneration command remains later work. Exit code 0 means an experiment
 was recorded, not that the task or report passed. Provider, evaluator, and harness
 errors return 2; keyboard interruption returns 130.
 
@@ -149,8 +199,11 @@ For M03, read [the independent-checker walkthrough](docs/milestones/M03.md).
 Explain why a task can be completed while its final claim is wrong or malformed,
 and why the checker does not call the agent's `get_task` tool.
 
+For M04, read [the fault-comparison walkthrough](docs/milestones/M04.md). Explain
+how to distinguish a triggered fault, detected failure, recovered task, and invalid
+report. The model is not forced to verify by application code.
+
 These tests establish application behavior, **not general AI reliability**.
-The first fault comparison remains M04, after review and explicit authorization.
 
 ## Development checks
 
@@ -173,4 +226,5 @@ are ignored by Git. The MIT license covers original project code.
   and the exact next action.
 - [AGENTS.md](AGENTS.md): working rules for Codex and future contributors.
 
-No remote publication or automatic advancement to M04 is part of this milestone.
+The M01–M03 baseline was published with explicit user approval. M04 is the current
+local milestone; no automatic advancement to M05 or release publication is included.

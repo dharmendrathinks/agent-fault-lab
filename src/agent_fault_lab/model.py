@@ -30,8 +30,11 @@ class ToolSpec(Record):
     parameters: dict[str, JsonValue]
 
 
+DEFAULT_MODEL = "qwen3:4b-instruct-2507-q4_K_M"
+
+
 class ModelSettings(Record):
-    model: str = Field(default="qwen3:4b", min_length=1)
+    model: str = Field(default=DEFAULT_MODEL, min_length=1)
     temperature: float = Field(default=0.0, ge=0, le=2)
     context_tokens: int = Field(default=4096, gt=0)
     max_output_tokens: int = Field(default=512, gt=0)

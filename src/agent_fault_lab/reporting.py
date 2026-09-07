@@ -8,7 +8,7 @@ from pydantic import JsonValue
 from agent_fault_lab.evaluation import Evaluation
 
 
-def _json_block(value: JsonValue) -> str:
+def json_block(value: JsonValue) -> str:
     content = json.dumps(value, ensure_ascii=True, indent=2, allow_nan=False)
     # A title or model reply must not close a fence and inject Markdown/HTML.
     longest = max((len(run) for run in re.findall(r"`+", content)), default=0)
@@ -28,7 +28,7 @@ def render_report(evaluation: Evaluation) -> str:
     )
     return "\n".join(
         [
-            "# Agent Fault Lab — M03 evaluation\n",
+            "# Agent Fault Lab — task evaluation\n",
             "These are separate results, not one overall reliability score.\n",
             "| Dimension | Observed result |",
             "|---|---|",
@@ -38,7 +38,7 @@ def render_report(evaluation: Evaluation) -> str:
             f"| Claim support | {evaluation.claim_support} |",
             f"| False-success claim | {false_success} |\n",
             "## Client and task\n",
-            _json_block(
+            json_block(
                 {
                     "client": evaluation.client,
                     "expected_title": evaluation.expected_title,
@@ -47,15 +47,15 @@ def render_report(evaluation: Evaluation) -> str:
             ),
             "A scripted client tests the machinery, not AI behavior.\n",
             "## Reasons\n",
-            _json_block(
+            json_block(
                 {"task": evaluation.task_reason, "claim": evaluation.claim_reason}
             ),
             "## Parsed terminal claim\n",
-            _json_block(evidence["report"]),
+            json_block(evidence["report"]),
             "## Independently inspected SQLite state\n",
-            _json_block(evidence["state"]),
+            json_block(evidence["state"]),
             "## Execution and raw terminal content\n",
-            _json_block(evidence["execution"]),
+            json_block(evidence["execution"]),
             "## Evidence and limits\n",
             "This report uses the snapshot in `evaluation.json`. Read `manifest.json`, "
             "`trace.jsonl`, `result.json`, and `tasks.sqlite3` alongside it.\n",

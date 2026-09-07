@@ -3,6 +3,8 @@
 from pydantic import Field
 
 from agent_fault_lab.claims import CLAIM_INSTRUCTION
+from agent_fault_lab.experiments import READ_BACK_INSTRUCTION, ExperimentConfig
+from agent_fault_lab.faults import FaultInjector
 from agent_fault_lab.model import (
     ExecutionStatus,
     Message,
@@ -38,19 +40,26 @@ def run_agent(
     *,
     settings: ModelSettings | None = None,
     limits: Limits | None = None,
+    config: ExperimentConfig | None = None,
 ) -> RunResult:
     if not request.strip():
         raise ValueError("request must not be blank")
     settings = settings or ModelSettings()
     limits = limits or Limits()
+    config = config or ExperimentConfig()
+    prompt = SYSTEM_PROMPT
+    if config.variant == "read-back":
+        prompt += READ_BACK_INSTRUCTION
+    injector = FaultInjector(config.fault, recorder)
     messages = [
-        Message(role="system", content=SYSTEM_PROMPT),
+        Message(role="system", content=prompt),
         Message(role="user", content=request),
     ]
     model_calls = tool_calls = tool_executions = 0
     recorder.emit(
         "run_started",
         client=client.label,
+        experiment=config.model_dump(mode="json"),
         messages=[message.model_dump(mode="json") for message in messages],
         settings=settings.model_dump(mode="json"),
         limits=limits.model_dump(mode="json"),
@@ -121,7 +130,7 @@ def run_agent(
             recorder.emit(
                 "tool_requested", call_id=call_id, call=call.model_dump(mode="json")
             )
-            result = execute_tool(store, call)
+            result = execute_tool(store, call, injector=injector, call_id=call_id)
             tool_executions += int(result.executed)
             recorder.emit(
                 "tool_returned", call_id=call_id, result=result.model_dump(mode="json")

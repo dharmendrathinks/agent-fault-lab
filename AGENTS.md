@@ -29,6 +29,13 @@ is the design authority; the progress record identifies the current learning ste
   strip prose, fences, or thinking tags to turn an invalid terminal report valid.
 - Do not start paid inference, download models, change daemon settings, publish,
   push, or expand scope implicitly. There is no automatic hosted-model fallback.
+- Before choosing or changing a model baseline, inspect the installed checkpoint
+  metadata and digest, not only the family name or tag. A `thinking` capability
+  does not establish that thinking can be disabled. Verify required mode support
+  against that checkpoint's documentation and observed output before comparisons.
+- Count a read-back request separately from correct verification. Inspect whether
+  it used the exact returned identifier and checked the matching task; a truthful
+  not-found response to a mistyped ID does not establish detection of a failed write.
 - Commit, stage, or publish only when requested. Local Git initialization is part
   of the approved M01 setup, not authorization for a remote repository.
 - Preserve existing user changes and use apply_patch for source/document edits.
@@ -37,6 +44,12 @@ is the design authority; the progress record identifies the current learning ste
 
 - Never fabricate logs, benchmark results, failures, or improvements.
 - Scripted tests demonstrate the test machinery, not live-model behavior.
+- Fault metadata belongs in external evidence, never in model-facing tool results.
+  Both comparison variants share tools, settings, limits and grading; change only
+  the declared prompt instruction. Never force the treatment's tool sequence.
+- Report invalid/absent claims and unexercised faults alongside outcome counts.
+  Zero scored false-success claims with zero assessable completion claims is not
+  evidence of reliability. Detecting a failed write is not recovering the task.
 - Keep local/private artifacts and credentials out of version control.
 - Run `make check` after meaningful changes and record actual outcomes.
 - Update `PROGRESS.md` before handoff with the status, evidence, limitations,

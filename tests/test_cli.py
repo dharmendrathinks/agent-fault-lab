@@ -10,7 +10,7 @@ import pytest
 from agent_fault_lab import cli
 from agent_fault_lab.cli import main
 from agent_fault_lab.evaluation import Evaluation
-from agent_fault_lab.model import ModelTurn, RunResult
+from agent_fault_lab.model import DEFAULT_MODEL, ModelTurn, RunResult
 from agent_fault_lab.ollama_adapter import DoctorResult, OllamaClient
 from agent_fault_lab.reporting import render_report
 from agent_fault_lab.scripted import ScriptedClient
@@ -27,6 +27,7 @@ def test_offline_demo_saves_real_evidence(
         "result.json",
         "tasks.sqlite3",
         "evaluation.json",
+        "observation.json",
         "report.md",
     }
     manifest = json.loads((output / "manifest.json").read_text())
@@ -39,7 +40,7 @@ def test_offline_demo_saves_real_evidence(
         "mode": "offline scripted",
         "case": "happy-path",
     }
-    assert manifest["milestone"] == "M03" and manifest["schema_version"] == 2
+    assert manifest["milestone"] == "M04" and manifest["schema_version"] == 3
     assert manifest["terminal_claim_schema"]["required"] == ["status", "task_id"]
     assert result["status"] == "finished" and result["tool_executions"] == 1
     assert [event["sequence"] for event in events] == list(range(1, len(events) + 1))
@@ -51,7 +52,7 @@ def test_offline_demo_saves_real_evidence(
     assert evaluation.task_outcome == "completed"
     assert evaluation.claim_support == "supported"
     assert evaluation.report.status == "valid"
-    assert (output / "report.md").read_text() == render_report(evaluation)
+    assert (output / "report.md").read_text().startswith(render_report(evaluation))
     with closing(
         sqlite3.connect(f"{(output / 'tasks.sqlite3').as_uri()}?mode=ro", uri=True)
     ) as connection:
@@ -85,7 +86,7 @@ def test_missing_output_parent_is_not_created(tmp_path: Path) -> None:
     assert not output.parent.exists()
 
 
-@pytest.mark.parametrize("command", [[], ["demo"], ["compare"], ["report"]])
+@pytest.mark.parametrize("command", [[], ["demo"], ["report"]])
 def test_required_or_future_commands_are_not_silently_selected(
     command: list[str],
 ) -> None:
@@ -97,7 +98,7 @@ def test_required_or_future_commands_are_not_silently_selected(
 def test_live_run_refused_before_creating_artifacts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    def not_ready(self: OllamaClient, model: str = "qwen3:4b") -> DoctorResult:
+    def not_ready(self: OllamaClient, model: str = DEFAULT_MODEL) -> DoctorResult:
         return DoctorResult(model=model, problems=("Cloud mode unverified",))
 
     monkeypatch.setattr(OllamaClient, "inspect", not_ready)
@@ -109,7 +110,7 @@ def test_live_run_refused_before_creating_artifacts(
 
 @pytest.mark.parametrize("ready", [True, False])
 def test_doctor_exit_status(ready: bool, monkeypatch: pytest.MonkeyPatch) -> None:
-    def inspect(self: OllamaClient, model: str = "qwen3:4b") -> DoctorResult:
+    def inspect(self: OllamaClient, model: str = DEFAULT_MODEL) -> DoctorResult:
         return DoctorResult(model=model, problems=() if ready else ("Not installed",))
 
     monkeypatch.setattr(OllamaClient, "inspect", inspect)

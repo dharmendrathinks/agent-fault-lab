@@ -6,9 +6,23 @@ import httpx
 import pytest
 from pydantic import JsonValue
 
-from agent_fault_lab.model import Message, ModelSettings, ProviderError, ToolCall
+from agent_fault_lab.model import (
+    DEFAULT_MODEL,
+    Message,
+    ModelSettings,
+    ProviderError,
+    ToolCall,
+)
 from agent_fault_lab.ollama_adapter import LOCAL_HOST, OllamaClient
 from agent_fault_lab.tools import TOOL_SPECS
+
+CHECKPOINT: dict[str, JsonValue] = {
+    "general.architecture": "qwen3",
+    "general.basename": "Qwen3",
+    "general.finetune": "Instruct",
+    "general.version": "2507",
+    "general.size_label": "4B",
+}
 
 
 class FakeAPI:
@@ -17,10 +31,13 @@ class FakeAPI:
         self.responses: dict[str, JsonValue | httpx.Response | Exception] = {
             "/api/version": {"version": "test-version"},
             "/api/status": {"cloud": {"disabled": True}},
-            "/api/tags": {"models": [{"name": "qwen3:4b", "digest": "test-digest"}]},
-            "/api/show": {"capabilities": ["completion", "tools", "thinking"]},
+            "/api/tags": {"models": [{"name": DEFAULT_MODEL, "digest": "test-digest"}]},
+            "/api/show": {
+                "capabilities": ["completion", "tools", "thinking"],
+                "model_info": dict(CHECKPOINT),
+            },
             "/api/chat": {
-                "model": "qwen3:4b",
+                "model": DEFAULT_MODEL,
                 "done": True,
                 "done_reason": "stop",
                 "message": {"role": "assistant", "content": "Done"},
@@ -49,6 +66,8 @@ def test_doctor_only_reads_metadata() -> None:
     info = api.client().inspect()
     assert info.ready and info.cloud_disabled and info.tools_supported
     assert info.model_digest == "test-digest" and info.ollama_version == "test-version"
+    assert info.model == "qwen3:4b-instruct-2507-q4_K_M"
+    assert info.checkpoint == CHECKPOINT
     assert [(r.method, r.url.path) for r in api.requests] == [
         ("GET", "/api/version"),
         ("GET", "/api/status"),
@@ -64,7 +83,7 @@ def test_doctor_only_reads_metadata() -> None:
         ("/api/status", {"cloud": {"disabled": "true"}}, "Cannot verify"),
         ("/api/status", {}, "Cannot verify"),
         ("/api/tags", {"models": []}, "not installed"),
-        ("/api/tags", {"models": [{"name": "qwen3:4b", "digest": ""}]}, "no digest"),
+        ("/api/tags", {"models": [{"name": DEFAULT_MODEL, "digest": ""}]}, "no digest"),
         ("/api/show", {"capabilities": ["completion"]}, "tool support"),
         (
             "/api/show",
@@ -87,6 +106,40 @@ def test_unready_never_infers(endpoint: str, response: JsonValue, problem: str) 
         )
     assert "/api/chat" not in [request.url.path for request in api.requests]
     assert "/api/pull" not in [request.url.path for request in api.requests]
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {},
+        {key: value for key, value in CHECKPOINT.items() if key != "general.finetune"},
+        {**CHECKPOINT, "general.finetune": "Thinking"},
+        {**CHECKPOINT, "general.version": "another-version"},
+        {**CHECKPOINT, "general.size_label": "8B"},
+        {**CHECKPOINT, "general.architecture": "another-family"},
+        {**CHECKPOINT, "general.finetune": None},
+    ],
+)
+def test_wrong_or_missing_checkpoint_never_infers(
+    metadata: dict[str, JsonValue],
+) -> None:
+    api = FakeAPI()
+    # Even an approved-looking tag and tool capability cannot hide a wrong model.
+    api.responses["/api/show"] = {
+        "capabilities": ["completion", "tools", "thinking"],
+        "model_info": metadata,
+    }
+    with pytest.raises(ProviderError, match="Checkpoint metadata"):
+        api.client().complete([], TOOL_SPECS, ModelSettings())
+    assert not any(r.url.path in {"/api/chat", "/api/pull"} for r in api.requests)
+
+
+def test_missing_model_info_never_infers() -> None:
+    api = FakeAPI()
+    api.responses["/api/show"] = {"capabilities": ["completion", "tools"]}
+    with pytest.raises(ProviderError, match="Checkpoint metadata"):
+        api.client().complete([], TOOL_SPECS, ModelSettings())
+    assert not any(r.url.path == "/api/chat" for r in api.requests)
 
 
 @pytest.mark.parametrize(
@@ -123,9 +176,10 @@ def test_real_sdk_serialization_and_usage(monkeypatch: pytest.MonkeyPatch) -> No
         "load_duration": 9000,
     }
     assert turn.metadata["model_digest"] == "test-digest"
+    assert turn.metadata["checkpoint"] == CHECKPOINT
     request = api.requests[-1]
     body = json.loads(request.content)
-    assert body["model"] == "qwen3:4b"
+    assert body["model"] == "qwen3:4b-instruct-2507-q4_K_M"
     assert body["stream"] is False and body["think"] is False
     assert body["options"] == {"temperature": 0.0, "num_ctx": 4096, "num_predict": 512}
     assert "format" not in body  # No grammar imposed on tool-calling turns.
@@ -146,7 +200,7 @@ def test_real_sdk_serialization_and_usage(monkeypatch: pytest.MonkeyPatch) -> No
 def test_tool_requests_and_followup_order_survive_sdk() -> None:
     api = FakeAPI()
     api.responses["/api/chat"] = {
-        "model": "qwen3:4b",
+        "model": DEFAULT_MODEL,
         "done": True,
         "done_reason": "stop",
         "message": {

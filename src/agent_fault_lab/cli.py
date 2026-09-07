@@ -1,4 +1,4 @@
-"""M03: task execution followed by independent state/claim evaluation."""
+"""M04: explicit one-task runs and bounded, independently evaluated comparisons."""
 
 import argparse
 import json
@@ -15,7 +15,9 @@ from pydantic import JsonValue
 
 from agent_fault_lab.agent import run_agent
 from agent_fault_lab.claims import TerminalClaim
-from agent_fault_lab.evaluation import EVALUATOR_VERSION, Evaluation, evaluate_run
+from agent_fault_lab.comparison import Comparison, ComparisonEntry, render_comparison
+from agent_fault_lab.evaluation import EVALUATOR_VERSION, evaluate_run
+from agent_fault_lab.experiments import ExperimentConfig, Observation, measure, schedule
 from agent_fault_lab.model import (
     Message,
     ModelClient,
@@ -24,7 +26,7 @@ from agent_fault_lab.model import (
     ToolCall,
 )
 from agent_fault_lab.ollama_adapter import OllamaClient
-from agent_fault_lab.reporting import render_report
+from agent_fault_lab.reporting import json_block, render_report
 from agent_fault_lab.scripted import ScriptedClient
 from agent_fault_lab.tasks import TaskStore
 from agent_fault_lab.trace import Recorder
@@ -35,7 +37,7 @@ REQUEST = f"Create a task with the exact title {json.dumps(TITLE)}."
 
 def _demo_client(case: str) -> ScriptedClient:
     if case == "false-success":
-        # No faulty tool yet (M04): the script simply claims a task it never created.
+        # This specific example claims without a tool; it does not exercise a fault.
         return ScriptedClient(
             [
                 ModelTurn(
@@ -63,6 +65,37 @@ def _demo_client(case: str) -> ScriptedClient:
             ModelTurn(
                 tool_calls=(ToolCall(name="create_task", arguments={"title": TITLE}),)
             ),
+            finish,
+        ]
+    )
+
+
+def _comparison_client(config: ExperimentConfig) -> ScriptedClient:
+    if config.variant == "baseline":
+        return _demo_client("happy-path")
+
+    def read_back(messages: Sequence[Message]) -> ModelTurn:
+        value = json.loads(messages[-1].content)["value"]
+        return ModelTurn(
+            tool_calls=(ToolCall(name="get_task", arguments={"task_id": value["id"]}),)
+        )
+
+    def finish(messages: Sequence[Message]) -> ModelTurn:
+        value = json.loads(messages[-1].content)["value"]
+        claim = (
+            TerminalClaim(status="not_completed", task_id=None)
+            if value is None
+            else TerminalClaim(status="completed", task_id=value["id"])
+        )
+        return ModelTurn(content=claim.model_dump_json())
+
+    # Deliberate scripted behavior, independent of the configured fault.
+    return ScriptedClient(
+        [
+            ModelTurn(
+                tool_calls=(ToolCall(name="create_task", arguments={"title": TITLE}),)
+            ),
+            read_back,
             finish,
         ]
     )
@@ -112,10 +145,13 @@ def _execute(
     client: ModelClient,
     output: Path | None,
     provenance: dict[str, JsonValue],
-) -> Evaluation:
+    *,
+    config: ExperimentConfig | None = None,
+) -> Observation:
+    config = config or ExperimentConfig()
     if output is None:
         Path("runs").mkdir(exist_ok=True)
-        output = Path("runs") / f"m03-{uuid4()}"
+        output = Path("runs") / f"m04-{uuid4()}"
     output = output.resolve()
     # Existing directories are rejected; no user or previous experiment is reused.
     output.mkdir()
@@ -124,8 +160,9 @@ def _execute(
     _write_json(
         output / "manifest.json",
         {
-            "schema_version": 2,
-            "milestone": "M03",
+            "schema_version": 3,
+            "milestone": "M04",
+            "experiment": config.model_dump(mode="json"),
             "started_at": datetime.now(UTC).isoformat(),
             "client": client.label,
             "request": REQUEST,
@@ -148,7 +185,9 @@ def _execute(
         recorder = Recorder(stream)
         try:
             store = TaskStore(output / "tasks.sqlite3")
-            result = run_agent(client, store, REQUEST, recorder, settings=settings)
+            result = run_agent(
+                client, store, REQUEST, recorder, settings=settings, config=config
+            )
             # Retain execution evidence before evaluation or rendering can fail.
             _write_json(output / "result.json", result.model_dump(mode="json"))
             recorder.emit("evaluation_started", evaluator_version=EVALUATOR_VERSION)
@@ -156,8 +195,25 @@ def _execute(
                 output / "tasks.sqlite3", TITLE, result, client=client.label
             )
             _write_json(output / "evaluation.json", evaluation.model_dump(mode="json"))
+            observation = Observation(
+                config=config,
+                evaluation=evaluation,
+                metrics=measure(recorder.events, result),
+            )
+            _write_json(
+                output / "observation.json", observation.model_dump(mode="json")
+            )
             with (output / "report.md").open("x", encoding="utf-8") as report_file:
-                report_file.write(render_report(evaluation))
+                report_file.write(
+                    render_report(evaluation)
+                    + "\n## Experiment and accounting\n\n"
+                    + json_block(
+                        {
+                            "config": config.model_dump(mode="json"),
+                            "metrics": observation.metrics.model_dump(mode="json"),
+                        }
+                    )
+                )
             recorder.emit(
                 "evaluation_completed",
                 task_outcome=evaluation.task_outcome,
@@ -181,18 +237,135 @@ def _execute(
     print(f"Task outcome: {evaluation.task_outcome}")
     print(f"Terminal report: {evaluation.report.status}")
     print(f"Claim support: {evaluation.claim_support}")
+    print(
+        f"Fault: {config.fault}; injected writes: {observation.metrics.injected_writes}"
+    )
     print("Raw terminal content is preserved in result.json and report.md.")
     print(
         "Evidence: manifest.json, trace.jsonl, tasks.sqlite3, result.json, "
-        "evaluation.json, report.md"
+        "evaluation.json, observation.json, report.md"
     )
-    return evaluation
+    return observation
+
+
+def _failed(observation: Observation) -> bool:
+    return (
+        observation.evaluation.execution.status == "provider_error"
+        or observation.evaluation.state.status == "error"
+    )
+
+
+def _compare(*, offline: bool, trials: int, output: Path | None) -> int:
+    planned = schedule(trials)
+    live_client = None if offline else OllamaClient()
+    if live_client is None:
+        provenance: dict[str, JsonValue] = {"mode": "offline scripted comparison"}
+        label = "scripted-test-client (NOT an AI model)"
+    else:
+        info = live_client.inspect()
+        if not info.ready:
+            print(
+                "Live comparison refused: " + "; ".join(info.problems), file=sys.stderr
+            )
+            return 2
+        provenance = info.model_dump(mode="json")
+        label = live_client.label
+    if output is None:
+        Path("runs").mkdir(exist_ok=True)
+        output = Path("runs") / f"m04-compare-{uuid4()}"
+    output = output.resolve()
+    output.mkdir()
+    print(f"Comparison directory: {output}", flush=True)
+    _write_json(
+        output / "manifest.json",
+        {
+            "schema_version": 1,
+            "milestone": "M04",
+            "client": label,
+            "started_at": datetime.now(UTC).isoformat(),
+            "trials_per_cell": trials,
+            "schedule": [spec.model_dump(mode="json") for spec in planned],
+            "revision": _source_revision(),
+            "prerequisites": provenance,
+            "settings": ModelSettings().model_dump(mode="json"),
+            "order": "reverse variant and fault order on alternate repetitions",
+        },
+    )
+    entries: list[ComparisonEntry] = []
+    status = "finished"
+    error: str | None = None
+    partial: str | None = None
+    with (output / "comparison-trace.jsonl").open("x", encoding="utf-8") as stream:
+        recorder = Recorder(stream)
+        try:
+            for spec in planned:
+                partial = spec.directory
+                recorder.emit(
+                    "trial_started",
+                    spec=spec.model_dump(mode="json"),
+                    directory=partial,
+                )
+                client = (
+                    _comparison_client(spec.config)
+                    if live_client is None
+                    else live_client
+                )
+                observation = _execute(
+                    client, output / spec.directory, provenance, config=spec.config
+                )
+                entries.append(ComparisonEntry(spec=spec, observation=observation))
+                partial = None
+                recorder.emit(
+                    "trial_completed", sequence=spec.sequence, directory=spec.directory
+                )
+                if _failed(observation):
+                    status, error = (
+                        "stopped",
+                        "Provider or evaluator error; remaining runs not attempted",
+                    )
+                    break
+        except KeyboardInterrupt:
+            status, error = (
+                "interrupted",
+                "Keyboard interrupt; inspect the partial run trace",
+            )
+            raise
+        except Exception as exc:
+            status, error = "harness_error", f"{type(exc).__name__}: {exc}"
+            raise
+        finally:
+            # Per-run evidence and the flushed trace survive even if this write fails.
+            comparison = Comparison.model_validate(
+                {
+                    "client": label,
+                    "planned": planned,
+                    "entries": tuple(entries),
+                    "status": status,
+                    "error": error,
+                    "partial_directory": partial,
+                }
+            )
+            _write_json(output / "comparison.json", comparison.model_dump(mode="json"))
+            with (output / "report.md").open("x", encoding="utf-8") as report_file:
+                report_file.write(render_comparison(comparison))
+            recorder.emit(
+                "comparison_stopped",
+                status=status,
+                recorded=len(entries),
+                planned=len(planned),
+                error=error,
+            )
+    print(
+        f"Comparison {status}: {len(entries)}/{len(planned)} runs recorded. "
+        "See report.md."
+    )
+    return 0 if status == "finished" else 2
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="aflab",
-        description="M03: compare a terminal claim with independently inspected state.",
+        description="M04: compare a read-back instruction against dropped writes.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("doctor", help="Check local Ollama; never download or infer.")
@@ -206,9 +379,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Scripted evaluator example, not a model benchmark.",
     )
     live = commands.add_parser(
-        "run", help="One explicit local qwen3:4b task; no retries."
+        "run", help="One explicit local Qwen3-4B-Instruct-2507 task; no retries."
     )
     live.add_argument("--output", type=Path, help="New directory; parent must exist.")
+    live.add_argument(
+        "--variant", choices=("baseline", "read-back"), default="baseline"
+    )
+    live.add_argument("--fault", choices=("none", "dropped-write"), default="none")
+    compare = commands.add_parser(
+        "compare", help="Four cells per trial; local inference unless --offline."
+    )
+    compare.add_argument(
+        "--offline", action="store_true", help="Programmed scripts, NOT AI evidence."
+    )
+    compare.add_argument(
+        "--trials",
+        type=int,
+        choices=range(1, 6),
+        default=1,
+        help="1–5 repetitions per cell (4–20 total runs).",
+    )
+    compare.add_argument(
+        "--output", type=Path, help="New directory; parent must exist."
+    )
     args = parser.parse_args(argv)
     try:
         if args.command == "doctor":
@@ -216,8 +409,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(info.model_dump_json(indent=2))
             print("READY for a local smoke test" if info.ready else "NOT READY")
             return 0 if info.ready else 2
+        if args.command == "compare":
+            return _compare(
+                offline=args.offline, trials=args.trials, output=args.output
+            )
         if args.command == "demo":
-            evaluation = _execute(
+            observation = _execute(
                 _demo_client(args.case),
                 args.output,
                 {"mode": "offline scripted", "case": args.case},
@@ -228,16 +425,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             if not info.ready:
                 print("Live run refused: " + "; ".join(info.problems), file=sys.stderr)
                 return 2
-            evaluation = _execute(client, args.output, info.model_dump(mode="json"))
-        # Model/limit outcomes are results, not necessarily a broken experiment.
-        return (
-            2
-            if (
-                evaluation.execution.status == "provider_error"
-                or evaluation.state.status == "error"
+            observation = _execute(
+                client,
+                args.output,
+                info.model_dump(mode="json"),
+                config=ExperimentConfig(variant=args.variant, fault=args.fault),
             )
-            else 0
-        )
+        # Model/limit outcomes are results, not necessarily a broken experiment.
+        return 2 if _failed(observation) else 0
     except KeyboardInterrupt:
         print(
             "Interrupted; inspect the partial trace if a run directory was created.",

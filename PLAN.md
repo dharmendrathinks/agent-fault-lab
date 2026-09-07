@@ -55,23 +55,34 @@ Resolve dependency versions during bootstrap and commit the lockfile. Subsequent
 
 The initial implementation is synchronous and sequential. Concurrency is a later experiment, not a starting requirement.
 
-### B. Initial local model
+### B. Current local model
 
-Use **`qwen3:4b`** as the initial documented baseline—not as a claim that it is the best available model.
+Use **`qwen3:4b-instruct-2507-q4_K_M`** as the documented baseline—not as a claim
+that it is the best available model. The original `qwen3:4b` alias resolved to
+Thinking-2507 and was replaced with explicit user approval on 2026-09-07. Preserve
+the historical M02–M04 results from that earlier checkpoint.
 
-Its Ollama listing documents tool support and an approximately 2.5 GB model download. Your machine has 18 GB of memory, but actual speed and behavior still require a local smoke test. [Model listing](https://ollama.com/library/qwen3:4b)
+Its Ollama listing documents tool support and an approximately 2.5 GB model download.
+The checkpoint's model card specifies non-thinking behavior. Your machine has
+18 GB of memory; actual output still requires testing.
+[Model listing](https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M),
+[checkpoint documentation](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507).
 
 Initial settings:
 
 - Local endpoint: `http://127.0.0.1:11434`.
 - Non-streaming responses.
-- Thinking disabled for this baseline.
+- Non-thinking checkpoint; keep the explicit `think=false` API setting.
 - Temperature `0`.
 - Context window: 4,096 tokens.
 - Maximum generated tokens per response: 512.
 - One active experiment at a time.
 
 Record the model digest, Ollama version, and effective settings in every live experiment. Temperature zero is **not** a promise of identical future responses.
+
+Preflight additionally checks checkpoint metadata for Qwen3, 4B, Instruct, 2507
+and records it. Missing or mismatched identity fails closed; family-level thinking
+capabilities do not establish mode support. The digest is recorded, not hard-pinned.
 
 Setup must use Ollama’s local-only configuration. Downloads and daemon configuration changes are explicit setup steps, never automatic behavior of a test or experiment command. [Ollama local-only configuration](https://docs.ollama.com/faq)
 
@@ -519,7 +530,7 @@ The long-term quality target is:
 Neither completing all 18 milestones nor accumulating features guarantees a “10/10” project. A smaller project with trustworthy evidence and adopted checks can be the stronger outcome.
 
 **The initial implementation target was M01 only. The user has since authorized
-M02 and then M03; see `PROGRESS.md`. All later milestones remain recorded and gated.**
+M02, M03, and M04; see `PROGRESS.md`. All later milestones remain recorded and gated.**
 
 ### Implementation decisions — 2026-09-06
 
@@ -628,3 +639,83 @@ M02 and then M03; see `PROGRESS.md`. All later milestones remain recorded and ga
   live M03 run demonstrated correct storage plus invalid terminal JSON; preserve
   both findings. A clean structured-output baseline needs a separately reviewed
   investigation before interpreting M04 false-success comparisons.
+
+### M04 implementation decisions — 2026-09-06
+
+- The user approved the first commit/push, followed by M04. Published the M01–M03
+  baseline as `b71f583` on `origin/main`; do not automatically publish M04 or a release.
+  M03 is accepted for progression after its explanation, not a claimed formal quiz.
+- Keep the M03 baseline prompt, strict terminal parser, model, settings, task store,
+  and independent evaluator unchanged. Append only a read-back instruction for
+  the treatment variant. Both variants may request any allowed tool; neither is
+  forced to verify or prevented from verifying by the application.
+- Intercept only validated `create_task` operations. Every dropped create gets a
+  fresh UUID and its exact title, with the same success-shaped tool envelope but
+  no write. Unknown tools and invalid arguments do not trigger injection.
+  `get_task` still calls the real store. Never expose experiment/fault metadata in
+  model-facing messages; record each intercepted call separately in the trace.
+- `tool_executions` now explicitly counts entry into a validated tool operation,
+  including the injected implementation. It is not a count of committed writes or
+  calls to the normal storage implementation. `injected_writes` is a separate count.
+- Add `run --variant baseline|read-back --fault none|dropped-write` and
+  `compare [--offline] --trials 1..5`. Four cells per repetition, default one,
+  maximum five. Reverse variant and fault order on alternate repetitions; do not
+  claim randomization. Each run owns fresh SQLite, messages, recorder, and artifacts.
+- Scripted comparisons use a fixed create-only script or a fixed read-back script,
+  neither of which branches on the configured fault. They demonstrate the harness,
+  not a causal effect of prompting a model.
+- Manifest schema 3 records M04 and the experiment config. Preserve M03's evaluator
+  version and evaluation schema because grading did not change. Add
+  `observation.json` with config, evaluation and trace-derived accounting.
+- The comparison manifest records the full planned order before runs begin. Flush
+  a separate comparison trace and keep all per-run evidence. Save the final or
+  interrupted `comparison.json` and Markdown summary without overwriting older
+  runs. Provider/observer errors halt remaining work; invalid/model-limit/task
+  results remain recorded. Unexpected harness errors and Ctrl-C preserve completed
+  observations and identify the partial run. No automatic retry or resume yet.
+- Count all recorded task outcomes, report states and claim-support results. Show
+  false-success counts alongside assessable completion-claim counts and invalid
+  reports, not an invented percentage. An unexercised fault is not recovery; a
+  supported negative claim under the fault is detection, not task completion.
+- Read-back accounting counts requests, not proof of semantic verification.
+  Loop elapsed time includes loading and local checks but excludes evaluation;
+  Ollama-reported load time is separate. Token/load totals are unknown unless
+  every requested call reported that field. Raw partial usage stays in traces.
+- Review the known output-format issue by keeping the same setup and all invalid
+  outputs in the planned exploratory comparison. Do not extract embedded JSON,
+  change models/settings, or declare a winner when structured claims are unscorable.
+  The comparison may establish a measurement limitation instead of safeguard value.
+- No new dependency, CI, dashboard, hosted API, new fault type, report-regeneration
+  command, or M05 release work. Technical and user-learning gates remain separate.
+
+### M04 diagnostic finding — 2026-09-07
+
+- User authorized investigation of the output-limit/extra-text problem. No new
+  model download or replacement was included in that authorization.
+- Installed `qwen3:4b` metadata identifies Qwen3-4B-Thinking-2507, a thinking-only
+  checkpoint. Correct the earlier assumption that the API's `think=false` flag
+  established non-thinking behavior. The first 20-run comparison remains unchanged.
+- Diagnostic probes tested the original 512-token request, a 1,024-token request,
+  and an empty-thinking input-prefix hypothesis at 512. All hit their limits before
+  returning a structured tool call. One mistaken debug request also generated 512
+  tokens; retained and disclosed. No output cleanup or application setting changes.
+- Proposed, not yet authorized or tested: explicitly named
+  `qwen3:4b-instruct-2507-q4_K_M`, subject to download approval and verification of
+  installed metadata/digest. It should first pass small no-fault checks with the
+  unchanged budget/grader. Add model-identity checks during that implementation.
+- See `docs/milestones/M04-qwen-diagnosis.md` for primary sources, evidence and limits.
+
+### M04 approved model replacement — 2026-09-07
+
+- The user explicitly authorized deleting the thinking model and downloading a
+  suitable non-thinking model. Downloaded the explicit Instruct Q4_K_M tag,
+  verified its metadata/digest, then removed only the old `qwen3:4b` with Ollama.
+  All historical experiment artifacts remain intact; no manual blob deletion.
+- Changed the shared default checkpoint and added offline preflight regression
+  tests. Both variants keep the same prompts, tools, evaluator and 512-token budget.
+  No grammar, output stripping, prefill, extra retries, or forced read-back.
+- First run one no-fault test per variant. Only if usable, run one bounded
+  four-cell smoke comparison and record all results separately. This is setup
+  validation, not a replacement for the recorded 20-run experiment or a general
+  reliability conclusion. A larger follow-up batch needs separate review.
+- No new dependency, daemon setting, hosted API, commit/push, or M05 work.
