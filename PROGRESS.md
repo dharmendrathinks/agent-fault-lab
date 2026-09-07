@@ -44,8 +44,7 @@
   (`feat: add first agent fault comparison`), now pushed with M05.
 - Exact next action: review M08/M09's stored effects versus model claims and give
   an independent engineer the M10 diagnostic bundle/worksheet. Record their actual
-  observations before declaring Phase 2 fully accepted. Candidate publication is
-  explicitly authorized and being verified in the release session below;
+  observations before declaring Phase 2 fully accepted. The candidate is published;
   Phase 3 remains planned. The M05 learning
   checkpoint remains pending; Phase 2 authorization did not claim its completion.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
@@ -55,6 +54,10 @@
   merged through `a8810fe`. Repository is public with launch protections enabled;
   [v0.1.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.1.0)
   is published from release commit `30ba746` with an annotated tag.
+- Phase 2 publication: [v0.2.0rc1](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.2.0rc1)
+  is published as a prerelease from `c95ebe0`. Both hosted CI jobs passed in run
+  `34132647062`; wheel/source downloads match their checksums. Stable latest remains
+  v0.1.0. See the release session below for exact publication evidence.
 - Next implementation phase: Phase 3 only after separate authorization and review.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -802,9 +805,25 @@ left local for review, not staged to bypass the assessment.
   `git diff --cached --check` PASS. Pattern inspection found only previously reviewed
   maintainer paths, no credential matches. PR Ready analyzer: **PR READY**; build,
   test, lint and static checks PASS, no suspicious files, blockers or remaining risks.
-- Hosted CI and publication outcome will be recorded after they occur. Exact next
-  release action: commit/push, wait for Ubuntu/macOS CI, then tag and publish verified
-  artifacts. This release record does not assert the pending human reviews passed.
+- Committed and pushed `c95ebe00bff24819b5c670bc69000c5b7e485732`
+  (`feat: release Phase 2 reliability experiments as v0.2.0rc1`) to `origin/main`.
+  [Hosted CI run 34132647062](https://github.com/dharmendrathinks/agent-fault-lab/actions/runs/34132647062)
+  passed both Ubuntu 24.04 and macOS 14 jobs, including `make check` and the isolated
+  installed-wheel checks, on that exact commit before publication.
+- Created and pushed annotated tag `v0.2.0rc1`; verified the remote tag peels to
+  `c95ebe00bff24819b5c670bc69000c5b7e485732`. Published the GitHub prerelease at
+  `2026-09-07T14:25:18Z` with the candidate wheel, source archive and `SHA256SUMS`.
+  GitHub confirms it is published, not a draft, and v0.1.0 remains latest stable.
+- Downloaded all three assets into a fresh temporary directory. The checksums
+  file and both package files match the originals byte for byte. SHA-256:
+  wheel `bac104d079384dbad712daeeb6f62dd9ac1d7c174eb583e00e75e8a0dd5ac9f8`;
+  source `a22b9cc13b76869fddeeb202f7b667d6de94e242d1f6b23a1af0bc948ab993d9`.
+  Release notes link to the tagged documentation and verified CI run. No PyPI
+  publication, new inference, model download or daemon change.
+- Exact next action: review M08/M09 findings and obtain the M10 independent
+  engineer's explanation from the diagnostic bundle alone. Record actual
+  observations before full Phase 2 acceptance; M05 learning review also stays open.
+  Publication does not authorize Phase 3 or assert that these human reviews passed.
 
 ## Remaining roadmap
 
