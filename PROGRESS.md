@@ -8,8 +8,8 @@
 - Local M05 verification: **passed**; 248 offline tests, one explicitly gated live
   test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
   extracted-source checks and repeatable isolated wheel verification. Hosted
-  Ubuntu/macOS CI passed `make check` on its first run but exposed an offline
-  distribution-cache assumption; the correction awaits hosted verification.
+  Ubuntu/macOS CI now passes both `make check` and `make package-check` on
+  `6354745` (run `34083659223`), after correcting an offline cache assumption.
 - Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
   reports invalid; all 10 read-back runs hit the output limit before executing a
   tool. No valid claims or live read-back behavior to assess; see the live note.
@@ -30,13 +30,15 @@
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
 - M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
   (`feat: add first agent fault comparison`), now pushed with M05.
-- Exact next action: verify the distribution-cache correction in Ubuntu/macOS CI,
-  then review the M05 learning checkpoint. Follow `docs/public-launch.md`, including
+- Exact next action: review the M05 learning checkpoint (explain how an installed
+  wheel check differs from checkout tests, and what saved reports establish).
+  Follow `docs/public-launch.md`, including
   private vulnerability reporting when public. Do not tag/release or start M06 yet.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
-  pushed to `origin/main`. Repository visibility remains private; no tag/release.
+  pushed to `origin/main`, with CI correction `6354745`. Repository visibility
+  remains private; no tag/release.
 - Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -358,8 +360,8 @@ left local for review, not staged to bypass the assessment.
   worktree based on that commit. They do not pretend it is a committed M04 revision.
 - Two local-model experiments ran across M02/M03; the separate M04 batch is
   recorded above. No hosted/paid API used.
-- Local verification covers macOS. The first hosted Ubuntu/macOS jobs passed
-  `make check` but failed isolated package setup; see the M05 push record below.
+- Local verification covers macOS; hosted Ubuntu/macOS checks now pass, including
+  isolated package setup. The initial failure is preserved in the push record below.
 
 ## M05 implementation session — 2026-09-07
 
@@ -486,6 +488,16 @@ left local for review, not staged to bypass the assessment.
 - Separate Dependabot run `34083489248` failed with "Github Dependabot job token
   is not set". This is an unresolved service-side job issue; no token/settings
   changes were attempted.
+- Correction committed and pushed as `6354745`. Fresh local `make check` and
+  `make package-check` PASS; 248 tests passed and one live test skipped. The
+  deterministic analyzer again returned **PR READY**, all four checks passing
+  and no suspicious files or blockers.
+- Hosted run `34083659223` on `6354745`: Ubuntu 24.04 and macOS 14 both PASS,
+  including isolated wheel installation and scripted report checks. GitHub also
+  reported a non-failing Node 20 action deprecation warning; dependency maintenance
+  remains follow-up work alongside the separate Dependabot service error.
+- M05 remains `in_progress` only for its separate learning/review checkpoint.
+  No new model evidence, visibility change, release/tag or M06 work was added.
 
 ## Remaining roadmap
 
@@ -495,7 +507,7 @@ left local for review, not staged to bypass the assessment.
 | M02: first agent | complete | Explained; user explicitly authorized M03 |
 | M03: independent evaluation | complete | Explained; user explicitly authorized M04 |
 | M04: first fault comparison | complete | Original inconclusive batch and replacement smoke recorded; user reviewed summary and authorized M05 |
-| M05: reproducible first release | in_progress | Public-facing polish and local checks pass; commit/push authorized; learning review and hosted Ubuntu/macOS CI remain |
+| M05: reproducible first release | in_progress | Changes pushed; local and hosted Ubuntu/macOS checks pass; separate learning review remains |
 | M06–M10: execution reliability | planned | Review the first release and plan the next phase |
 | M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |

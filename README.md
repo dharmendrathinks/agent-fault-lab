@@ -15,7 +15,8 @@ asking the agent to read the task back improve its completion claims?**
 [Roadmap](docs/roadmap.md)
 
 Status: v0.1 release candidate. Python 3.12. MIT licensed. Local verification is
-recorded in [PROGRESS.md](PROGRESS.md); CI status will be available after publication.
+recorded in [PROGRESS.md](PROGRESS.md); see the
+[Ubuntu/macOS CI runs](https://github.com/dharmendrathinks/agent-fault-lab/actions/workflows/ci.yml).
 
 ## Quickstart
 
