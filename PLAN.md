@@ -760,3 +760,6 @@ M02, M03, and M04; see `PROGRESS.md`. All later milestones remain recorded and g
   Sync its isolated runtime directly from the unchanged lockfile, excluding the
   source project, then install the built wheel. Do not re-resolve exported package
   requirements or enable network access during verification.
+- Run `push` CI only for `main`; pull requests retain their own trigger. This keeps
+  the same two-platform validation while avoiding duplicate branch-push and
+  pull-request runs for dependency updates.

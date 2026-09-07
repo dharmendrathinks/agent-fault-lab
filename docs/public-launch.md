@@ -32,9 +32,10 @@ those decisions. Local test results are recorded in [PROGRESS.md](../PROGRESS.md
   rendering and issue-form acceptance have not been established by local tests.
 - Consider requiring the actual observed CI check names before merges, and review
   Dependabot action updates rather than auto-merging them.
-- Optional description: “A local-first lab for reproducing AI-agent failures and
-  checking outcomes independently.” Suggested topics: `ai-agents`, `fault-injection`,
-  `evaluation`, `reliability`, `ollama`, `python`.
+- Configured description: “A Python lab for reproducing AI agent failures,
+  injecting tool faults, and independently evaluating outcomes.” Configured topics:
+  `agent-reliability`, `ai-agents`, `fault-injection`, `llm-evaluation`, `ollama`,
+  `python`, `reproducible-research`, `sqlite`, and `tool-calling`.
 
 Actions have read-only repository permissions and full-SHA pins; PR workflows do
 not receive publication secrets. This follows

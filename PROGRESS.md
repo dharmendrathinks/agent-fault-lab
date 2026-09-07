@@ -30,15 +30,15 @@
   correct verification or general safeguard superiority. See `M04-instruct-smoke.md`.
 - M04 checkpoint: `43c0ab3873a76dd32a3b7050ea57b48fe02329c3`
   (`feat: add first agent fault comparison`), now pushed with M05.
-- Exact next action: review the M05 learning checkpoint (explain how an installed
-  wheel check differs from checkout tests, and what saved reports establish).
-  Follow `docs/public-launch.md`, including
-  private vulnerability reporting when public. Do not tag/release or start M06 yet.
+- Exact next action: decide whether existing Git history may expose the maintainer's
+  commit email and recorded local paths. If accepted, make the repository public,
+  immediately enable private vulnerability reporting and required CI checks, and
+  verify the public rendering. Do not tag/release or start M06 yet.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
-  pushed to `origin/main`, with CI correction `6354745`. Repository visibility
-  remains private; no tag/release.
+  pushed to `origin/main`, with CI correction `6354745` and both action updates
+  merged through `a8810fe`. Repository visibility remains private; no tag/release.
 - Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -498,6 +498,31 @@ left local for review, not staged to bypass the assessment.
   remains follow-up work alongside the separate Dependabot service error.
 - M05 remains `in_progress` only for its separate learning/review checkpoint.
   No new model evidence, visibility change, release/tag or M06 work was added.
+
+## M05 public-launch preparation — 2026-09-07
+
+- User merged Dependabot PRs #2 (`actions/setup-python` 7.0.0) and #1
+  (`actions/checkout` 7.0.1). Both remain pinned to their reviewed full SHAs;
+  `persist-credentials` stays disabled and workflow permissions stay read-only.
+- No open pull requests remain. In the first post-merge `main` run `34086130000`,
+  Ubuntu passed and macOS remained queued for runner capacity. The launch-prep push
+  supersedes that run through the configured concurrency group; its intended-commit
+  Ubuntu/macOS matrix must pass before the visibility change.
+- Restrict branch-push CI to `main`; pull requests still run the same Ubuntu 24.04
+  and macOS 14 matrix. This removes duplicate push/PR runs without weakening the
+  required checks.
+- Updated the release checklist to reflect completed hosted CI and commit/push,
+  while keeping tag and GitHub release publication explicitly unapproved.
+- GitHub About text and nine repository topics are configured. Issues are enabled;
+  README, MIT license, issue form and PR template are present through the API.
+- A limited current-tree and reachable-history scan found no credential patterns,
+  model weights, databases or raw run artifacts. Existing history does contain the
+  maintainer commit email and documented `/Users/dhasharma/...` paths. These are
+  privacy metadata, not credentials; history rewriting would invalidate recorded
+  commit references and requires an explicit decision before visibility changes.
+- Private vulnerability reporting and branch rules cannot be configured on this
+  private repository under the current plan. Both are immediate post-public steps.
+- Technical launch preparation does not complete the separate M05 learning review.
 
 ## Remaining roadmap
 
