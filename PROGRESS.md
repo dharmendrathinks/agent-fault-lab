@@ -9,7 +9,7 @@
   test skipped, Ruff lint/format, strict typing, lockfile, 0.1.0 sdist/wheel, clean
   extracted-source checks and repeatable isolated wheel verification. Hosted
   Ubuntu/macOS CI passes both `make check` and `make package-check` on the public
-  security update `89e9743` (run `34090765739`).
+  release commit `30ba746` (run `34091647210`).
 - Original live comparison: **20/20 recorded, scientific comparison inconclusive**. All
   reports invalid; all 10 read-back runs hit the output limit before executing a
   tool. No valid claims or live read-back behavior to assess; see the live note.
@@ -39,7 +39,8 @@
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
   pushed to `origin/main`, with CI correction `6354745` and both action updates
   merged through `a8810fe`. Repository is public with launch protections enabled;
-  v0.1.0 tag and release publication now explicitly authorized and being prepared.
+  [v0.1.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.1.0)
+  is published from release commit `30ba746` with an annotated tag.
 - Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -571,10 +572,31 @@ left local for review, not staged to bypass the assessment.
   lockfile, Ruff, strict mypy and 0.1.0 package build passed. `make package-check`
   PASS in an isolated installed environment. PR Ready analyzer: **PR READY**;
   build, test, lint and static checks passed, with no suspicious files or blockers.
-- Publication is pending final package inspection and hosted Ubuntu/macOS checks
-  on the release commit. Record the publication result in a subsequent handoff.
+- Release commit `30ba7461df9762a79623c501134d24a2098accc9` was pushed. Hosted run
+  `34091647210` passed on Ubuntu 24.04 and macOS 14, including installed-wheel
+  checks, before tag creation and publication.
+- Rebuilt the final artifacts from the clean release commit. All 91 source archive
+  entries match tracked files (plus package metadata); all 22 wheel entries have
+  expected code, metadata, license and type marker. The exact wheel passed a
+  fresh isolated installation and scripted CLI/report check.
+- Created and pushed annotated tag `v0.1.0`; verified its remote peeled commit is
+  `30ba7461df9762a79623c501134d24a2098accc9`. Published the normal latest GitHub
+  release with curated notes, the 0.1.0 wheel, source archive and `SHA256SUMS`.
+- Asset SHA-256 values: wheel
+  `d410a8f9ae7508fb1de8dd843f570615141f4e02e7b1c74c66087c77d48163e3`;
+  source archive
+  `1fa859aa2a613e27629d032a0114bcbe3f2a2624f9efc470571092b2808dfe8d`.
+- Anonymous public API and all three asset downloads verified. Downloaded bytes
+  match the local release assets; `shasum -a 256 -c SHA256SUMS` passes for both
+  packages. The release is published, marked latest, and is not a prerelease.
 - M05 remains `in_progress` for its separate learning checkpoint. Release
   authorization does not claim the checkpoint was completed or authorize M06.
+- User asked whether the learning plan belongs in the public repository. Reviewed
+  `PLAN.md`: the learning path fits the lab's purpose; retained previously accepted
+  personal paths and historical decisions. Added public-reader context separating
+  planning assumptions from release commitments, corrected the stale scope summary,
+  and updated the public roadmap's candidate label. This is a post-release docs
+  clarification; the published tag and package assets remain at `30ba746`.
 
 ## Remaining roadmap
 
@@ -584,7 +606,7 @@ left local for review, not staged to bypass the assessment.
 | M02: first agent | complete | Explained; user explicitly authorized M03 |
 | M03: independent evaluation | complete | Explained; user explicitly authorized M04 |
 | M04: first fault comparison | complete | Original inconclusive batch and replacement smoke recorded; user reviewed summary and authorized M05 |
-| M05: reproducible first release | in_progress | Changes pushed; local and hosted Ubuntu/macOS checks pass; separate learning review remains |
+| M05: reproducible first release | in_progress | v0.1.0 published; local and hosted Ubuntu/macOS checks pass; separate learning review remains |
 | M06–M10: execution reliability | planned | Review the first release and plan the next phase |
 | M11–M13: boundaries and state | planned | Review prior experiment evidence and scope the phase |
 | M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |

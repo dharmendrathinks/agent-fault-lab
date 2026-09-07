@@ -3,7 +3,7 @@
 The aim is to reproduce agent failures and test whether safeguards help. Every
 milestone needs a clear failure, an independent check and an honest result.
 
-## Available in the v0.1 candidate
+## Available in v0.1.0
 
 - Bounded local tool-using agent and offline scripted client.
 - Independently evaluated task store and strict terminal claims.

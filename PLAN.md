@@ -1,5 +1,11 @@
 # Agent Fault Lab — Detailed First Release and Complete Learning Roadmap
 
+This document records the project's technical design and the maintainer's learning
+path. It includes original planning assumptions and dated decisions; personal time
+estimates are not release commitments. For current capabilities and future work,
+see the [public roadmap](docs/roadmap.md). For verified results and remaining
+learning checkpoints, see [PROGRESS.md](PROGRESS.md).
+
 ## 1. Purpose, decisions, and scope
 
 Build an open-source learning lab for reproducing AI-agent failures, evaluating safeguards, and publishing evidence that other engineers can inspect and reuse.
@@ -530,7 +536,8 @@ The long-term quality target is:
 Neither completing all 18 milestones nor accumulating features guarantees a “10/10” project. A smaller project with trustworthy evidence and adopted checks can be the stronger outcome.
 
 **The initial implementation target was M01 only. The user has since authorized
-M02, M03, and M04; see `PROGRESS.md`. All later milestones remain recorded and gated.**
+M02–M05 and the v0.1.0 release; see `PROGRESS.md`. M05's learning review remains
+pending. M06 and later milestones remain recorded and gated.**
 
 ### Implementation decisions — 2026-09-06
 
