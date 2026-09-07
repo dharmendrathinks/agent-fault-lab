@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — unreleased
+## 0.1.0 — 2026-09-07
 
 - Added a bounded tool-using agent and local-only Ollama adapter.
 - Added independent SQLite evaluation and strict structured terminal claims.

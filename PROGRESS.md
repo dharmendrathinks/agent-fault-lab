@@ -32,14 +32,14 @@
   (`feat: add first agent fault comparison`), now pushed with M05.
 - Exact next action: complete the M05 learning review: explain why an installed
   wheel check catches packaging failures that checkout tests can miss, and why
-  regenerated reports do not authenticate saved evidence. Do not tag/release or
-  start M06 yet.
+  regenerated reports do not authenticate saved evidence. The user explicitly
+  authorized releasing v0.1.0 with this checkpoint pending. Do not start M06 yet.
 - `make agent-demo` and the two negative examples remain scripted learning aids,
   not evidence about what a model does.
 - Publication: M01–M03 (`b71f583`), M04 (`43c0ab3`) and M05 (`de73f82`) are
   pushed to `origin/main`, with CI correction `6354745` and both action updates
   merged through `a8810fe`. Repository is public with launch protections enabled;
-  no tag/release.
+  v0.1.0 tag and release publication now explicitly authorized and being prepared.
 - Next milestone: M05 explicitly authorized on 2026-09-07 and now in progress.
   All M04 format and ID-copying failures stay unchanged; no safeguard-win claim.
 
@@ -559,6 +559,22 @@ left local for review, not staged to bypass the assessment.
   rendering were not visually inspected. This is the only remaining launch UI
   check; public accessibility and configuration were verified independently.
 - M05 remains `in_progress` solely for the separate user learning checkpoint.
+
+## M05 first release — 2026-09-07
+
+- User explicitly requested "yeah release now", authorizing the release metadata
+  commit/push, annotated `v0.1.0` tag, and GitHub release with wheel, source archive,
+  and checksums. PyPI publication is outside this release.
+- Updated README status, dated the changelog, and finalized release notes. The
+  package version was already 0.1.0; runtime code and dependencies are unchanged.
+- Fresh `make check` PASS: 248 offline tests passed, one live test skipped;
+  lockfile, Ruff, strict mypy and 0.1.0 package build passed. `make package-check`
+  PASS in an isolated installed environment. PR Ready analyzer: **PR READY**;
+  build, test, lint and static checks passed, with no suspicious files or blockers.
+- Publication is pending final package inspection and hosted Ubuntu/macOS checks
+  on the release commit. Record the publication result in a subsequent handoff.
+- M05 remains `in_progress` for its separate learning checkpoint. Release
+  authorization does not claim the checkpoint was completed or authorize M06.
 
 ## Remaining roadmap
 
