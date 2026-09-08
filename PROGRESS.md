@@ -3,19 +3,17 @@
 ## Resume here
 
 - Phase: 4 — Stronger evaluation methodology.
-- Release preparation: **v0.4.0 stable**, authorized on 2026-09-08. Version,
-  locks, README and release notes are updated; publication awaits final checks
-  and hosted CI. Previously published: **v0.3.0** on 2026-09-07.
+- Release: **v0.4.0 published as stable/latest** on 2026-09-08.
   GitHub confirms `draft=false` and `prerelease=false`. The annotated tag points
-  to `ff458539f68ff5700d4c7a325d574f24dcca0f0f`; both hosted platforms pass.
-  Notes are in `docs/releases/v0.3.0.md`.
-- Current scope: prepare, commit, push and publish **stable v0.4.0**, under the
+  to `6ddcc54e736a4edfe5d184128f9f4fa431e6b511`; both hosted platforms pass.
+  Downloaded wheel/sdist checksums verified. Notes are in `docs/releases/v0.4.0.md`.
+- Completed scope: prepare, commit, push and publish **stable v0.4.0**, under the
   user's request “prepare new release for this, push” and clarification “actual
   release not in pre-relese”. Learning acceptance remains separate.
 - M11 learning checkpoint: accepted for progression after the user discussed the
   roles of skill scanning, approval and outcome verification, said “got it”, and
   requested the rest of Phase 3. This does not claim a formal assessment or live runs.
-- Implementation status: **M14–M16 implemented; v0.4.0 release in progress**. Includes
+- Implementation status: **M14–M16 released in v0.4.0**. Includes
   repeated studies, ordinary workflows, semantic scanner transport, independent
   evaluator audit, real LangGraph orchestration and matched runtime studies.
   Learning acceptance and live evidence remain separate. Staging, committing,
@@ -31,10 +29,28 @@
 - Learning checkpoint: **pending**. Technical tests do not establish acceptance
   or comparative model/scanner accuracy. Phase 3's M12/M13 learning reviews and
   separately opted-in 16-run live smoke remain disclosed follow-ups.
-- Exact next action: finish release checks, commit/push, wait for complete hosted
-  Ubuntu/macOS CI, then create an annotated v0.4.0 tag and stable/latest GitHub
-  release with wheel, sdist and checksums. Verify downloaded assets and publication.
+- Exact next action: review M14–M16 learning evidence and select a bounded live
+  comparison or semantic-latency investigation explicitly. Phase 5 is not started.
   Learning reviews, live comparisons and semantic diagnosis remain follow-ups.
+
+## Verified stable v0.4.0 publication — 2026-09-08
+
+- Committed and pushed Phase 4 as `6ddcc54e736a4edfe5d184128f9f4fa431e6b511`.
+  Author and committer: Dharmendra <dharmendra.code@gmail.com>.
+- [CI run 34232738020](https://github.com/dharmendrathinks/agent-fault-lab/actions/runs/34232738020)
+  passed both complete Ubuntu 24.04 and macOS 14 jobs on that commit, including
+  installed-wheel, real static-scanner and real LangGraph checks.
+- Created annotated tag `v0.4.0` on the verified commit and pushed it. Published
+  [v0.4.0](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.4.0)
+  at 2026-09-08 13:39:09 UTC. GitHub reports `draft=false`, `prerelease=false`,
+  and the latest-release endpoint returns v0.4.0.
+- Attached wheel, sdist and `SHA256SUMS`. Downloaded all three and independently
+  verified both hashes: wheel `9e120c006c20e537ac501ecbb5cd29447672c55719795fd504a9ee99ebe61208`;
+  sdist `30a40046c0b06bcb7d48aaee31074aac6bde2f0f1224d884fb41eebb8a9be274`.
+  Remote annotated tag resolves to the intended commit. Evidence remains under
+  ignored `runs/v0.4.0-*`; the public assets contain no raw local runs.
+- Publication does not complete learning reviews or missing live comparisons.
+  The semantic timeout findings and unsupported runtime behaviors remain disclosed.
 
 ## Stable v0.4.0 preparation — 2026-09-08
 
