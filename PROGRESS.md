@@ -2,37 +2,212 @@
 
 ## Resume here
 
-- Phase: 3 — Agent boundaries and state.
-- Release: **v0.3.0 published as stable/latest** on 2026-09-07.
+- Phase: 4 — Stronger evaluation methodology.
+- Release preparation: **v0.4.0 stable**, authorized on 2026-09-08. Version,
+  locks, README and release notes are updated; publication awaits final checks
+  and hosted CI. Previously published: **v0.3.0** on 2026-09-07.
   GitHub confirms `draft=false` and `prerelease=false`. The annotated tag points
   to `ff458539f68ff5700d4c7a325d574f24dcca0f0f`; both hosted platforms pass.
   Notes are in `docs/releases/v0.3.0.md`.
-- Current milestones: **M12 and M13**, implemented locally under the user's
-  explicit request to complete the remaining Phase 3 implementation.
+- Current scope: prepare, commit, push and publish **stable v0.4.0**, under the
+  user's request “prepare new release for this, push” and clarification “actual
+  release not in pre-relese”. Learning acceptance remains separate.
 - M11 learning checkpoint: accepted for progression after the user discussed the
   roles of skill scanning, approval and outcome verification, said “got it”, and
   requested the rest of Phase 3. This does not claim a formal assessment or live runs.
-- Scope: all Phase 3 implementation: real static scanning and approvals (M11),
-  eight attack/benign cases on three surfaces with crossed policies (M12), and
-  five stale-state/history cases with cached/authoritative-refresh comparison (M13).
-- Evidence: `make check` passed with 773 tests and one gated live skip; strict typing,
-  lint/format, lock verification, sdist/wheel and installed-wheel checks pass locally.
-  Real-scanner acceptance includes M11 plus 26 M12/M13 runs. Three of the four M12
-  attack skill fixtures received SAFE; the concealed fixture was blocked. All four
-  benign fixtures were admitted. Permission enforcement prevented the scripted
-  unauthorized effects; audit reproduced them. See
-  `docs/milestones/Phase3-static-smoke.md`.
-  These are real scanner/SQLite observations with scripted agents, not model results.
-- PR Ready: **PR READY** after authorized staging. Build/test/lint/static all pass,
-  with 773 tests and one gated live skip after the hosted cleanup fix; no suspicious
-  files, blockers or other risks reported by the analyzer.
-- Pending: separately opted-in 16-run Phase 3 local-model smoke; M12/M13 learning
-  reviews. These remain follow-ups under the explicit publication request, not
-  claimed results. No new inference or daemon change is part of publication.
-- Exact next action: review M12/M13 learning evidence and explicitly opt in to the
-  planned 16-run local-model smoke if desired. Publication is complete; those
-  follow-ups and any M14 scope remain separate. No automatic inference or next
-  milestone is authorized.
+- Implementation status: **M14–M16 implemented; v0.4.0 release in progress**. Includes
+  repeated studies, ordinary workflows, semantic scanner transport, independent
+  evaluator audit, real LangGraph orchestration and matched runtime studies.
+  Learning acceptance and live evidence remain separate. Staging, committing,
+  pushing and stable publication are now authorized. No new inference, model
+  download, daemon change or Phase 5 work is included.
+- Current evidence: `make check` passes **850 tests, one gated live skip**,
+  Ruff, strict typing across 97 files, root lock and sdist/wheel builds. Installed
+  wheel studies/audit/report checks, real static-scanner acceptance and actual
+  LangGraph contract checks pass. The audit passes 43 references and detects all
+  12 mutants without harness errors. Both semantic probes remain timed out.
+- PR Ready: **PR READY** for the staged v0.4.0 release. Build, tests, lint and
+  static checks pass, with no suspicious files, blockers or remaining risks.
+- Learning checkpoint: **pending**. Technical tests do not establish acceptance
+  or comparative model/scanner accuracy. Phase 3's M12/M13 learning reviews and
+  separately opted-in 16-run live smoke remain disclosed follow-ups.
+- Exact next action: finish release checks, commit/push, wait for complete hosted
+  Ubuntu/macOS CI, then create an annotated v0.4.0 tag and stable/latest GitHub
+  release with wheel, sdist and checksums. Verify downloaded assets and publication.
+  Learning reviews, live comparisons and semantic diagnosis remain follow-ups.
+
+## Stable v0.4.0 preparation — 2026-09-08
+
+- Publication explicitly authorized after the complete Phase 4 handoff. Record
+  the known evidence limits in PLAN.md and release notes; no prerelease substitute.
+- Bumped package and root/runtime locks to 0.4.0 without upgrading dependencies.
+  Updated README installation tag, stable link, changelog, roadmap and milestone
+  guides. Added `docs/releases/v0.4.0.md` with commands, compatibility and limitations.
+- The installed Qwen3 baseline and scanner pin remain unchanged. No inference or
+  model downloads are part of release verification. Retain pending learning
+  reviews and live comparisons, plus the two failed semantic feasibility probes.
+- Release verification logs are under ignored `runs/v0.4.0-*.log`; final results
+  and hosted publication evidence will be recorded after checks complete.
+- Local v0.4.0 verification passed: **850 tests, one gated live skip** (56.52s),
+  lint/format, strict typing, root lock and wheel/sdist builds. Installed-wheel
+  studies/audit/report checks, real static-scanner checks (26 context runs) and
+  all real-graph integration cases passed. Archive inspection found the required
+  integration locks and release guide, with no environments/private runs bundled;
+  all three locks also validated from the extracted source archive.
+- Release PR Ready verdict: **PR READY**; 850 tests passed, one gated skip
+  (45.85s), build/lint/static all pass; no blockers or remaining risks. Evidence:
+  `runs/v0.4.0-pr-ready.md`. Proceed with the authorized commit/push and hosted CI.
+
+## Complete Phase 4 implementation — 2026-09-08
+
+- Scope: the user explicitly requested implementation of all Phase 4. This
+  supersedes the earlier M14-to-M15 and M15-to-M16 implementation pauses; it does
+  not imply learning acceptance, live inference or publication authorization.
+- M15: added 43 independent SQL fixtures covering exact data, alternate valid
+  identifiers/history, duplicates, malformed or absent claims, committed writes
+  after execution failures, grant scope/expiry, seed preservation, replay,
+  unknown observers, revocation and unexercised configuration. Expectations come
+  from the task contract; task tools never create these fixtures.
+- Each of twelve deliberately defective graders runs in a disposable package
+  copy and separate socket-blocked worker. Full grades, assertions, mismatches,
+  worker errors and mutation/source hashes remain in the audit evidence. A
+  mismatch is required for detection; import/application/harness errors never
+  count. Saved verdicts validate against their recorded grades. The unmodified
+  grader passed, so no production grader or historical result was changed.
+- M16: pinned LangGraph 1.2.11 in a separate Python 3.12 integration environment.
+  Both transfer runtimes use that interpreter/provider dependency set. Doctor
+  checks installed versions, current package source and the integration lock.
+  Root dependencies remain unchanged. Missing setup fails explicitly.
+- Extracted shared one-model/one-tool steps. Native execution retains its loop;
+  LangGraph owns a real model/tools/terminal StateGraph. Six model and six tool
+  requests, serial execution, stable operation IDs, context/permission boundaries
+  and strict terminal parsing remain shared. No hidden call to the native loop,
+  retries, claim repair, graph cache, checkpointer, telemetry or hosted fallback.
+- Added runtime CLI, versioned runtime evidence and saved-report validation; the
+  `runtime` study preset freezes four cases × two runtimes × three repetitions.
+  Runtime workers inherit the study lock and remaining deadline, remain in the
+  study process group and have a maximum 450-second timer. Study resume preserves
+  attempted children and only starts unstarted slots. Native resume rejects
+  marked runtime children; manual approval and crash/restart parity are unsupported.
+- Real-graph checks use socket blocking and deliberately replace native `advance`
+  with a failing stub. Four paired scenarios and six malformed/protocol/budget/
+  provider-error cases passed. CI now installs the separate runtime and runs these
+  checks on both configured platforms; hosted results await an authorized push.
+- Verification: `make check` passed **850 tests, one gated live skip** in 59.03s,
+  plus Ruff, strict typing across 97 files, lock validation and builds. The
+  installed wheel passes study plan/run/resume, the full evaluator audit and
+  report reconstruction; missing runtime setup gives the expected explicit error.
+  The sdist contains integration locks/setup, adapter checks and milestone guides;
+  the wheel contains the adapter without bundling LangGraph or local environments.
+- `make scanner-check` passed M11 and all 26 real-scanner context runs:
+  `runs/context-check-a09a3495-ce67-4405-b1ed-f1117c2e4f3b/`.
+  `make runtime-check` passed; `runs/m16-runtime-check-final.log` retains output.
+- Final M15 audit: `runs/m15-audit-final/`, **43/43 baseline references pass;
+  12/12 mutants detected; zero harness errors**. This demonstrates regression
+  coverage, not universal evaluator correctness or model effectiveness.
+- Initial full offline transfer: `runs/m16-transfer/`, **24/24 sealed** in
+  54.247 active seconds. Both runtimes completed all approved and refreshed-title
+  cases (3/3 each), blocked rejected and injected writes (0 completions), and
+  retained supported completion claims only where tasks actually completed.
+  The injected/rejected cells made no completion claims; zero false success there
+  is not evidence of general reliability. Final rerun after deadline/lock hardening
+  is recorded in `runs/m16-transfer-final/`: **24/24 sealed**, 77.203 active
+  seconds, matching outcomes and zero unauthorized writes across both runtimes.
+  All 24 child reports and the aggregate rebuild exactly; finalized study resume
+  launches no new executions. Final audit report reconstruction also passes.
+- Logs: `runs/phase4-make-check.log`, `runs/phase4-package-check.log`,
+  `runs/phase4-scanner-check.log`, `runs/m15-audit-final.log` and
+  `runs/m16-runtime-check-final.log`. All raw runs remain ignored/private.
+- Updated PLAN.md, README, changelog, roadmap, architecture/development/limitations
+  and M15/M16 guides. Stable version/tag remains v0.3.0; no commit, staging, push
+  or release was performed for this request.
+- Final PR Ready assessment: **NOT PR READY**, solely for 28 untracked files.
+  Build, test (**850 passed, one gated skip**, 47.10s), lint and static checks all
+  pass. No suspicious files or remaining risks were reported. Full analyzer
+  output: `runs/phase4-pr-ready.md`. Do not stage simply to change this verdict.
+- Limitations and learning: M12/M13 and M14–M16 learning acceptance remain pending.
+  The full live 66-agent/48-scan M14 pilot and 24-run M16 comparison were not run.
+  Earlier benign/attack semantic probes both timed out on their first physical
+  request at 60 seconds; no successful semantic classification, model superiority
+  or framework winner is claimed. No limits, model or daemon settings were changed.
+
+## M14 implementation — 2026-09-08
+
+- Recorded the complete approved Phase 4 plan: three repetitions per cell,
+  sequential 30-minute studies, ordinary workflow companions, semantic admission
+  and scanner-only comparisons, twelve evaluator mutants in M15, and an isolated
+  LangGraph runtime comparison in M16. Preserved milestone IDs and learning gates.
+- Added immutable manifests with fixture/source/lock fingerprints, approved model
+  digest/settings, exact cell inventory, shuffled case blocks and alternating
+  policy order. CLI: `study list/plan/run/resume`; `report --check` uses saved JSON.
+- Each child owns fresh SQLite storage and seals its observation after grading.
+  Persist the schedule and budget reservation before launching; workers inherit
+  the study lock and enforce a deadline. Resume retains completed seals and never
+  retries a started slot. Uncertain controller-crash time is charged conservatively.
+- Added a deterministic create/read/check participant using actual tool responses,
+  including the M07 versioned response envelope. It has zero model requests and
+  cannot inspect evaluator SQL or fault labels. Regressions reproduce unsupported
+  completion after duplicate writes despite a correct read of the returned task.
+- Added scenario/participant/policy counts, matched-pair exclusions, separate raw
+  outcome/report/claim/fault/authorization/usage evidence, duration variation and
+  conditional Wilson intervals with the unestablished-independence caveat.
+- Added a separately pinned semantic scanner profile and a gateway accepting only
+  bounded text chat completions for the approved local checkpoint. Native Ollama
+  requests fix `think=false`, context 4,096, temperature zero and output ≤1,024.
+  Each physical request is supervised for ≤60 seconds; each scan allows ≤12
+  requests and 180 seconds. Unsupported requests, incomplete output and failed
+  coverage never become clean admission. Upstream registry overrides avoid a
+  guessed 128k context capacity. Legacy static readers remain unchanged.
+- Two explicit probe slots precede semantic studies; failure leaves the study
+  partial and later cells unstarted. Probe rows are excluded from matched agent
+  results. Offline semantic profiles are clearly labeled scanner doubles and do
+  not start inference. The ordinary boundary presets still use real static scans.
+- Local `aflab doctor` confirms Ollama 0.33.2, cloud disabled, Qwen3-4B-Instruct-2507
+  metadata and digest `0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`.
+  The approved bounded local study plan includes two semantic feasibility probes;
+  no model/scanner superiority is inferred from executing them.
+- Verification logs: ignored `runs/m14-make-check.log`,
+  `runs/m14-package-check.log`, and `runs/m14-scanner-check.log`. The initial
+  eight-run offline claim study is in `runs/m14-dev-claims/`; it demonstrates
+  detection without recovery and report reconstruction, not learned behavior.
+- Limits: the complete 66-agent-run pilot and 48-scan comparison have not been
+  claimed as completed. Cancellation does not undo committed effects or guarantee
+  remote Ollama generation stops. Python socket restrictions are not an OS sandbox.
+  Learning acceptance, M15/M16 implementation and publication remain separate.
+- Real static integration: `make scanner-check` passes M11 and 26 M12/M13 runs;
+  evidence in `runs/context-check-63ff65ce-b53f-4018-bfed-b87d18e03b15/`.
+- Real semantic feasibility: both standalone probes failed on their first physical
+  model request at its 60-second limit. Scan elapsed times were 63.4495 seconds
+  (benign) and 62.4328 seconds (attack), both exit 2/error/incomplete with no
+  recommendation. No classification accuracy can be computed. Raw evidence is in
+  `runs/m14-semantic-probes-54a37e00-07f8-4d85-93bc-0c94fbffb1d5/`; the public
+  [probe note](docs/milestones/M14-semantic-probes.md) records the exact scope.
+  No limits or models were changed to obtain a successful result. Follow-up
+  hardening adds failure accounting, bounded error evidence and independent
+  fallback process timers; no additional inference was run after those edits.
+- M14 is **not fully complete**: semantic feasibility and the learning review
+  remain open. M15/M16 remain planned. The next action is to review the matched
+  offline evidence and the two timeout findings, then explicitly decide whether
+  to investigate semantic latency or run another unchanged local study.
+- Final verification: `make check` passes **831 tests, one gated live skip**
+  (37.19 seconds), Ruff, strict typing across 86 files, locked dependencies and
+  sdist/wheel builds. The installed wheel passes public study plan/run/resume and
+  saved-report checks. Final real-scanner acceptance passes M11 and 26 context
+  runs in `runs/context-check-b35339fe-c97e-4b06-bc7b-bb2be9aea48a/`.
+- Executed two full offline presets at three repetitions: 24 claim executions and
+  24 retry executions, including their workflow companions. All 48 observations
+  were sealed; both reports reproduce exactly. Evidence:
+  `runs/m14-offline-pilots-0aae94d8-be7c-46d6-a646-d650b760ff25/`.
+  The dropped-write baseline has 3/3 contradicted completion claims; scripted
+  read-back has no completion claims and still recovers zero tasks. Lost-reply
+  unprotected retries yield 3/3 contradicted completion claims for both scripted
+  agents and workflows; operation-ID protection yields three completed tasks per
+  participant. These are actual SQLite/evaluator observations with programmed
+  behavior, **not live-model effectiveness results**.
+- PR Ready's exact verdict is **NOT PR READY**: all four checks pass, with 831
+  tests/one gated skip (38.22 seconds); no suspicious files or remaining risks.
+  Its sole blocker is the 13 untracked new files. Full assessment is retained in
+  `runs/m14-pr-ready.md`. Staging/commit/push were not requested for this milestone.
 
 ## v0.3.0 stable publication evidence — 2026-09-07
 

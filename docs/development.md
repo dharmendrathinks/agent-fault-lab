@@ -36,6 +36,13 @@ run this check. Default unit tests use labeled scanner doubles and remain indepe
 of scanner installation. Read the actual recommendations; scanner misses are findings,
 not automatically harness failures.
 
+Phase 4 adds `aflab evaluator audit --output DIR`, included in offline unit and
+installed-wheel checks. It runs independent SQL fixtures against twelve disposable
+grader mutations. `make runtime-setup` installs the separate pinned LangGraph
+environment; after scanner setup, `make runtime-check` exercises the actual graph
+with controlled model responses and sockets blocked. Both CI platforms run that
+integration check. Root tests do not require LangGraph to be installed.
+
 ## Check the distribution, not just the checkout
 
 ```sh
@@ -47,7 +54,8 @@ fresh temporary environment offline, and installs the built wheel there. It
 checks installed-package identity outside the checkout, exercises the version
 entry point, three scripted demos, the original comparison, M06/M07 comparisons,
 an M08 process comparison, M11 approvals, M12/M13 comparisons, finalized-run resume,
-diagnosis and saved reports. Python socket
+diagnosis, repeated-study execution, the evaluator audit and saved reports. It
+also checks that missing runtime integration fails explicitly. Python socket
 construction is blocked during the scripted application calls. Temporary files
 are cleaned automatically. Initial dependency setup must have populated uv's cache.
 Using the lock directly avoids requiring cached package-index metadata in addition

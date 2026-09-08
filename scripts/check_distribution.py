@@ -229,7 +229,45 @@ def check_installed(version: str) -> None:
                 assert len(evidence["entries"]) == (
                     4 if case.startswith("injection-") else 2
                 )
-    print(f"PASS: installed wheel {version}; scripted runs, comparison and reports")
+        study_plan = Path("study-plan.json")
+        study_output = Path("study-output")
+        assert (
+            main(
+                [
+                    "study",
+                    "plan",
+                    "claims",
+                    "--repetitions",
+                    "1",
+                    "--output",
+                    str(study_plan),
+                ]
+            )
+            == 0
+        )
+        assert (
+            main(
+                [
+                    "study",
+                    "run",
+                    str(study_plan),
+                    "--offline",
+                    "--output",
+                    str(study_output),
+                ]
+            )
+            == 0
+        )
+        assert main(["study", "resume", str(study_output), "--offline"]) == 0
+        assert main(["report", str(study_output), "--check"]) == 0
+    audit = Path("wheel-evaluator-audit")
+    with redirect_stdout(StringIO()):
+        assert main(["evaluator", "audit", "--output", str(audit)]) == 0
+        assert main(["report", str(audit), "--check"]) == 0
+        assert main(["runtime", "doctor", "langgraph"]) == 2
+    print(
+        f"PASS: installed wheel {version}; runs, studies, evaluator audit and reports"
+    )
 
 
 if __name__ == "__main__":

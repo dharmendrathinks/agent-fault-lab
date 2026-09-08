@@ -75,6 +75,15 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
     if has_comparison:
         raw = _read_evidence(comparison_path)
         parsed = json.loads(raw)
+        if isinstance(parsed, dict) and parsed.get("artifact") == "evaluator-audit":
+            from agent_fault_lab.evaluator_audit import Audit, render_audit
+
+            return "comparison", render_audit(Audit.model_validate_json(raw))
+        if isinstance(parsed, dict) and parsed.get("artifact") == "study-comparison":
+            from agent_fault_lab.study_records import Study
+            from agent_fault_lab.study_reports import render_study
+
+            return "comparison", render_study(Study.model_validate_json(raw))
         if isinstance(parsed, dict) and parsed.get("artifact") == "boundary-comparison":
             from agent_fault_lab.boundary_reports import BoundaryComparison
             from agent_fault_lab.boundary_reports import (
@@ -108,9 +117,16 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
             render_report as render_boundary_report,
         )
 
-        return "run", render_boundary_report(
-            BoundaryEvaluation.model_validate_json(raw_evaluation)
-        )
+        boundary = BoundaryEvaluation.model_validate_json(raw_evaluation)
+        runtime_path = directory / "runtime.json"
+        if _present(runtime_path):
+            from agent_fault_lab.runtime_records import RuntimeResult, render_runtime
+
+            runtime = RuntimeResult.model_validate_json(_read_evidence(runtime_path))
+            if runtime.evaluation != boundary:
+                raise ValueError("Runtime and evaluation evidence do not match")
+            return "run", render_runtime(runtime)
+        return "run", render_boundary_report(boundary)
     evaluation = Evaluation.model_validate_json(raw_evaluation)
     observation_path = directory / "observation.json"
     if _present(observation_path):

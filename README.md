@@ -14,12 +14,19 @@ asking the agent to read the task back improve its completion claims?**
 [Architecture](docs/architecture.md) · [Contribute](CONTRIBUTING.md) ·
 [Roadmap](docs/roadmap.md)
 
-Latest stable: [v0.3.0 — Agent boundaries and state](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.3.0).
+Latest stable: [v0.4.0 — Evaluation and runtime transfer](https://github.com/dharmendrathinks/agent-fault-lab/releases/tag/v0.4.0).
 Python 3.12. MIT licensed. Local verification is
 recorded in [PROGRESS.md](PROGRESS.md); see the
 [Ubuntu/macOS CI runs](https://github.com/dharmendrathinks/agent-fault-lab/actions/workflows/ci.yml).
 
-New in v0.3.0: [M11 permissions and approval](docs/milestones/M11.md),
+New in v0.4.0: [repeated studies](docs/milestones/M14.md),
+[independent evaluator audits](docs/milestones/M15.md), and
+[LangGraph runtime comparisons](docs/milestones/M16.md). Local validation includes
+850 passing tests, twelve detected grader defects and 24 offline runtime runs.
+Live comparisons and learning reviews remain follow-ups; initial semantic probes
+timed out. See the [v0.4.0 release notes](docs/releases/v0.4.0.md).
+
+Included from v0.3.0: [M11 permissions and approval](docs/milestones/M11.md),
 [M12 untrusted content](docs/milestones/M12.md) and [M13 stale context](docs/milestones/M13.md).
 Real static SkillSpector scanning, operation-specific write grants, injection
 comparisons and authoritative request refresh extend the existing task lab.
@@ -48,7 +55,7 @@ without Ollama, an API key, or a GPU.
 ```sh
 git clone https://github.com/dharmendrathinks/agent-fault-lab.git
 cd agent-fault-lab
-git checkout v0.3.0
+git checkout v0.4.0
 uv sync --locked --all-groups
 
 mkdir -p runs
@@ -260,10 +267,30 @@ AI-assisted contributions are welcome when you can explain and verify the change
 
 ## Where this is going
 
-Phase 2 includes malformed results, retry/duplicate-effect safety, process limits,
-restart recovery and diagnosis. Its implementation and reviews are complete.
-Later: permissions, untrusted content, context/memory, stronger
-evaluators, and reproduction of external failures.
+v0.4.0 adds [M14 repeated studies](docs/milestones/M14.md):
+frozen schedules, ordinary workflow companions, preserved partial runs, and a
+bounded local semantic SkillSpector profile. Offline semantic studies use explicit
+scanner doubles and make no scanner-accuracy claim.
+
+The release also includes [M15 evaluator audits](docs/milestones/M15.md) and
+[M16 LangGraph transfer](docs/milestones/M16.md). The audit checks 43 independent
+SQL fixtures against twelve deliberately broken graders. LangGraph controls its
+own loop while sharing the same individual model/tool contracts and evaluator.
+
+```sh
+# Run from the v0.4.0 checkout after uv sync.
+uv run --offline --no-sync aflab evaluator audit --output runs/evaluator-audit
+make scanner-setup runtime-setup
+uv run --offline --no-sync aflab runtime doctor langgraph
+uv run --offline --no-sync aflab runtime run langgraph approved --offline --output runs/graph-run
+uv run --offline --no-sync aflab study plan runtime --output runs/runtime-plan.json
+uv run --offline --no-sync aflab study run runs/runtime-plan.json --offline --output runs/runtime-study
+```
+
+Learning reviews and live comparisons remain separate from implementation checks.
+Both initial semantic probes timed out; no semantic-classification success or
+framework superiority is claimed. M16 supports four bounded cases; manual approval,
+crash/restart and resume parity remain outside this comparison.
 See the [public roadmap](docs/roadmap.md) for scope and contribution opportunities.
 
 Created by [Dharmendra Thinks](https://github.com/dharmendrathinks).

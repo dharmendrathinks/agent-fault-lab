@@ -45,3 +45,7 @@ jobs:
         run: make scanner-setup
       - name: Exercise real static scanning and approval on this platform
         run: make scanner-check
+      - name: Install the separately locked LangGraph runtime
+        run: make runtime-setup
+      - name: Exercise real graph execution with sockets blocked
+        run: make runtime-check

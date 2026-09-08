@@ -46,6 +46,21 @@ misses and distinguishes programmed client behavior from model observations.
 SkillSpector is a shared Phase 3 integration. Semantic scanner comparisons remain
 M14. Technical checks and learning acceptance gate advancement between milestones.
 
+## Added in v0.4.0
+
+- [M14](milestones/M14.md): repeated comparisons, ordinary workflow companions,
+  partial-run inventory and bounded semantic scanner studies;
+  technical evidence and pending learning review are recorded in PROGRESS.md.
+- [M15](milestones/M15.md): implemented 43 independent SQL reference cases, twelve
+  deliberately broken graders, valid alternatives and an offline audit command.
+- [M16](milestones/M16.md): implemented a real LangGraph loop in a separately
+  pinned environment, matched runtime studies and explicit unsupported behaviors.
+
+The detailed [Phase 4 plan](../PLAN.md#phase-4--stronger-evaluation-methodology)
+fixes three repetitions per cell and a 30-minute active study budget. A partial
+or negative result remains evidence. The user authorized implementation through
+M16; learning acceptance and live-model evidence remain separate and pending.
+
 ## Later, with concrete experiments
 
 Stronger evaluation methodology, then reproduction and reuse with external projects.

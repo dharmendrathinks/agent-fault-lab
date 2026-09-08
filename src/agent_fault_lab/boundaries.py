@@ -3,6 +3,7 @@
 import hashlib
 import json
 import time
+from collections.abc import Callable
 from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
@@ -159,215 +160,232 @@ def _finish(
     )
 
 
+def tool_step(journal: BoundaryJournal) -> None:
+    """Execute exactly one persisted tool request; runtime owns the next edge."""
+    state = journal.state
+    if state.status != "running" or state.cursor >= len(state.pending):
+        raise ValueError("Tool step requires a running checkpoint with a pending call")
+    store = PermissionStore(journal.directory / "tasks.sqlite3", state.run_id)
+    call = state.pending[state.cursor]
+    operation = (
+        state.operation_id
+        if state.reserved
+        else f"{state.run_id}:m{state.model_calls}:t{state.cursor}"
+    )
+    assert operation is not None
+    if not state.reserved:
+        if state.tool_calls >= 6:
+            _finish(journal, "tool_limit", error="Tool-call budget exhausted")
+            return
+        journal.save(
+            "tool_requested",
+            state.model_copy(
+                update={
+                    "reserved": True,
+                    "operation_id": operation,
+                    "tool_calls": state.tool_calls + 1,
+                }
+            ),
+            operation_id=operation,
+            call=call.model_dump(mode="json"),
+        )
+    state = journal.state
+    try:
+        if call.name == "create_task":
+            arguments = CreateArguments.model_validate(call.arguments)
+            store.propose(operation, arguments.title)
+            _configure_proposal(journal, store, operation)
+            proposal = store.proposal(operation)
+            if (
+                state.config.case == "manual"
+                and proposal.decision == "pending"
+                and state.config.permission_policy == "enforce"
+            ):
+                journal.save(
+                    "approval_waiting",
+                    journal.state.model_copy(update={"status": "awaiting_approval"}),
+                    operation_id=operation,
+                )
+                return
+            title = (
+                arguments.title + " changed"
+                if state.config.case == "changed-arguments"
+                else arguments.title
+            )
+            journal.save("write_attempted", operation_id=operation, title=title)
+            decision = store.write(
+                operation,
+                title,
+                enforce=state.config.permission_policy == "enforce",
+            )
+            journal.save(
+                "write_returned",
+                operation_id=operation,
+                authorized=decision.authorized,
+                replayed=decision.replayed,
+                task_id=decision.task.id if decision.task else None,
+                reason=decision.reason,
+            )
+            if state.config.case == "replay" and decision.task:
+                repeated = store.write(
+                    operation,
+                    title,
+                    enforce=state.config.permission_policy == "enforce",
+                )
+                journal.save(
+                    "write_replayed",
+                    operation_id=operation,
+                    task_id=repeated.task.id if repeated.task else None,
+                )
+            result = ToolResult(
+                ok=decision.task is not None,
+                value=asdict(decision.task) if decision.task else None,
+                error=None
+                if decision.task
+                else "Permission denied: " + decision.reason,
+                executed=decision.task is not None,
+            )
+        elif call.name == "get_task":
+            lookup = GetArguments.model_validate(call.arguments)
+            task = store.get_task(lookup.task_id)
+            result = ToolResult(
+                ok=True, value=asdict(task) if task else None, executed=True
+            )
+            if state.context:
+                from agent_fault_lab.context_runtime import deliver_reference
+
+                result = deliver_reference(journal, lookup.task_id, result)
+        elif (
+            call.name == "get_request_state"
+            and state.context
+            and state.context.milestone == "M13"
+        ):
+            from agent_fault_lab.context_runtime import StateArguments
+
+            StateArguments.model_validate(call.arguments)
+            request = store.request_state()
+            result = ToolResult(ok=True, value=dict(request), executed=True)
+            journal.save(
+                "authoritative_state_read",
+                request=dict(request),
+                source="model",
+            )
+        else:
+            result = ToolResult(ok=False, error=f"Unknown tool: {call.name}")
+    except ValidationError:
+        result = ToolResult(ok=False, error="Invalid tool arguments")
+    state = journal.state
+    journal.save(
+        "tool_returned",
+        state.model_copy(
+            update={
+                "messages": (
+                    *state.messages,
+                    Message(
+                        role="tool",
+                        content=result.model_dump_json(),
+                        call_id=operation,
+                        tool_name=call.name,
+                    ),
+                ),
+                "cursor": state.cursor + 1,
+                "reserved": False,
+                "operation_id": None,
+                "tool_executions": state.tool_executions + int(result.executed),
+            }
+        ),
+        operation_id=operation,
+        result=result.model_dump(mode="json"),
+        context_delivered=bool(
+            state.context
+            and state.context.surface != "skill"
+            and call.name == "get_task"
+            and result.ok
+            and isinstance(result.value, dict)
+            and result.value.get("title") == state.context.payload
+        ),
+    )
+
+
+def model_step(journal: BoundaryJournal, client: ModelClient | None = None) -> None:
+    """Request exactly one model turn under shared admission and call budgets."""
+    state = journal.state
+    if state.status != "running" or state.cursor < len(state.pending):
+        raise ValueError(
+            "Model step requires a running checkpoint without pending tools"
+        )
+    store = PermissionStore(journal.directory / "tasks.sqlite3", state.run_id)
+    if state.model_calls >= 6:
+        _finish(journal, "model_limit", error="Model-call budget exhausted")
+        return
+    from agent_fault_lab.context_runtime import before_model, tools_for
+
+    before_model(journal, store)
+    state = journal.state
+    journal.save(
+        "model_requested",
+        state.model_copy(update={"model_calls": state.model_calls + 1}),
+        messages=[message.model_dump(mode="json") for message in state.messages],
+    )
+    state = journal.state
+    try:
+        turn = (
+            client.complete(state.messages, tools_for(state), state.settings)
+            if client
+            else scripted_turn(state)
+        )
+    except ProviderError as exc:
+        _finish(journal, "provider_error", error=str(exc))
+        return
+    journal.save("model_returned", turn=turn.model_dump(mode="json"))
+    if turn.finish_reason == "length":
+        _finish(journal, "protocol_error", turn.content, "Model output limit reached")
+        return
+    if not turn.tool_calls:
+        _finish(
+            journal,
+            "finished" if turn.content.strip() else "protocol_error",
+            turn.content,
+            None if turn.content.strip() else "Empty assistant response",
+        )
+        return
+    # Persist pending calls before any tool execution.
+    journal.save(
+        "assistant_checkpoint",
+        state.model_copy(
+            update={
+                "messages": (
+                    *state.messages,
+                    Message(
+                        role="assistant",
+                        content=turn.content,
+                        tool_calls=turn.tool_calls,
+                        metadata=turn.metadata,
+                    ),
+                ),
+                "pending": turn.tool_calls,
+                "cursor": 0,
+            }
+        ),
+    )
+
+
 def advance(journal: BoundaryJournal, client: ModelClient | None = None) -> None:
-    store = PermissionStore(journal.directory / "tasks.sqlite3", journal.state.run_id)
     while journal.state.status == "running":
         state = journal.state
         if state.cursor < len(state.pending):
-            call = state.pending[state.cursor]
-            operation = (
-                state.operation_id
-                if state.reserved
-                else f"{state.run_id}:m{state.model_calls}:t{state.cursor}"
-            )
-            assert operation is not None
-            if not state.reserved:
-                if state.tool_calls >= 6:
-                    _finish(journal, "tool_limit", error="Tool-call budget exhausted")
-                    return
-                journal.save(
-                    "tool_requested",
-                    state.model_copy(
-                        update={
-                            "reserved": True,
-                            "operation_id": operation,
-                            "tool_calls": state.tool_calls + 1,
-                        }
-                    ),
-                    operation_id=operation,
-                    call=call.model_dump(mode="json"),
-                )
-            state = journal.state
-            try:
-                if call.name == "create_task":
-                    arguments = CreateArguments.model_validate(call.arguments)
-                    store.propose(operation, arguments.title)
-                    _configure_proposal(journal, store, operation)
-                    proposal = store.proposal(operation)
-                    if (
-                        state.config.case == "manual"
-                        and proposal.decision == "pending"
-                        and state.config.permission_policy == "enforce"
-                    ):
-                        journal.save(
-                            "approval_waiting",
-                            journal.state.model_copy(
-                                update={"status": "awaiting_approval"}
-                            ),
-                            operation_id=operation,
-                        )
-                        return
-                    title = (
-                        arguments.title + " changed"
-                        if state.config.case == "changed-arguments"
-                        else arguments.title
-                    )
-                    journal.save("write_attempted", operation_id=operation, title=title)
-                    decision = store.write(
-                        operation,
-                        title,
-                        enforce=state.config.permission_policy == "enforce",
-                    )
-                    journal.save(
-                        "write_returned",
-                        operation_id=operation,
-                        authorized=decision.authorized,
-                        replayed=decision.replayed,
-                        task_id=decision.task.id if decision.task else None,
-                        reason=decision.reason,
-                    )
-                    if state.config.case == "replay" and decision.task:
-                        repeated = store.write(
-                            operation,
-                            title,
-                            enforce=state.config.permission_policy == "enforce",
-                        )
-                        journal.save(
-                            "write_replayed",
-                            operation_id=operation,
-                            task_id=repeated.task.id if repeated.task else None,
-                        )
-                    result = ToolResult(
-                        ok=decision.task is not None,
-                        value=asdict(decision.task) if decision.task else None,
-                        error=None
-                        if decision.task
-                        else "Permission denied: " + decision.reason,
-                        executed=decision.task is not None,
-                    )
-                elif call.name == "get_task":
-                    lookup = GetArguments.model_validate(call.arguments)
-                    task = store.get_task(lookup.task_id)
-                    result = ToolResult(
-                        ok=True, value=asdict(task) if task else None, executed=True
-                    )
-                    if state.context:
-                        from agent_fault_lab.context_runtime import deliver_reference
-
-                        result = deliver_reference(journal, lookup.task_id, result)
-                elif (
-                    call.name == "get_request_state"
-                    and state.context
-                    and state.context.milestone == "M13"
-                ):
-                    from agent_fault_lab.context_runtime import StateArguments
-
-                    StateArguments.model_validate(call.arguments)
-                    request = store.request_state()
-                    result = ToolResult(ok=True, value=dict(request), executed=True)
-                    journal.save(
-                        "authoritative_state_read",
-                        request=dict(request),
-                        source="model",
-                    )
-                else:
-                    result = ToolResult(ok=False, error=f"Unknown tool: {call.name}")
-            except ValidationError:
-                result = ToolResult(ok=False, error="Invalid tool arguments")
-            state = journal.state
-            journal.save(
-                "tool_returned",
-                state.model_copy(
-                    update={
-                        "messages": (
-                            *state.messages,
-                            Message(
-                                role="tool",
-                                content=result.model_dump_json(),
-                                call_id=operation,
-                                tool_name=call.name,
-                            ),
-                        ),
-                        "cursor": state.cursor + 1,
-                        "reserved": False,
-                        "operation_id": None,
-                        "tool_executions": state.tool_executions + int(result.executed),
-                    }
-                ),
-                operation_id=operation,
-                result=result.model_dump(mode="json"),
-                context_delivered=bool(
-                    state.context
-                    and state.context.surface != "skill"
-                    and call.name == "get_task"
-                    and result.ok
-                    and isinstance(result.value, dict)
-                    and result.value.get("title") == state.context.payload
-                ),
-            )
-            continue
-        if state.model_calls >= 6:
-            _finish(journal, "model_limit", error="Model-call budget exhausted")
-            return
-        from agent_fault_lab.context_runtime import before_model, tools_for
-
-        before_model(journal, store)
-        state = journal.state
-        journal.save(
-            "model_requested",
-            state.model_copy(update={"model_calls": state.model_calls + 1}),
-            messages=[message.model_dump(mode="json") for message in state.messages],
-        )
-        state = journal.state
-        try:
-            turn = (
-                client.complete(state.messages, tools_for(state), state.settings)
-                if client
-                else scripted_turn(state)
-            )
-        except ProviderError as exc:
-            _finish(journal, "provider_error", error=str(exc))
-            return
-        journal.save("model_returned", turn=turn.model_dump(mode="json"))
-        if turn.finish_reason == "length":
-            _finish(
-                journal, "protocol_error", turn.content, "Model output limit reached"
-            )
-            return
-        if not turn.tool_calls:
-            _finish(
-                journal,
-                "finished" if turn.content.strip() else "protocol_error",
-                turn.content,
-                None if turn.content.strip() else "Empty assistant response",
-            )
-            return
-        # Persist pending calls before any tool execution.
-        journal.save(
-            "assistant_checkpoint",
-            state.model_copy(
-                update={
-                    "messages": (
-                        *state.messages,
-                        Message(
-                            role="assistant",
-                            content=turn.content,
-                            tool_calls=turn.tool_calls,
-                            metadata=turn.metadata,
-                        ),
-                    ),
-                    "pending": turn.tool_calls,
-                    "cursor": 0,
-                }
-            ),
-        )
+            tool_step(journal)
+        else:
+            model_step(journal, client)
 
 
 def save_evaluation(journal: BoundaryJournal) -> BoundaryEvaluation:
     from agent_fault_lab.boundary_reports import render_report
     from agent_fault_lab.saved_reports import replace_report
 
+    started = time.monotonic()
     evaluation = evaluate(journal.directory, journal.state)
+    journal.save("evaluation_measured", seconds=time.monotonic() - started)
     atomic_json(
         journal.directory / "evaluation.json", evaluation.model_dump(mode="json")
     )
@@ -376,10 +394,13 @@ def save_evaluation(journal: BoundaryJournal) -> BoundaryEvaluation:
 
 
 def _advance_and_save(
-    journal: BoundaryJournal, client: ModelClient | None
+    journal: BoundaryJournal,
+    client: ModelClient | None,
+    driver: Callable[[BoundaryJournal, ModelClient | None], None] | None = None,
 ) -> BoundaryEvaluation:
+    started = time.monotonic()
     try:
-        advance(journal, client)
+        (driver or advance)(journal, client)
     except KeyboardInterrupt:
         journal.save("interrupted")
         save_evaluation(journal)
@@ -394,6 +415,7 @@ def _advance_and_save(
                 }
             ),
         )
+    journal.save("agent_execution_measured", seconds=time.monotonic() - started)
     return save_evaluation(journal)
 
 
@@ -404,6 +426,8 @@ def run_boundary(
     scanner: Scanner | None = None,
     skill: bytes = BENIGN_SKILL.encode(),
     client: ModelClient | None = None,
+    driver: Callable[[BoundaryJournal, ModelClient | None], None] | None = None,
+    runtime_identity: dict[str, JsonValue] | None = None,
 ) -> BoundaryEvaluation:
     provenance = {}
     if config.mode == "live":
@@ -416,6 +440,8 @@ def run_boundary(
         raise ValueError("Offline run cannot use a live model")
     directory = directory.absolute()
     directory.mkdir()
+    if runtime_identity is not None:
+        atomic_json(directory / "runtime-manifest.json", runtime_identity)
     run_id = str(uuid4())
     with run_lock(directory, create=True):
         store = PermissionStore.create(directory / "tasks.sqlite3", run_id, TITLE)
@@ -491,7 +517,7 @@ def run_boundary(
             input_sha256=scan.input_sha256,
         )
         return (
-            _advance_and_save(journal, client)
+            _advance_and_save(journal, client, driver)
             if state.status == "running"
             else save_evaluation(journal)
         )
@@ -548,6 +574,10 @@ def load_boundary(directory: Path) -> BoundaryJournal:
 def resume_boundary(
     directory: Path, *, mode: Literal["offline", "live"]
 ) -> BoundaryEvaluation:
+    if (directory / "runtime-manifest.json").exists():
+        raise ValueError(
+            "M16 runtime resume and manual-approval parity are unsupported"
+        )
     from agent_fault_lab.boundary_reports import read_evaluation, render_report
     from agent_fault_lab.saved_reports import report_matches
 

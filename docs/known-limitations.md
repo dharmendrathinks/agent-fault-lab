@@ -56,3 +56,26 @@ documented offline/static evidence and does not imply those activities occurred.
 See the [M04 live comparison](milestones/M04-live-comparison.md),
 [checkpoint diagnosis](milestones/M04-qwen-diagnosis.md), and
 [replacement smoke](milestones/M04-instruct-smoke.md) for the underlying evidence.
+
+The [M14 studies](milestones/M14.md) use a compact repeated fixture
+pilot, not a general accuracy benchmark. Workflow read-back can miss duplicates;
+failed or uninspectable attempts remain in the inventory. Conservative crash-time
+accounting can end a study before all cells run. Semantic admission requires
+complete feasibility probes and does not turn a SAFE result into a security
+guarantee. The local gateway supports a bounded text/structured-output subset;
+unsupported requests fail explicitly. Offline semantic profiles are test doubles.
+
+The [M15 audit](milestones/M15.md) covers 43 authored examples and twelve known
+defects. Passing it does not prove that every evaluator defect is detectable.
+Mutants run in disposable package copies; audit artifacts retain full grades and
+assertion differences. Existing production grading and historical results remain
+unchanged.
+
+[M16](milestones/M16.md) compares the native loop with a real LangGraph 1.2.11 graph
+in the same separately locked environment. It isolates orchestration, while
+sharing single model/tool steps. It is not a completely independent tool stack.
+Four scenarios are supported. Manual approval, resume and crash/restart parity
+are explicitly unsupported. The worker uses a 450-second deadline, within the
+study's remaining 1,800-second budget. Python network restrictions and process
+termination do not establish an OS sandbox or undo committed writes. Real-graph
+offline checks demonstrate machinery; a live framework comparison remains pending.

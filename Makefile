@@ -1,5 +1,6 @@
 .PHONY: check lockcheck test lint typecheck build package-check demo agent-demo doctor live-test
 .PHONY: scanner-setup scanner-check
+.PHONY: runtime-setup runtime-check
 
 UV ?= uv
 RUN = $(UV) run --offline --no-sync
@@ -32,6 +33,14 @@ scanner-check:
 	$(UV) lock --project integrations/skillspector --check --offline
 	$(RUN) python scripts/check_scanner.py
 	$(RUN) python scripts/check_context.py
+
+runtime-setup:
+	$(UV) sync --project integrations/langgraph --locked
+
+runtime-check:
+	$(UV) lock --project integrations/langgraph --check --offline
+	$(RUN) aflab runtime doctor langgraph
+	$(UV) run --project integrations/langgraph --offline --no-sync python scripts/check_runtime.py
 
 demo:
 	$(RUN) python examples/task_workflow.py

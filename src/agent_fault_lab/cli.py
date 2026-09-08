@@ -691,6 +691,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     from agent_fault_lab.boundary_cli import add_commands
 
     add_commands(commands)
+    from agent_fault_lab.study_cli import add_commands as add_study_commands
+
+    add_study_commands(commands)
+    from agent_fault_lab.evaluator_audit import add_commands as add_audit_commands
+
+    add_audit_commands(commands)
+    from agent_fault_lab.runtimes import add_commands as add_runtime_commands
+
+    add_runtime_commands(commands)
     commands.add_parser("doctor", help="Check local Ollama; never download or infer.")
     demo = commands.add_parser("demo", help="Scripted test machinery, NOT AI evidence.")
     demo.add_argument("--offline", action="store_true", required=True)
@@ -795,6 +804,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         from agent_fault_lab.boundary_cli import command as boundary_command
         from agent_fault_lab.boundary_cli import is_boundary
 
+        if args.command == "runtime":
+            from agent_fault_lab.runtimes import command as runtime_command
+
+            return runtime_command(args)
+        if args.command == "evaluator":
+            from agent_fault_lab.evaluator_audit import command as audit_command
+
+            return audit_command(args)
+        if args.command == "study":
+            from agent_fault_lab.study_cli import command as study_command
+
+            return study_command(args)
         if args.command in ("scanner", "boundaries", "approval"):
             return boundary_command(args)
         if args.command == "diagnose":

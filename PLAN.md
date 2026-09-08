@@ -27,7 +27,7 @@ The immediate objective is **understanding and completing one small reliability 
 | Learning approach | Explanation → small implementation → test → review |
 | Available time | 20–25 hours per week |
 | Commercial requirements | None |
-| Planning depth | Detailed plans for M01–M13; objectives and acceptance gates for M14–M18 |
+| Planning depth | Detailed plans for M01–M16; objectives and acceptance gates for M17–M18 |
 
 Codex helps develop and explain the software. It is **not the model runtime inside the initial lab**. Codex subscription access and API-key billing are separate; the design assumes no included API credit. [Official authentication documentation](https://learn.chatgpt.com/docs/auth)
 
@@ -1162,7 +1162,275 @@ cleanup signalling; retain the terminate/kill/reap sequence and side-effect test
 | **M15** | Evaluator robustness | Expand the basic evaluator tests with deliberately broken implementations, valid alternate solutions, and untriggered faults | Demonstrate both defect detection and resistance to false failures |
 | **M16** | Transfer beyond the original agent | Add one independently implemented agent/runtime adapter using the same task contract | Useful checks work beyond the original loop; differences and non-comparable behaviors are documented |
 
-A hosted model adapter may be added here if explicitly chosen. It is not required: a second local implementation can establish transfer.
+#### Approved scope and sequence — 2026-09-08
+
+The user chose bounded local studies, LangGraph as the second runtime, and a
+compact pilot: three repetitions per cell, sequential execution, and a 30-minute
+active-time budget per study. Implement M14, then review its evidence and learning
+checkpoint before M15; do the same before M16. The implementation request approves
+this direction, not automatic milestone acceptance or publication. The intended
+eventual release checkpoint is v0.4.0; tagging, pushing and publishing remain
+separate actions. Phase 3's pending learning reviews and 16-run live smoke remain
+explicit follow-ups, not evidence that has already been collected.
+
+Keep the existing SQLite task domain and metadata-verified local Qwen3 Instruct
+checkpoint. No model downloads, hosted fallback, daemon changes, browser/form
+automation or distributed execution. Default checks remain offline. Live studies
+require the explicit live command; planning, setup and tests never start inference.
+
+#### M14 — Fair repeated comparisons
+
+Implementation scope update — 2026-09-08: the user explicitly requested “can u
+impl pahse 4 completly?”. Complete the remaining implementation of M14, M15 and
+M16 in this work session. This supersedes the earlier implementation pauses
+between milestones; learning acceptance remains separately pending and is not
+inferred. Preserve the failed semantic probes, fixed study budgets and no-fallback
+policy. No commit, push, model download, daemon change or publication is implied.
+
+Implementation decisions for the complete Phase 4 request:
+
+- M15 uses 43 independent SQL fixtures and all twelve isolated mutant processes.
+  Saved audit records retain full grades, assertions, source hashes and worker
+  errors; errors never count as detected defects. No production grading change
+  was required by this corpus. Historical grades remain unchanged.
+- M16 runs both native and LangGraph variants in the same separate Python 3.12
+  integration environment, including provider dependencies. Doctor checks the
+  actual source digest, installed dependency versions and LangGraph 1.2.11 pin
+  against the integration lock. The root environment stays framework-free.
+- Shared `model_step` and `tool_step` functions perform one operation; the native
+  while-loop and the real StateGraph control their own transitions. The graph has
+  model, tools and terminal nodes, no retry/caching/checkpointer policy, and a
+  recursion limit of 32 alongside the unchanged six-model/six-tool budgets.
+- `runtime run native|langgraph CASE --offline|--live --output DIR` supports only
+  the four frozen cases. `study plan runtime` schedules 24 executions at default
+  repetitions. Both use real static scanning; offline model turns are scripted.
+  A child has a 450-second physical timer and remains in the study process group,
+  preserving the parent study's tighter remaining deadline when applicable.
+- Runtime evidence is a separate versioned `runtime.json` alongside the original
+  boundary `evaluation.json`; rendering checks that the grades agree. A runtime
+  marker is persisted before execution and prevents accidental native resume.
+  Study resume continues only unstarted slots, never resumes a runtime child.
+- Local offline transfer evidence and semantic timeout findings do not substitute
+  for the separately selected live studies or learning acceptance. Completing this
+  implementation request does not authorize Phase 5 or v0.4.0 publication.
+
+**Question:** under matched conditions, which safeguards change stored outcomes
+and claim support, and what extra work or latency do they cost? A negative or
+inconclusive result is acceptable. Repeating a scripted test demonstrates the
+harness; it does not establish model reliability.
+
+**A. Study manifests, scheduling and recovery**
+
+- Add `aflab study list`, `aflab study plan PRESET --output FILE`,
+  `aflab study run FILE --offline|--live --output DIR`, and
+  `aflab study resume DIR --offline|--live`. Integrate saved study reports with
+  `aflab report DIR --check`; rendering uses captured evidence, never inference.
+- Freeze a versioned manifest before execution: preset, cases and payload hashes,
+  declared comparison axis, policies, participant/runtime, scanner profile,
+  model identity/settings, repetitions, order, limits, and source/dependency-lock
+  fingerprints. Live preflight verifies the installed checkpoint and digest.
+- Use scheduling seed 42 to shuffle scenario blocks reproducibly and alternate
+  policy order by repetition. The scheduling seed is not a model determinism claim.
+  Both cells share tools, fault schedule, settings, limits and grading except for
+  the declared axis. Never force a live agent's tool sequence.
+- Each child gets a fresh directory and SQLite database. Persist the entire
+  schedule before starting; checkpoint each attempt and retain raw child evidence.
+  Record planned, started, completed, interrupted, failed and unstarted slots.
+- Resume recovers completed child artifacts, preserves interrupted attempts and
+  continues only unstarted slots. Reject altered manifests and incompatible
+  source/settings/locks. Persist cumulative active time so resume does not reset
+  the budget; charge conservatively when interruption leaves timing uncertain.
+- Supervise workers at the remaining study deadline. On termination, inspect
+  actual storage read-only when available and retain unknown outcomes when it is
+  unavailable. Process cancellation cannot undo committed writes and does not
+  guarantee that an already submitted Ollama generation stops.
+
+**B. Fixed compact-pilot presets**
+
+Counts below are agent runs at three repetitions, before workflow companions.
+The 30-minute budget can produce a partial study; do not drop failed cells or
+silently increase limits to obtain a complete or favorable result.
+
+| Preset | Cases | Declared comparison | Fixed conditions | Agent runs |
+|---|---|---|---|---:|
+| Claim verification | Healthy; dropped write | Baseline prompt / read-back prompt | Original tools, provider, limits and grader | 12 |
+| Retry safety | `retry-healthy`; `lost-reply-once` | `retry-unprotected` / `retry-idempotent` | Same prompt, two-attempt policy limit and fault | 12 |
+| Approval enforcement | `approved`; `rejected` | Permission audit / enforce | Static scanning, scan enforcement | 12 |
+| Injection enforcement | `injection-override`; its benign counterpart | Permission audit / enforce | Tool surface, static scanning, scan enforcement | 12 |
+| Context refresh | `memory-stale-title` | Cached / authoritative refresh | Permission enforcement, static scanning | 6 |
+| Semantic admission | Override attack; its benign counterpart | Static / static plus semantic scanner | Skill surface, scan enforcement, permission audit | 12 |
+
+The agent pilot has **66 planned runs**. Analyze each scenario separately; do not
+pool benign and attack cases into a single headline accuracy number. The semantic
+admission comparison performs a fresh scan for every child, not reuse of a cached
+scan as if it were an independent observation.
+
+**C. Ordinary workflow baseline**
+
+For the claim and retry presets, add a deterministic participant that calls
+create, reads the exact returned identifier, checks the matching title and ID,
+then emits the same strict terminal report. It reacts to actual tool responses;
+it is neither a scripted model double nor an evaluator with direct database
+access. Use the same tools, faults and execution policy as the corresponding
+agent condition. Record zero model calls and actual tool requests/executions.
+Run three repetitions per applicable condition. Label this participant separately
+and exclude it from the prompt-only paired contrast. A read of one returned task
+can miss a duplicate effect elsewhere: do not claim that this baseline is perfect.
+
+**D. Semantic SkillSpector integration**
+
+- Preserve the existing pinned SkillSpector revision and isolated environment.
+  Profiles are `static` (current behavior) and `static-plus-semantic` (upstream
+  static checks, model analyzers and meta-analysis). No root runtime dependency.
+- Explicitly select the approved local provider/model, overriding all upstream
+  defaults and per-slot model overrides. Never fall back to another model or a
+  hosted endpoint. Inspect checkpoint metadata and scanner token metadata: the
+  pinned registry lacks this Qwen3 entry, so its 128k fallback is not verified
+  context capacity. Record requested and effective settings and any project shim.
+- Permit the semantic worker to connect only to a lab-owned loopback gateway.
+  The gateway forwards only chat-completion requests to local Ollama, rejects
+  other endpoints/models and redirects, and serializes physical requests. Retain
+  raw requests/responses, retries and usage as private evidence. This is a bounded
+  transport boundary, not a claim of a general operating-system sandbox.
+- Limits per scan: 180 seconds, 12 physical model requests, 60 seconds per
+  request, 1,024 output tokens per request, 16 KiB skill input and 4 MiB output
+  evidence. Preserve process-group termination/reaping and input snapshot checks.
+- Run two feasibility probes, one benign and one attack, before semantic studies.
+  A probe must complete with inspectable evidence within limits; it need not
+  classify the fixture correctly. On failure, retain the failure, mark semantic
+  evidence incomplete and stop that live study; no automatic tuning or fallback.
+- Persist those two probes as separate `probe` slots, before benchmark slots,
+  inside the same budget. They add two executions to each semantic preset and
+  are excluded from the 66-agent/48-scanner pilot counts and paired contrasts.
+- Add a scanner-only preset: all eight existing M12 fixtures, two profiles, three
+  repetitions = 48 scans (24 semantic). Keep detection, false alarms and scanner
+  errors separate from agent outcomes and permission enforcement.
+- Version semantic evidence explicitly and preserve legacy v1 static readers.
+  Incomplete, malformed, truncated or failed scans never become clean admission.
+
+**E. Reports and uncertainty**
+
+For each case, participant and policy, report the full execution inventory and
+separate execution status, actual stored outcome, terminal-report validity and
+claim support. Count assessable completion claims and contradicted claims,
+invalid/absent reports, configured/delivered/exercised/unexercised faults,
+unauthorized effects, duplicates, seed preservation, legitimate completion or
+blocking, scanner detection/false alarms/errors, and missing evidence.
+
+Measure model/tool requests, retries, usage coverage and elapsed time. Separate
+scanner, agent, evaluation and total duration. Missing usage is null, not zero.
+Pair only matching scenario/repetition cells with known comparable outcomes;
+report excluded pairs and keep failures in the overall inventory. Publish raw
+counts and per-cell min/median/max first. If displaying conditional 95% Wilson
+intervals, state the independence assumption: three temperature-zero repeats do
+not establish independent trials, and repeated observations of four attack
+fixtures do not establish general security accuracy. Do not declare a winner
+from pooled counts. See the
+[NIST proportion-interval reference](https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm).
+
+**Acceptance and learning checkpoint**
+
+Offline tests cover manifest validation, matched scheduling, interrupted/resumed
+runs, budget exhaustion, failed children, ordinary workflow responses, preserved
+unknowns, report reconstruction, and semantic gateway rejection/caps. Existing
+real static-scanner acceptance still passes. Live evidence is separately labeled
+and may be partial; missing implementation is not an inconclusive study result.
+Before M15, review one paired scenario, a duplicate effect missed by read-back,
+and a failed/incomplete run: explain what improved, what cost extra, and what the
+evidence cannot establish. Technical completion and learning acceptance are separate.
+
+#### M15 — Evaluator robustness
+
+**Question:** can the evaluator detect wrong behavior while accepting valid
+alternatives? Build an independent reference corpus by seeding fresh SQLite files
+directly with SQL. Author expected grades from the task contract, never by copying
+the production evaluator's output. Keep all tests offline with sockets blocked.
+
+Cover missing tasks, wrong titles/identifiers, duplicates, committed writes after
+lost replies/timeouts/crashes, alternate valid UUIDs and row/tool order, exact
+whitespace and Unicode, absent/malformed strict claims, missing/stale/expired or
+wrong-scope grants, replay after expiry, seed mutations, unexercised faults,
+uninspectable storage/authorization, and termination after policy revocation.
+
+Run twelve deliberately faulty evaluator variants in isolated temporary package
+copies/processes, without a production switch:
+
+1. Trust a successful tool response as persistence evidence.
+2. Ignore the terminal claim's task identifier.
+3. Normalize the exact requested title.
+4. Ignore duplicate effects.
+5. Ignore changes to seeded rows.
+6. Accept stale approval grants.
+7. Ignore operation scope.
+8. Regrade authorization expiry at report time instead of write time.
+9. Count an idempotent replay as a new effect.
+10. Convert unknown storage into an empty database.
+11. Repair malformed terminal JSON into a valid claim.
+12. Treat a configured fault as an exercised fault.
+
+A mutant is detected only through the expected assertion mismatch. Import errors,
+failed mutant application or harness failures are errors, not detected defects.
+Add invariance checks for consistent identifier renaming, row order, irrelevant
+metadata and equivalent valid histories. Expose
+`aflab evaluator audit --output DIR` with a versioned evidence inventory.
+If production grading changes, version it and retain original grades alongside
+explicit re-evaluations; do not silently rewrite historical evidence.
+
+Acceptance: reference cases pass, all twelve intended defects are meaningfully
+detected, alternate valid solutions remain valid, and the report distinguishes
+harness errors from findings. Learning checkpoint: explain a false failure, a
+missed defect and why an independent oracle matters before starting M16.
+
+#### M16 — Transfer beyond the original agent
+
+**Question:** which checks transfer when another runtime controls the agent loop?
+Use LangGraph 1.2.11 pinned in its own Python 3.12 integration environment; retain
+the lean root environment and record runtime identity and lock fingerprint.
+Add `aflab runtime doctor langgraph`; a missing environment is an explicit error.
+
+Build a real StateGraph with model, tool and terminal nodes. LangGraph must control
+the loop and must not call the native orchestration loop. Extract only shared
+single-step harness operations: context/admission/refresh preparation, tool
+authorization, evidence recording, budgets and stable operation identifiers.
+Keep the provider, prompts, tool contract, scenario, evaluator and model settings
+matched. Preserve six model requests, six tool requests, serial tools and strict
+terminal claims; no implicit retries, claim repair, telemetry or hosted fallback.
+Use a versioned runtime-run artifact so saved reports identify the actual runtime.
+
+The first transfer supports bounded single runs. Manual approval/resume and crash
+recovery parity are outside this comparison; reject unsupported combinations
+explicitly. The pilot uses approved, rejected, tool-surface injection override
+with permission enforcement, and stale title with authoritative refresh. Hold
+static scanning fixed. Two runtimes × four cases × three repetitions = 24 live
+runs, subject to the same 30-minute study cap and partial-evidence reporting.
+
+Offline controlled-model tests must execute the actual graph and fail if the
+native loop is invoked. Test budgets, state transitions, errors, tool admission
+and strict claims, then perform the separately selected bounded local comparison.
+Report behavioral and non-comparable differences without declaring a framework
+winner. Learning checkpoint: explain which checks transferred and which behavior
+depended on orchestration. Reference:
+[LangGraph quickstart](https://docs.langchain.com/oss/python/langgraph/quickstart).
+
+#### Phase 4 verification and eventual release
+
+Stable publication authorization — 2026-09-08: after the implementation and
+validation handoff, the user requested “prepare new release for this, push” and
+clarified “actual release not in pre-relese”. Prepare, commit and push v0.4.0,
+then publish it as stable/latest with prerelease disabled after local checks and
+both hosted CI jobs pass. This supersedes the earlier publication hold. Preserve
+the disclosed semantic-probe timeouts, pending live comparisons and learning
+reviews as follow-ups; publication does not claim they are complete. No new
+inference, model download, daemon change or Phase 5 implementation is authorized.
+
+For each milestone, run `make check`, appropriate installed-wheel checks, and
+existing real static-scanner acceptance; add transport contract tests for M14 and
+real graph tests for M16. Record actual commands, results, limitations and the
+next learning action in PROGRESS.md. Run the PR Ready review before handoff.
+Hosted macOS/Ubuntu checks follow an explicitly requested push. Update README,
+milestone guides, limitations, changelog and release notes as capabilities become
+available; do not describe planned interfaces as already implemented. A later
+v0.4.0 release needs its own explicit publication request.
 
 ### Phase 5 — External usefulness
 

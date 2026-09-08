@@ -84,3 +84,21 @@ M12 varies scanner and permission enforcement independently. M13 varies only
 runner refresh of current request state, keeping the read-only state tool available
 to either variant. The synthetic approval controller is scoped to the current
 requested title and remaining task; it never represents a human decision.
+
+## Phase 4 development interfaces
+
+`study_records.py` freezes a schedule and fingerprints; `studies.py` supervises
+sequential child processes and preserves partial evidence. `study_reports.py`
+renders saved scenario counts and conditional intervals. The ordinary workflow
+uses the same tool responses and cannot inspect evaluator SQL.
+
+`audit_corpus.py` creates contract-authored SQL fixtures. `evaluator_audit.py`
+copies the package into a temporary directory per evaluator variant, applies one
+declared mutation and invokes a separate offline worker. Production sources and
+historical grades are never modified by the audit.
+
+`boundaries.py` exposes one model step and one tool step used by its native loop
+and by `langgraph_runtime.py`. LangGraph owns conditional graph edges; it does not
+call the native loop. `runtimes.py` launches both transfer variants in the same
+separate locked environment. Runtime records wrap independent boundary grades
+without extending the tools or exposing evaluator metadata to the model.

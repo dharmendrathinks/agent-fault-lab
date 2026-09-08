@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.4.0 — 2026-09-08
+
+- Expanded PLAN.md with the approved Phase 4 design, compact local studies,
+  semantic SkillSpector limits, evaluator audit and LangGraph transfer gates.
+- Added immutable repeated-study manifests, alternating matched cells, fresh
+  child databases, deadline supervision and conservative resume accounting.
+- Added an ordinary create/read/check workflow participant with zero model calls;
+  duplicate effects remain independently graded even if read-back looks correct.
+- Added study reports with complete inventories, per-scenario counts, paired
+  exclusions, duration variation and explicitly conditional proportion intervals.
+- Added the isolated semantic scanner profile through a bounded local gateway,
+  fixed native Ollama settings, complete-evidence admission and feasibility probes.
+  Offline semantic execution is explicitly a scanner double, not model evidence.
+- Added 43 contract-authored SQL reference cases and twelve isolated evaluator
+  mutations. Audit reports distinguish assertion failures from harness errors.
+- Added a real LangGraph 1.2.11 loop in a separately locked Python environment,
+  shared single-step contracts, strict budgets, runtime evidence and a matched
+  four-case, three-repetition transfer study. Added real-graph CI checks.
+- Stable Phase 4 release authorized by the maintainer. Learning acceptance and
+  live-study evidence remain separate; both initial semantic probes timed out.
+  See [release notes](docs/releases/v0.4.0.md) for evidence and limitations.
+
 ## 0.3.0 — 2026-09-07
 
 - Added M11 static SkillSpector integration in a separately pinned environment,
