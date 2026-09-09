@@ -265,6 +265,52 @@ def check_installed(version: str) -> None:
         assert main(["evaluator", "audit", "--output", str(audit)]) == 0
         assert main(["report", str(audit), "--check"]) == 0
         assert main(["runtime", "doctor", "langgraph"]) == 2
+        assert main(["external", "list"]) == 0
+        assert main(["external", "doctor", "langgraph-router-resume"]) == 2
+        # Explicitly synthetic unstarted inventory: checks the installed reader,
+        # not external-framework behavior or the original report's finding.
+        from agent_fault_lab.external import save as save_external
+        from agent_fault_lab.external_records import (
+            CONDITIONS,
+            MODES,
+            Identity,
+            Reproduction,
+            Slot,
+        )
+
+        external_report = work / "external-report"
+        external_report.mkdir()
+        save_external(
+            external_report,
+            Reproduction(
+                identity=Identity(
+                    python="3.12.0",
+                    platform="synthetic installed-wheel reader check",
+                    dependencies={
+                        "langgraph": "1.2.11",
+                        "langgraph-checkpoint-sqlite": "3.1.1",
+                    },
+                    source_sha256="0" * 64,
+                    lock_sha256="1" * 64,
+                    harness_sha256="2" * 64,
+                ),
+                created_at="synthetic fixture",
+                status="unstarted",
+                slots=tuple(
+                    Slot(
+                        id=f"{m}-{c}-{r}",
+                        mode=m,
+                        condition=c,
+                        repetition=r,
+                        thread_id=f"{m}-{c}-{r}",
+                    )
+                    for m in MODES
+                    for c in CONDITIONS
+                    for r in range(1, 4)
+                ),
+            ),
+        )
+        assert main(["report", str(external_report), "--check"]) == 0
     print(
         f"PASS: installed wheel {version}; runs, studies, evaluator audit and reports"
     )

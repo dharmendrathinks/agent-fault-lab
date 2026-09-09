@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Recorded the detailed Phase 5 plan and implemented M17's standalone reproduction
+  of LangGraph issue #8834, with a separately locked Python environment.
+- Added `external list/doctor/run`, a fixed 27-lifecycle control/failure matrix,
+  between-invocation read-only SQL grading, bounded workers, full partial inventory,
+  strict saved reports and real integration checks on both configured CI platforms.
+- No model inference or M18 implementation. Independent outside review and learning
+  acceptance remain pending; stable version and release remain v0.4.0.
+
 ## 0.4.0 — 2026-09-08
 
 - Expanded PLAN.md with the approved Phase 4 design, compact local studies,

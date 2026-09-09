@@ -75,6 +75,13 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
     if has_comparison:
         raw = _read_evidence(comparison_path)
         parsed = json.loads(raw)
+        if (
+            isinstance(parsed, dict)
+            and parsed.get("artifact") == "external-reproduction"
+        ):
+            from agent_fault_lab.external_records import Reproduction, render_external
+
+            return "comparison", render_external(Reproduction.model_validate_json(raw))
         if isinstance(parsed, dict) and parsed.get("artifact") == "evaluator-audit":
             from agent_fault_lab.evaluator_audit import Audit, render_audit
 

@@ -1,5 +1,12 @@
 # Reading experiment artifacts
 
+Unreleased M17 adds a versioned `external-reproduction` record in `comparison.json`.
+It contains all 27 reserved lifecycles, invocation snapshots and independent SQL
+grades. Harness status, framework symptom, task outcome and absent model claims
+remain separate. `aflab report DIR --check` validates saved JSON without reading
+databases or importing LangGraph. Raw events and invocation/evaluation JSON remain
+beside each lifecycle's private task/checkpoint files. See the [M17 guide](milestones/M17.md).
+
 Generated outputs normally live under ignored `runs/`. A custom output directory
 must be new. Review a run before uploading it.
 

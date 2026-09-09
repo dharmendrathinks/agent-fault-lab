@@ -1,5 +1,12 @@
 # Known limitations
 
+- Unreleased M17 reproduces one reported LangGraph 1.2.11 router/resume behavior
+  with a fixed graph and synthetic sink. Zero-model runs are framework evidence,
+  not model reliability measurements. Fresh-process SQLite tests restart after
+  an exception; abrupt crashes and power loss are untested. M18 independent
+  outside review and M17 learning acceptance remain pending. See the
+  [M17 guide](milestones/M17.md) for supervision and evidence limits.
+
 - This is one synthetic create/read workflow. v0.1 has a dropped-write fault and
   prompt-level read-back treatment; v0.2.0 adds the M06–M10 execution experiments.
   It is not an agent framework or broad benchmark.

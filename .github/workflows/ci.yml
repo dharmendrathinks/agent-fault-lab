@@ -49,3 +49,7 @@ jobs:
         run: make runtime-setup
       - name: Exercise real graph execution with sockets blocked
         run: make runtime-check
+      - name: Install the separately locked external reproduction
+        run: make external-setup
+      - name: Reproduce router recovery and controls with sockets blocked
+        run: make external-check

@@ -19,6 +19,12 @@ Python 3.12. MIT licensed. Local verification is
 recorded in [PROGRESS.md](PROGRESS.md); see the
 [Ubuntu/macOS CI runs](https://github.com/dharmendrathinks/agent-fault-lab/actions/workflows/ci.yml).
 
+Unreleased development: [M17 external failure reproduction](docs/milestones/M17.md)
+adds an isolated LangGraph router/resume case with independent SQLite grading.
+Run `make external-setup` once, then `make external-check` for the 27-lifecycle
+offline matrix. This needs the development checkout; v0.4.0 does not include it.
+Learning acceptance and independent outside review remain separate.
+
 New in v0.4.0: [repeated studies](docs/milestones/M14.md),
 [independent evaluator audits](docs/milestones/M15.md), and
 [LangGraph runtime comparisons](docs/milestones/M16.md). Local validation includes

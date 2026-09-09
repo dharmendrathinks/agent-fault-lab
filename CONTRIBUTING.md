@@ -49,6 +49,14 @@ separately locked scanner) and `make scanner-check`. The latter runs real static
 SkillSpector and scripted agent/approval checks without model inference. Both CI
 platforms require it. Core `make check` stays independent of scanner installation.
 
+For M17 changes, run `make external-setup` once and `make external-check`. The
+separate locked LangGraph/SQLite saver environment runs the real 27-lifecycle
+matrix offline. Root tests need no framework install. Keep the
+[standalone reduction](reproductions/langgraph-8834/README.md) independent of lab
+imports. Credit the report, preserve controls and unfavorable results, and inspect
+existing upstream work before proposing a fix. M18 outside review and communication
+are separate from local technical checks.
+
 A local-model smoke is separate and deliberately inconvenient to trigger:
 
 ```sh

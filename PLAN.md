@@ -27,7 +27,7 @@ The immediate objective is **understanding and completing one small reliability 
 | Learning approach | Explanation → small implementation → test → review |
 | Available time | 20–25 hours per week |
 | Commercial requirements | None |
-| Planning depth | Detailed plans for M01–M16; objectives and acceptance gates for M17–M18 |
+| Planning depth | Detailed plans for M01–M18; implementation and learning gates remain separate |
 
 Codex helps develop and explain the software. It is **not the model runtime inside the initial lab**. Codex subscription access and API-key billing are separate; the design assumes no included API credit. [Official authentication documentation](https://learn.chatgpt.com/docs/auth)
 
@@ -1439,7 +1439,131 @@ v0.4.0 release needs its own explicit publication request.
 | **M17** | External failure reproduction | Reduce a public issue or permissioned practitioner report to a focused test case | Reproduce the behavior and establish whether it violates a documented contract or an application assumption |
 | **M18** | External reuse and contribution | Improve the project using independent feedback and contribute useful checks or fixes upstream | Independent reproduction, adopted checks, confirmed findings, or accepted contributions |
 
-Begin practitioner conversations before M17. The final phase should deepen external usefulness, not introduce user contact for the first time.
+#### Phase 5 decisions — 2026-09-08
+
+The user selected LangGraph reliability as the first external case and independent
+reproduction as the completion gate. Implement **M17 first**, then review its
+learning evidence before M18. Record both milestones now. This supersedes the
+earlier Phase 5 publication-session hold, without authorizing outreach, publication,
+inference or implementation of M18. Existing Phase 3/4 learning and live-evidence
+follow-ups remain open.
+
+The question is: **can another engineer reproduce a real framework failure and
+distinguish a normal runtime return from the required durable effect?** The
+framework experiment uses no model. Graph state, execution, stored task outcome,
+and model claims remain separate. Zero model claims is not a reliability score.
+
+#### M17 — External failure reproduction
+
+**Case and attribution.** Start with `langgraph-router-resume`, a reduction of
+[LangGraph issue #8834](https://github.com/langchain-ai/langgraph/issues/8834),
+reported by roli-lpci (Rolando Bosch). Recheck issue/fix activity before coding.
+Credit the report and existing reproduction/fix discussion; do not claim discovery
+or upstream confirmation of our interpretation. The reported application symptom
+is a normal resume return without reaching a required downstream effect after a
+conditional router fails. A node failure before returning state is the control.
+
+**Isolation.** Add `reproductions/langgraph-8834/`, a standalone Python 3.12 uv
+project pinned to `langgraph==1.2.11` and
+`langgraph-checkpoint-sqlite==3.1.1`, with a complete separate lock. Its script
+imports no Agent Fault Lab code. Preserve root and M16 dependency environments.
+Record installed distributions, Python/platform, source/lock hashes, source URL
+and the issue's reference commit. Source distributions include the reduction and
+lock; wheels expose list/doctor/report but explicitly require a source checkout
+and separate setup to execute. Never auto-install or fall back to another runtime.
+
+**Graph and contract.** `START → work → conditional router → task-writing sink
+→ END`. The sink commits exactly one task with the exact synthetic title and a
+usable identifier in a fresh task SQLite database, separate from checkpoints.
+The evaluator reads task storage independently through read-only SQL, never the
+sink or framework state. Duplicate/wrong/missing rows fail the application
+contract; uninspectable storage is unknown. Graph executions are not model tool
+requests. Record zero model calls and an absent terminal model claim.
+
+**Fixed matrix.** Run three repetitions of each combination (27 lifecycles):
+
+| Condition | Initial invocation | Resume expectation |
+|---|---|---|
+| Healthy | No injected failure; sink reached | No extra effect |
+| Node failure | Work raises before returning its state update | Work retries and sink is reached |
+| Router failure | Work returns state; router raises | Sink reached or unresolved failure exposed; investigate normal return with missing sink |
+
+| Saver | Process mode | Evidence |
+|---|---|---|
+| InMemorySaver | Initial/resume in one process | In-process behavior |
+| SqliteSaver | Initial/resume in one process | Persistence backend comparison |
+| SqliteSaver | Initial and resume in separate processes | Restart after an exception |
+
+Each lifecycle owns fresh task/checkpoint databases and a unique thread ID. Inject
+once, only during the initial invocation; explicitly disable injection during
+resume, including fresh-process resume. Capture each invocation's return/exception,
+state and pending tasks before/after, work/router/sink call counts, fault activation,
+durations, process identity and independent task inspection. Retain raw timeline
+events. Fresh-process resume is not a SIGKILL, power-loss or general crash guarantee.
+
+**Supervision and artifacts.** Sequential execution; 30 seconds per worker and a
+300-second matrix budget. Stop only owned workers on timeout/interruption. Save
+the full reserved inventory before execution, preserve failed/interrupted/unstarted
+slots and inspect remaining task storage even after failure. Do not silently rerun
+or discard attempts. Versioned `external-reproduction` JSON records provenance,
+environment and all slots. Separate harness status (`completed`, `failed`,
+`interrupted`, `unstarted`), symptom (`reproduced`, `not_reproduced`, `inconclusive`),
+task outcome and absent model claim. A reproduced upstream symptom with complete
+evidence exits 0; harness failure exits 2 and interruption 130. Saved report
+regeneration strictly validates captured JSON and never reads databases or invokes
+the framework. It does not upgrade missing evidence into successful execution.
+
+**Interfaces.** `make external-setup`, `make external-check`, `aflab external list`,
+`aflab external doctor langgraph-router-resume`, `aflab external run
+langgraph-router-resume --output runs/external-case`, and `aflab report
+runs/external-case --check`. Require a fresh output directory. No live mode,
+arbitrary script selection, automatic retry, or M16 resume/parity expansion.
+
+**Acceptance and tests.** Offline root tests do not require this extra environment.
+Cover controls, fault activation, read-only missing/duplicate/unknown grading,
+strict records/report readers, environment mismatch, process cleanup, deadlines,
+interruption and partial inventories. A separate real integration check executes
+the 27 lifecycles with Python sockets blocked and tracing disabled, on Ubuntu and
+macOS CI. Test standalone execution and installed-wheel missing-environment/report
+behavior. Inspect archives for required source files and excluded private artifacts.
+Run `make check`, package checks, relevant existing scanner/runtime checks, and PR
+Ready. Document exact versions, actual local results, platform limits and attribution
+in README, M17 guide, limitations, development/contributing, roadmap and PROGRESS.
+
+Technical acceptance requires faithful failure evidence plus passing healthy/node
+controls and a complete inspectable inventory. A changed upstream result must be
+reported, not forced to match. **Learning checkpoint:** explain successful resume,
+checkpoint state and actual effects separately, and distinguish an application
+contract violation from an upstream-confirmed framework defect. Remain in progress
+until the maintainer accepts this checkpoint.
+
+#### M18 — External reuse and contribution (planned, not implemented)
+
+1. Add `aflab external export RUN --output DIR` for this registered synthetic case
+   only. Build a reviewed standalone package with code, lock, exact commands,
+   reports, allowlisted evidence, checksums and attribution. Exclude raw databases,
+   unreviewed logs, environment files, credentials and local account paths. Leave
+   original private evidence unchanged. Validate export/redaction and reject
+   unsupported cases rather than making a generic artifact exporter.
+2. Ask one outside engineer to run the control and failing condition from a clean
+   checkout/package without this development session. Collect their exact versions,
+   commands, outcomes and ambiguities. AI assistance is acceptable if the engineer
+   owns and verifies the result; CI or another assistant is not independent review.
+3. Address feedback with focused regressions and fresh runs. Retain contradictions
+   and original evidence. Compare separately pinned fixed versions if a fix lands;
+   do not overwrite the original reproduction environment or quietly upgrade it.
+4. Prepare an upstream reproduction note and focused regression proposal locally.
+   Check existing work first; avoid duplicating an active fix. If behavior is
+   intentional, propose a documentation clarification. Posting, recruiting and
+   publishing require an explicit user request; no messages are sent implicitly.
+5. Completion requires independent reproduction, feedback addressed, useful upstream
+   material ready, and the learning checkpoint accepted. An upstream merge is useful
+   but optional. With no external response, record technical preparation complete
+   and independent review pending; do not claim the milestone is complete.
+
+Potential v0.5.0 preparation follows these gates; version changes, tags and stable
+publication remain separately requested work. Revisit scope after each milestone
+instead of adding more frameworks or broad practitioner outreach automatically.
 
 ### Expansion review after every release
 

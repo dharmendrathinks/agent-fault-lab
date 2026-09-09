@@ -61,11 +61,18 @@ fixes three repetitions per cell and a 30-minute active study budget. A partial
 or negative result remains evidence. The user authorized implementation through
 M16; learning acceptance and live-model evidence remain separate and pending.
 
-## Later, with concrete experiments
+## Phase 5 — External usefulness (development)
 
-Stronger evaluation methodology, then reproduction and reuse with external projects.
-These are planned
-learning areas, not current capabilities or promised release dates.
+- [M17](milestones/M17.md): implemented an isolated LangGraph router/resume
+  reproduction with independent SQLite grading and 27 offline lifecycles.
+  Technical verification is local; learning review remains open.
+- M18: planned synthetic evidence export, one outside engineer's reproduction,
+  feedback-driven improvements and a prepared upstream contribution. Independent
+  review is required; an upstream merge is optional. No outreach or M18 code yet.
+
+The [detailed Phase 5 plan](../PLAN.md#phase-5--external-usefulness) preserves
+milestone boundaries and separate learning/publication gates. These changes are
+unreleased; v0.4.0 remains the current stable release.
 
 See [PLAN.md](../PLAN.md) for the full staged plan and
 [PROGRESS.md](../PROGRESS.md) for verified results and unresolved gates.

@@ -43,6 +43,13 @@ environment; after scanner setup, `make runtime-check` exercises the actual grap
 with controlled model responses and sockets blocked. Both CI platforms run that
 integration check. Root tests do not require LangGraph to be installed.
 
+M17 adds `make external-setup` and `make external-check`. The standalone uv project
+under `reproductions/langgraph-8834/` has a separate full lock and no lab dependency;
+it does not change M16's environment. The real check requires all 27 lifecycles,
+passing controls, the pinned-version symptom and report consistency. Both CI
+platforms run it. Root tests exercise grading, protocol validation, deadlines and
+partial inventories without importing LangGraph. See the [M17 guide](milestones/M17.md).
+
 ## Check the distribution, not just the checkout
 
 ```sh

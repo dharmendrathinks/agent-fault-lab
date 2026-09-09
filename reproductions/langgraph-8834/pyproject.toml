@@ -1,0 +1,8 @@
+[project]
+name = "langgraph-8834-reproduction"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = ["langgraph==1.2.11", "langgraph-checkpoint-sqlite==3.1.1"]
+
+[tool.uv]
+package = false

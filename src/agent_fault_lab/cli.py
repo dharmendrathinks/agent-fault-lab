@@ -700,6 +700,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     from agent_fault_lab.runtimes import add_commands as add_runtime_commands
 
     add_runtime_commands(commands)
+    from agent_fault_lab.external import add_commands as add_external_commands
+
+    add_external_commands(commands)
     commands.add_parser("doctor", help="Check local Ollama; never download or infer.")
     demo = commands.add_parser("demo", help="Scripted test machinery, NOT AI evidence.")
     demo.add_argument("--offline", action="store_true", required=True)
@@ -804,6 +807,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from agent_fault_lab.boundary_cli import command as boundary_command
         from agent_fault_lab.boundary_cli import is_boundary
 
+        if args.command == "external":
+            from agent_fault_lab.external import command as external_command
+
+            return external_command(args)
         if args.command == "runtime":
             from agent_fault_lab.runtimes import command as runtime_command
 

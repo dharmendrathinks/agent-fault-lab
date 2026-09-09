@@ -2,6 +2,118 @@
 
 ## Resume here
 
+- Phase: 5 — External usefulness; **M17 in progress**.
+- Current scope: commit and push the implemented M17 work, explicitly requested
+  on 2026-09-09. M18 remains planned; independent outside review and the human
+  learning checkpoint are separate gates. Stable release remains v0.4.0.
+- M17 implementation: standalone pinned LangGraph #8834 reduction, independent SQL
+  between invocations, fixed 27-lifecycle matrix, bounded workers, full partial
+  inventory and strict saved reports. Final real macOS evidence: 9/9 router
+  failures reproduced; 18/18 controls saved exactly one task. `make check` passes
+  884 tests with one gated live skip, lint/format, strict typing and builds.
+- Exact next action: review the M17 guide's distinction
+  between normal resume, framework state and actual task effects. Await learning
+  acceptance before implementing M18's export and independent reviewer exercise.
+
+## M17 commit and push — 2026-09-09
+
+- User explicitly authorized staging, committing and pushing the pending M17
+  implementation, detailed Phase 5 plan and related documentation. Preserve the
+  separate learning checkpoint and M18 scope; this does not publish a new release.
+- Verified Git author/committer configuration: Dharmendra
+  <dharmendra.code@gmail.com>. Target is `origin/main`.
+- Staged PR Ready assessment: **PR READY**. Build, test, lint and strict typing
+  all PASS; 884 tests passed, one gated live test skipped (44.64 seconds). No
+  suspicious files, blockers or remaining risks. Evidence: `runs/m17-push-pr-ready.md`.
+- Verified the current worker, harness and lock hashes exactly match the recorded
+  27-lifecycle real reproduction. All 23 intended files are staged, including the
+  nine new files that blocked the earlier assessment. Whitespace checks pass.
+- Hosted Ubuntu/macOS checks run on push, including the new external reproduction.
+  The next learning action remains review of M17 evidence before M18 implementation.
+
+## M17 implementation — 2026-09-08
+
+- Implemented the approved M17 scope from base commit
+  `10d5ff62c61a96105bbabf5153eab0db73d32357`. Recorded the full detailed M17/M18
+  design in PLAN.md; M18 remains planned. The human learning checkpoint is pending,
+  so M17 remains **in_progress** despite passing technical checks.
+- Rechecked [LangGraph #8834](https://github.com/langchain-ai/langgraph/issues/8834):
+  still open, last updated 2026-09-07, with another contributor describing a
+  prepared fix. Credited roli-lpci (Rolando Bosch), the report's AI-assistance
+  disclosure and existing discussion. No upstream finding, fix confirmation,
+  independent reviewer or communication is invented.
+- Added a standalone Python 3.12 reduction in `reproductions/langgraph-8834/`:
+  LangGraph 1.2.11, SQLite saver 3.1.1 and its own full uv lock. The extra project
+  resolves 43 packages and installs 41 on this platform; its doctor checks the
+  active dependency closure against lock markers. Root and M16 locks and the
+  released 0.4.0 version remain unchanged. No lab imports in the reduction.
+- Added `external list/doctor/run`, a fixed 27-lifecycle matrix and strict saved
+  report dispatch. Three conditions × three saver/process modes × three repeats;
+  every lifecycle owns fresh task/checkpoint storage and a unique thread ID.
+  Faults activate only initially. The controller independently inspects read-only
+  task SQL between invocations and after owned-worker cleanup. No model calls,
+  requested tools or invented terminal claims are recorded.
+- Captured per-invocation state/pending-task snapshots, returns/exceptions,
+  counters, fault activation, process IDs, durations and SQL evaluations. Raw
+  events survive partial execution. A normal resume with no sink/task is a
+  framework symptom; unreadable storage remains unknown. Duplicate/wrong rows
+  fail the task contract independently. Exposed resume exceptions are retained
+  as observations rather than mislabeled silent success.
+- Added 30-second worker limits, a 300-second matrix budget, inherited ownership
+  locks and reservations before spawn. Failed/interrupted/unstarted inventory is
+  retained. Regression tests cover timeout, oversized output, early worker exit,
+  interruption after committed writes and closed resume input. The latter now
+  preserves initial evidence even when flushing/closing stdin raises BrokenPipeError.
+- Real final matrix: `runs/external-check-1330bd1a-45b7-4842-b6c1-515ad28caf44/`,
+  13.926 seconds on Python 3.12.13 / macOS 26.5.2 ARM64. All 27 lifecycles captured;
+  **9/9 router failures reproduced**, including all fresh-process SQLite repeats;
+  **18/18 healthy/node controls completed exactly one task**, with no duplicate on
+  resume. The raw timeline agrees with invocation counts and fault activation.
+  Earlier exploratory matrices remain in ignored runs and are not overwritten.
+- Final worker SHA-256:
+  `5aa8e1bb30af72197b25f6d2e550649e9ba226d351580b9112a55e72af962358`;
+  lock SHA-256:
+  `5f78fa825b0163d12772623b1688ed1f9ba50f996320b371cfb1c17cdce36d0f`;
+  harness SHA-256:
+  `ba0554eb1fc7f0370e1ed37de9078c11fd3948da75cff5eb7878b3da5c4d1b12`.
+- `make external-check` also copied the standalone project to a fresh temporary
+  location, installed only its own locked dependencies offline, verified no lab
+  package was installed and ran all three conditions successfully. CI now requires
+  this real check on Ubuntu 24.04 and macOS 14; those jobs have not run this local
+  change. This is not an independent engineer's reproduction.
+- Final `make check` PASS: **884 tests, one gated live skip**, 46.63 seconds;
+  Ruff lint/format, strict mypy across 101 files, root lock and wheel/sdist build.
+  Real static scanner checks PASS, including 26 context runs under
+  `runs/context-check-f67c8207-2b98-4032-ab11-86700a801c5e/`. Existing real runtime
+  checks PASS: four matched cases plus six protocol/budget/provider checks.
+  Logs are in ignored `runs/m17-*-check*.log`.
+- Source archive inspection confirms the standalone code, lock, guide and check
+  script are included; no environments, private runs or SQLite databases are
+  bundled. The wheel includes the controller/reader and requires source setup
+  for actual external execution. Installed-wheel checks cover case listing,
+  missing-environment refusal and saved synthetic inventory/report reading.
+- Final `make package-check` PASS for the installed development wheel outside
+  the checkout (`runs/m17-package-check-final.log`). Final saved-report consistency
+  and Markdown-link/whitespace checks PASS. PR Ready analyzer: **NOT PR READY**;
+  build/test/lint/static checks all PASS (884 tests, one skip; 45.31 seconds).
+  Its only blocker is the nine intended untracked files; no suspicious files or
+  remaining risks were reported. They remain unstaged under the working agreement.
+  Full assessment: `runs/m17-pr-ready-final.md`.
+- Updated README, changelog, roadmap, contribution/development/artifact/limitation
+  guides and the M17 walkthrough. No model inference, download, daemon change,
+  staging, commit, push, tag, release, upstream posting or M18 implementation.
+- Limits: one pinned synchronous graph, trusted mutable local evidence, Python
+  network blocking rather than an OS sandbox. Fresh-process resume is restart
+  after an exception, not abrupt-crash or power-loss recovery. Phase 3/4 live and
+  learning follow-ups are unchanged.
+- Exact next action: review a healthy, node-failure and router-failure lifecycle
+  from the final bundle. Explain normal return versus graph state versus durable
+  effect, and application-contract interpretation versus upstream confirmation.
+  Record maintainer learning acceptance before advancing to M18's synthetic
+  export and outside-engineer review. Publication remains separately requested.
+
+## Previous release handoff (preserved)
+
 - Phase: 4 — Stronger evaluation methodology.
 - Release: **v0.4.0 published as stable/latest** on 2026-09-08.
   GitHub confirms `draft=false` and `prerelease=false`. The annotated tag points
@@ -1373,7 +1485,8 @@ left local for review, not staged to bypass the assessment.
 | M11: permissions and approval | in_progress | Released in v0.3.0; local/hosted checks pass; learning accepted for progression; separately opted-in live smoke pending |
 | M12: untrusted content | in_progress | Released in v0.3.0; local/hosted real-scanner checks pass; live smoke and learning review pending |
 | M13: context and memory | in_progress | Released in v0.3.0; local/hosted real-scanner checks pass; live smoke and learning review pending |
-| M14–M16: evaluation methodology and transfer | planned | Reusable experiments and reviewed evaluators exist |
-| M17–M18: external reproduction and reuse | planned | A relevant external problem or collaborator is available |
+| M14–M16: evaluation methodology and transfer | in_progress | Released in v0.4.0; technical checks pass; learning/live follow-ups remain |
+| M17: external failure reproduction | in_progress | Implemented locally; 27 real lifecycles verified; human learning checkpoint pending |
+| M18: external reuse and contribution | planned | Start after M17 review; independent outside reproduction required for completion |
 
 See `PLAN.md` for all individual milestone definitions and gates.
