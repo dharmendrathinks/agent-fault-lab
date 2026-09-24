@@ -69,6 +69,12 @@ M16; learning acceptance and live-model evidence remain separate and pending.
 - M18: planned synthetic evidence export, one outside engineer's reproduction,
   feedback-driven improvements and a prepared upstream contribution. Independent
   review is required; an upstream merge is optional. No outreach or M18 code yet.
+- [M19](milestones/M19.md): explicitly selected before M18; implemented one bounded
+  Codex coding-task verifier with deterministic claim grades. The first genuine
+  pilot captured real work and left three assertions unverified; it did not prove
+  a false claim. Review hardening adds suite inventories and stricter trace gates.
+  The maintainer accepted M19's learning review on 2026-09-24. This is not generic
+  CI or a coding-agent platform; the older milestones' review gates are unchanged.
 
 The [detailed Phase 5 plan](../PLAN.md#phase-5--external-usefulness) preserves
 milestone boundaries and separate learning/publication gates. These changes are

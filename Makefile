@@ -2,6 +2,7 @@
 .PHONY: scanner-setup scanner-check
 .PHONY: runtime-setup runtime-check
 .PHONY: external-setup external-check
+.PHONY: coverage
 
 UV ?= uv
 RUN = $(UV) run --offline --no-sync
@@ -13,6 +14,9 @@ lockcheck:
 
 test:
 	AFLAB_RUN_LIVE_TESTS=0 AFLAB_LIVE_TEST_COMMAND=0 $(RUN) pytest
+
+coverage:
+	$(RUN) python scripts/check_coverage.py
 
 lint:
 	$(RUN) ruff check .

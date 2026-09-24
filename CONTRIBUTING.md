@@ -57,6 +57,15 @@ imports. Credit the report, preserve controls and unfavorable results, and inspe
 existing upstream work before proposing a fix. M18 outside review and communication
 are separate from local technical checks.
 
+M19 verification changes must keep the final agent response on the claim side of
+the boundary and deterministic observations on the evidence side. Default tests
+must use a fake executable. Never trigger `aflab verify run ... --live` in routine
+tests or CI; it is a separately reviewed, account-dependent pilot.
+Include negative cases for missing/skipped tests and invalid/wrong-context traces.
+Run `make coverage` sequentially after functional checks; inspect missing branches,
+not just the total. Never remove code from coverage solely to improve the number.
+Use `docs/development.md` for measurement scope and subprocess limitations.
+
 A local-model smoke is separate and deliberately inconvenient to trigger:
 
 ```sh

@@ -7,6 +7,19 @@
   outside review and M17 learning acceptance remain pending. See the
   [M17 guide](milestones/M17.md) for supervision and evidence limits.
 
+- M19 supports one controlled Python fixture through the Codex CLI. It does not
+  verify arbitrary repositories, prove complete correctness, establish that a
+  changed test is relevant, authenticate mutable artifacts or aggregate delegated
+  work. Default fake-executable coverage is test-machinery evidence. One genuine
+  pilot completed; its unverified claims reflect evidence limits, not demonstrated
+  falsehoods. M19 learning review was accepted. Suite inventories detect missing or
+  skipped tests but not weakened assertions. Git-ignored files are outside the
+  declared snapshot scope. Missing cwd or shell-wrapped commands are not accepted
+  as exact contextual trace evidence. Shell network denial and workspace write
+  restrictions are not a hostile-code sandbox; independent checks run trusted
+  fixture code on the host with owned-process time/output bounds. See the
+  [M19 guide](milestones/M19.md).
+
 - This is one synthetic create/read workflow. v0.1 has a dropped-write fault and
   prompt-level read-back treatment; v0.2.0 adds the M06–M10 execution experiments.
   It is not an agent framework or broad benchmark.

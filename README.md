@@ -25,6 +25,14 @@ Run `make external-setup` once, then `make external-check` for the 27-lifecycle
 offline matrix. This needs the development checkout; v0.4.0 does not include it.
 Learning acceptance and independent outside review remain separate.
 
+[M19 real-work verification](docs/milestones/M19.md) is the next focused extension.
+It can run one controlled Codex coding task and grade seven completion claims using
+before/after Git state and independent checks. Default tests use a fake executable.
+One genuine pilot verified four bounded claims and left three unverified; it did
+not demonstrate a false agent claim. See the guide for the evidence limits. The
+live command requires explicit
+`--live`, and M19 is neither arbitrary-repository CI nor an AI judge.
+
 New in v0.4.0: [repeated studies](docs/milestones/M14.md),
 [independent evaluator audits](docs/milestones/M15.md), and
 [LangGraph runtime comparisons](docs/milestones/M16.md). Local validation includes
@@ -256,6 +264,7 @@ An agent's task failure is a recorded experimental result and can return 0.
 
 ```sh
 make check         # Locked dependencies, lint, typing, offline tests, build
+make coverage      # Offline line/branch measurement, including inherited children
 make package-check # Install the wheel in isolation and exercise the public CLI
 ```
 

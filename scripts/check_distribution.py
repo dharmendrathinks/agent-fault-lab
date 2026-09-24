@@ -267,6 +267,9 @@ def check_installed(version: str) -> None:
         assert main(["runtime", "doctor", "langgraph"]) == 2
         assert main(["external", "list"]) == 0
         assert main(["external", "doctor", "langgraph-router-resume"]) == 2
+        assert main(["verify", "list"]) == 0
+        # Wheels expose the saved reader but intentionally omit the source fixture.
+        assert main(["verify", "doctor", "codex-title-preservation"]) == 2
         # Explicitly synthetic unstarted inventory: checks the installed reader,
         # not external-framework behavior or the original report's finding.
         from agent_fault_lab.external import save as save_external
@@ -311,6 +314,122 @@ def check_installed(version: str) -> None:
             ),
         )
         assert main(["report", str(external_report), "--check"]) == 0
+        from agent_fault_lab.saved_reports import replace_report
+        from agent_fault_lab.verification import spec as verification_spec
+        from agent_fault_lab.verification_records import (
+            AgentExecution,
+            ChangeSummary,
+            CheckResult,
+            ClaimGrade,
+            CodexIdentity,
+            CodingVerification,
+            ParsedClaims,
+            RepositorySnapshot,
+            RequirementGrade,
+            TraceAssessment,
+            render_verification,
+        )
+
+        def verification_check(phase: str, name: str, code: int) -> CheckResult:
+            return CheckResult.model_validate(
+                {
+                    "phase": phase,
+                    "name": name,
+                    "command": ("synthetic",),
+                    "returncode": code,
+                    "status": "passed" if code == 0 else "failed",
+                    "stdout": "",
+                    "stderr": "",
+                    "elapsed_seconds": 0.0,
+                }
+            )
+
+        verification_case = verification_spec()
+        before_checks = tuple(
+            verification_check("before", name, 1 if name == "acceptance" else 0)
+            for name in ("tests", "build", "acceptance")
+        )
+        after_checks = tuple(
+            verification_check("after", name, 0)
+            for name in ("tests", "build", "acceptance")
+        )
+        coding = CodingVerification(
+            case=verification_case,
+            created_at="synthetic installed-wheel reader check",
+            execution=AgentExecution(
+                command=("synthetic",),
+                identity=CodexIdentity(
+                    executable="synthetic",
+                    version="synthetic",
+                    sha256="0" * 64,
+                    fixture_sha256="1" * 64,
+                ),
+                returncode=1,
+                status="failed",
+                elapsed_seconds=0.0,
+                stdout_sha256="2" * 64,
+                stderr_sha256="3" * 64,
+                error="synthetic: no inference",
+            ),
+            trace=TraceAssessment(
+                status="absent",
+                event_count=0,
+                event_types={},
+                commands=(),
+                delegation_observed=False,
+                error="synthetic: no trace",
+            ),
+            claims=ParsedClaims(status="absent", error="synthetic: no final message"),
+            before=RepositorySnapshot(commit="0" * 40, entries=()),
+            after=RepositorySnapshot(commit="0" * 40, entries=()),
+            changes=ChangeSummary(
+                head_changed=False,
+                added=(),
+                modified=(),
+                deleted=(),
+                changed=(),
+                outside_allowed=(),
+                test_files_changed=(),
+            ),
+            before_checks=before_checks,
+            after_checks=after_checks,
+            requirements=tuple(
+                RequirementGrade(
+                    requirement_id=requirement.id,
+                    verdict="not_verified",
+                    reason="synthetic reader check",
+                    evidence=(),
+                )
+                for requirement in verification_case.requirements
+            ),
+            claim_grades=tuple(
+                ClaimGrade(
+                    claim=name,
+                    assertion="unknown",
+                    verdict="not_verified",
+                    reason="synthetic reader check",
+                    evidence=(),
+                )
+                for name in (
+                    "build_succeeds",
+                    "all_tests_pass",
+                    "bug_fixed",
+                    "regression_test_added",
+                    "all_requirements_implemented",
+                    "only_relevant_files_changed",
+                    "verification_commands_passed",
+                )
+            ),
+            experiment_result="inconclusive",
+            artifact_sha256={},
+        )
+        verification_report = work / "coding-verification-report"
+        verification_report.mkdir()
+        atomic_json(
+            verification_report / "evaluation.json", coding.model_dump(mode="json")
+        )
+        replace_report(verification_report, render_verification(coding))
+        assert main(["report", str(verification_report), "--check"]) == 0
     print(
         f"PASS: installed wheel {version}; runs, studies, evaluator audit and reports"
     )

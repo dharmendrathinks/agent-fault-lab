@@ -25,6 +25,7 @@ aflab = "agent_fault_lab.cli:main"
 
 [dependency-groups]
 dev = [
+    "coverage==7.10.7",
     "hatchling==1.27.0",
     "mypy>=1.15,<2",
     "pytest>=9.0.3,<10",
@@ -54,3 +55,21 @@ select = ["E", "F", "I", "UP", "B"]
 python_version = "3.12"
 strict = true
 files = ["src", "tests", "examples", "scripts"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/agent_fault_lab"]
+patch = ["subprocess"]
+parallel = true
+data_file = "runs/coverage/.coverage"
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+fail_under = 83
+
+[tool.coverage.json]
+output = "runs/coverage/coverage.json"
+
+[tool.coverage.xml]
+output = "runs/coverage/coverage.xml"

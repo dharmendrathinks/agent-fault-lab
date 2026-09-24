@@ -19,6 +19,7 @@ environment, not a plugin system or general agent framework.
 | Accounting | [experiments.py](../src/agent_fault_lab/experiments.py) | Trace-derived counts; missing usage is unknown |
 | Aggregation | [comparison.py](../src/agent_fault_lab/comparison.py) | Include invalid claims, partial runs and unexercised faults |
 | Presentation | [reporting.py](../src/agent_fault_lab/reporting.py), [saved_reports.py](../src/agent_fault_lab/saved_reports.py) | Render saved evidence without new inference or SQL inspection |
+| M19 coding claims | [verification.py](../src/agent_fault_lab/verification.py), [verification_records.py](../src/agent_fault_lab/verification_records.py) | Final response supplies claims; canonical repository state and independent checks supply evidence |
 | Commands | [cli.py](../src/agent_fault_lab/cli.py) | Fresh directories, preflight, capture and exit status |
 
 ## Four separate questions
@@ -84,6 +85,19 @@ M12 varies scanner and permission enforcement independently. M13 varies only
 runner refresh of current request state, keeping the read-only state tool available
 to either variant. The synthetic approval controller is scoped to the current
 requested title and remaining task; it never represents a human decision.
+
+M19 reuses the same separation for one controlled coding repository. The Codex
+process operates only on a copied fixture. The verifier owns before/after snapshots,
+an acceptance oracle outside the workspace, post-run process checks and claim
+grading. Codex JSONL can establish that an exact command was observed; the final
+message cannot establish its own truth. No model interprets the diff or grades the
+claims. A test-file change remains weaker evidence than a relevant regression test.
+The external standard-library `verification_suite.py` observes unittest inventory
+outside the mutable workspace; v2 grades require nonempty discovery, baseline ID
+preservation and complete success without skips. Check capture is bounded while
+reading and owned process groups are stopped. Valid completed trace events must
+match both the exact command and cwd. These are controlled-fixture guarantees,
+not a hostile-code sandbox or semantic proof of regression relevance.
 
 ## Phase 4 development interfaces
 

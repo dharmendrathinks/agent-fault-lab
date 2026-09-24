@@ -50,6 +50,42 @@ passing controls, the pinned-version symptom and report consistency. Both CI
 platforms run it. Root tests exercise grading, protocol validation, deadlines and
 partial inventories without importing LangGraph. See the [M17 guide](milestones/M17.md).
 
+M19's default tests use an executable test double and never invoke Codex. Use
+`aflab verify list` for discovery and `aflab verify doctor
+codex-title-preservation` for a read-only CLI/fixture preflight. A genuine pilot is
+not a routine test: review account/billing and the [M19 guide](milestones/M19.md),
+then explicitly pass `--live` to one fresh output directory. Do not add it to
+`make check`, package checks or CI.
+
+## Measure coverage
+
+```sh
+make coverage
+```
+
+The pinned development-only coverage.py runs the full socket-blocked offline
+suite, combines inherited Python subprocess measurements and writes JSON/XML under
+ignored `runs/coverage/`. It prints missing lines and branches. The command retains
+a failing exit status even if report generation succeeds. Run it sequentially, not
+concurrently with integrations: instrumentation and CPU contention can disturb
+the intentionally short deadline experiments. A failed coverage run is not a
+successful acceptance run.
+
+The source denominator is the actual checkout's `src/agent_fault_lab`, with no
+mapping of disposable evaluator mutants back onto production files. Separate
+integration environments, workers that deliberately sanitize the instrumentation
+environment, and killed processes that cannot flush data are not fully captured.
+Their functional checks remain required separately. Default coverage never starts
+inference. These are code-execution metrics, not percentages of requirements or
+proof of correctness; no 100% badge is claimed.
+
+Both CI platforms run this measurement after uninstrumented `make check`. The
+initial combined line/branch floor is 83%, based on the 2026-09-24 measurement of
+83.47% (86.40% lines, 73.86% branches). This is a regression floor, not the quality
+target. Raise it with meaningful tests; never lower it to hide a failed check.
+Coverage uses the documented
+[subprocess measurement mechanism](https://coverage.readthedocs.io/en/7.10.7/subprocess.html).
+
 ## Check the distribution, not just the checkout
 
 ```sh

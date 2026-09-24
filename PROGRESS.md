@@ -2,18 +2,184 @@
 
 ## Resume here
 
-- Phase: 5 — External usefulness; **M17 in progress**.
-- Current scope: commit and push the implemented M17 work, explicitly requested
-  on 2026-09-09. M18 remains planned; independent outside review and the human
-  learning checkpoint are separate gates. Stable release remains v0.4.0.
-- M17 implementation: standalone pinned LangGraph #8834 reduction, independent SQL
-  between invocations, fixed 27-lifecycle matrix, bounded workers, full partial
-  inventory and strict saved reports. Final real macOS evidence: 9/9 router
-  failures reproduced; 18/18 controls saved exactly one task. `make check` passes
-  884 tests with one gated live skip, lint/format, strict typing and builds.
-- Exact next action: review the M17 guide's distinction
-  between normal resume, framework state and actual task effects. Await learning
-  acceptance before implementing M18's export and independent reviewer exercise.
+- Phase: real-work extension; M19 hardening and live pilot verified locally;
+  **M19 learning accepted** by the maintainer on 2026-09-24.
+- Current scope: close review findings for the bounded coding-claim verifier. M18 remains
+  planned and deferred; M17's human learning checkpoint remains open. Stable
+  release remains v0.4.0.
+- M19 implementation: controlled source fixture, strict seven-claim contract,
+  canonical before/after repository evidence, independent tests/build/acceptance,
+  conservative deterministic grades, hash-linked artifacts and saved reports.
+  Offline tests use a fake executable. One separate genuine pilot completed:
+  four bounded claims verified, three unverified, none contradicted.
+- Exact next action: inspect hosted Ubuntu/macOS checks after the authorized M19
+  commit and push. Do not publish a release, launch further inference or advance
+  automatically. Older learning/live gates remain unchanged.
+
+## M19 authorized commit and push — 2026-09-24
+
+- The maintainer explicitly requested “commit and push.” Staged all 30 intended
+  M19, coverage, documentation and lock files; ignored private run artifacts remain
+  outside version control. `git diff --cached --check` passed.
+- Exact bundled PR Ready assessment on the staged tree: **PR READY**. Build, tests,
+  lint and strict typing pass; 937 tests passed, one gated live test skipped in
+  81.84 seconds. No suspicious files, blockers or remaining risks. This supersedes
+  the earlier untracked-file assessment without erasing its recorded history.
+- Target is `origin/main`. Commit and push results are recorded below after the
+  operation; hosted CI is triggered by the push and is not preclaimed as passing.
+
+## Review hardening and real pilot — 2026-09-24
+
+- The user requested closing the review findings and improving open-source quality,
+  explicitly authorized one bounded genuine Codex pilot, and separately accepted
+  M19's learning checkpoint after the result was explained. No larger live study,
+  outside outreach, staging, commit or publication is authorized by this session.
+- Fixed all three reproduced M19 issues: normalized invocation paths; required
+  valid completed exact-command events with matching cwd and no observed delegation;
+  replaced exit-code-only test grading with externally observed suite inventories.
+  Empty/replaced/skipped/partial suites cannot verify the all-tests assertion.
+- Added an external standard-library unittest observer, source fingerprints,
+  bounded streaming check capture and owned-process-group cleanup. Clarified that
+  file scope covers Git-visible paths, not ignored files or Git metadata. Invalid
+  UTF-8 claims/traces fail closed. New v2 grades do not silently regrade v1 artifacts.
+- Expanded M19 from six to 46 offline cases, including genuine subprocess tests,
+  invalid evidence, missing context, timeout/output limits and descendant cleanup.
+  Seven additional tests protect coverage-command failure propagation.
+- Final inspection also found that isolated Python ignores the cache environment
+  variables. Explicit interpreter flags now isolate cache lookup. A positive-control
+  test demonstrates that workspace bytecode can make the ordinary acceptance
+  command pass while source remains broken, and that the hardened check rejects it.
+- Added development-only coverage.py 7.10.7, subprocess-aware `make coverage`,
+  JSON/XML output and an 83% combined baseline floor in existing Ubuntu/macOS CI.
+  Root runtime dependencies did not change. M16's lock changed only root-package
+  dev metadata; the other integration locks and runtime versions were preserved.
+- Final isolated coverage run: **937 passed, one gated live skip**, 123.33 seconds.
+  Actual source scope: 63 modules, 5,814/6,729 executable lines (**86.40%**),
+  1,517/2,054 branch outcomes (**73.86%**), combined **83.47%**. Both the original
+  independent SQL evaluator and claim parser measure 100% lines/branches. This
+  does not measure every isolated integration worker or prove complete correctness.
+  Mutant copies are excluded by absolute source scope, not mapped onto production.
+- Preserved a failed exploratory instrumented run: 908 passed, one failed, one
+  skipped during concurrent workloads. An after-commit recovery test observed
+  deadline retries (five attempts versus three expected). Quiet rerun passed
+  without loosening assertions or changing runtime limits. Do not present the
+  failed attempt as successful evidence; logs remain under `runs/review-20260924/`.
+- Restored separately locked setup and passed installed-wheel, real static
+  scanner/context, real LangGraph runtime and standalone external checks. External
+  bundle `runs/external-check-45a5777a-1f8c-42f7-9c52-8fa44adf8625/` retains all 27
+  lifecycles: 9 router failures reproduced and 18 healthy/node controls completed.
+  Existing scanner misses remain findings, not erased results. No fresh hosted
+  CI pass is asserted for these uncommitted changes.
+- Genuine pilot: `runs/m19-live-20260924/`, Codex CLI 0.156.1 using existing
+  ChatGPT login, 55.07 seconds. Binary hash
+  `0196e89fe5a7598f816ee54232c3d7c26d75e502ab5cfe2c9240e81d90f7255a`;
+  fixture hash `3f2cbf2aedea72d3a4c3c881d869d78c762aaf94ecc31ce01474b8458e46c57c`.
+  Both allowed files changed, baseline three test IDs preserved, two tests added,
+  all five passed independently, acceptance failed before and passed after.
+- Pilot verdicts: build, observed tests, bounded behavior and Git-visible scope
+  verified. Regression relevance, aggregate requirements and exact command
+  execution remained unverified. Shell-wrapped commands lacked cwd; compilation
+  used a cache environment override. No claims were contradicted. `detected`
+  therefore means insufficient evidence, not a demonstrated false agent claim.
+  This establishes real capture and conservative challenge, not semantic completeness.
+- Maintainer learning acceptance was explicit: the summary is a claim source,
+  independent checks provide evidence, and changed tests alone do not establish
+  relevant regressions. M05/M12–M17 learning and other live follow-ups are not
+  closed by this M19-only acceptance. M18 still requires outside participation.
+- Final `make check`: **937 passed, one live skip**, 108.93 seconds; Ruff lint and
+  format (172 files), strict mypy (107 files), root lock and wheel/sdist builds pass.
+  Pilot saved report regenerates exactly and all nine raw companion hashes match.
+  Final rebuilt-wheel `make package-check` also passed after the cache fix
+  (`runs/review-20260924/package-v2-final.log`); local Markdown-link and whitespace
+  checks pass. No private run data was staged or published.
+- PR Ready's original CLI assessment was **NOT PR READY**: its 120-second test
+  budget expired and it detected edits during that earlier run, plus untracked
+  files. Preserved `pr-ready-final.md` rather than concealing the failed assessment.
+  After freezing code, called the same unchanged bundled analyzer through its
+  supported `assess_repository(..., timeout_seconds=300)` API. Final exact verdict:
+  **NOT PR READY**; build/test/lint/static all PASS (937 passed, one skip, 76.04
+  seconds). No suspicious files or other risks; the sole remaining blocker is the
+  eleven intended untracked source/test/fixture/guide files. No staging or commit.
+  Full output: `runs/review-20260924/pr-ready-extended-final.md`. The time-budget
+  increase affects the assessment only; runtime test deadlines were not loosened.
+
+## Repository review — 2026-09-24
+
+- Review only: inspected architecture, roadmap, evaluators, M19 and tests; no
+  production fixes, dependency/lock changes, live inference, commits or publication.
+  Existing uncommitted M19 work is preserved. Detailed local evidence is under
+  ignored `runs/review-20260924/` (`review.md`, `probes.py`, `probes.json`, coverage
+  reports and the package-check log).
+- Fresh `make check` PASS: 890 passed, one gated live skip; Ruff, formatting,
+  strict mypy, root lock and wheel/sdist build passed. A separate coverage run
+  also passed 890 tests with one skip.
+- Isolated coverage.py 7.10.7 measured the main pytest process over
+  `src/agent_fault_lab`: 5,491/6,617 executable lines (82.98%) and 1,405/2,004
+  branches (70.11%); combined 79.99%. Child processes, separate integration
+  checks and isolated mutation copies were not combined. This is not complete
+  whole-project coverage; no coverage threshold is currently enforced.
+- Disposable offline probes reproduced M19 false verification for an empty test
+  suite and for command evidence retained from an invalid trace with wrong cwd
+  and unfinished events. The documented relative output path also failed in the
+  fake-Codex end-to-end probe. These are open correctness findings, not fixes.
+- Additional scope/resource limitations: Git snapshots omit ignored paths;
+  independent-check output is truncated after capture rather than bounded during
+  capture. The timeout probe returned unknown promptly; no timeout overrun is
+  claimed. M19 has not received the earlier evaluators' mutation audit.
+- `make package-check` could not complete its offline temporary-environment
+  installation: cached `pydantic-core==2.46.5` wheel missing. Build itself passed.
+  Separate integration environments are currently absent; their checks were not
+  freshly rerun. This does not invalidate historical results or establish a
+  distribution-code defect.
+- Saved M15 audit, M16 final transfer and M17 final reproduction JSON validate
+  and regenerate their existing Markdown exactly. This checks report consistency,
+  not fresh runtime execution or artifact authenticity.
+- Learning/live gates remain open as previously recorded. Next action: maintainer
+  reviews these findings, then explicitly authorizes focused M19 fixes and their
+  negative regression cases; add subprocess-aware coverage as a separate scoped
+  testing improvement. No new milestone or automatic roadmap advance.
+
+## M19 implementation — 2026-09-18
+
+- The user explicitly requested implementation of the reviewed real-work
+  verification plan before M18. This changes milestone sequencing without marking
+  M17's learning review complete or cancelling M18.
+- Added a controlled title-preservation Git fixture and `verify list/doctor/run`.
+  A live run is deliberately inconvenient: `--live` is required, output must be a
+  new directory, Codex identity/capabilities and fixture bytes are recorded, user
+  config is ignored, approval is disabled and shell network is disabled.
+- The agent final message supplies seven fixed claims only. Repository snapshots,
+  raw Git evidence, recognized Codex command events, and separately invoked
+  tests/build/immutable acceptance checks supply evidence. No LLM grades another
+  LLM. A changed test file is not enough to verify test relevance.
+- Added strict `coding-verification` saved records and Markdown regeneration. The
+  report separates process completion, claim validity, trace validity, requirement
+  grades and claim support. A detected result means an asserted claim was
+  contradicted or unverified; it is not proof of general program correctness.
+- Added offline regressions for the fixture baseline, file/mode/symlink snapshots,
+  out-of-scope changes, strict claims/traces, semantic restraint and an end-to-end
+  fake-executable run. The fake claims a regression test while adding only a
+  comment; M19 correctly leaves that claim and all-requirements claim unverified.
+- No genuine Codex task, paid inference, model download, daemon change, staging,
+  commit, push, publication, M18 work, dashboard, CI integration or additional
+  coding-agent adapter was performed.
+- Read-only preflight passed for Codex CLI 0.154.0 at resolved binary SHA-256
+  `4f85982624b3898c8991cb80c0981b2aa71070e3537046c9a95950318a95afcc`;
+  fixture SHA-256 was
+  `3f2cbf2aedea72d3a4c3c881d869d78c762aaf94ecc31ce01474b8458e46c57c`.
+  A run without mandatory `--live` exited 2 during argument parsing and created no
+  experiment. This inspected local capabilities only and did not start inference.
+- `make check` passed: **890 tests passed, one gated live test skipped**; root lock,
+  Ruff lint/format, strict mypy across 104 files, sdist and wheel builds passed.
+  The source archive includes the fixture and guide; the wheel contains the
+  verifier/reader but intentionally excludes the source-only fixture.
+- `make package-check` passed outside the checkout. It lists the M19 case, refuses
+  installed-wheel execution without the source fixture, and regenerates a strict
+  synthetic `coding-verification` report without Codex or network access.
+- PR Ready analyzer verdict: **NOT PR READY**. Build, test, lint and static checks
+  all passed (890 tests, one skip), with no suspicious files or remaining risks.
+  Its sole blocker is the eight intended untracked M19 source/test/fixture/guide
+  files. They remain unstaged because staging or committing was not requested.
 
 ## M17 commit and push — 2026-09-09
 
@@ -1488,5 +1654,6 @@ left local for review, not staged to bypass the assessment.
 | M14–M16: evaluation methodology and transfer | in_progress | Released in v0.4.0; technical checks pass; learning/live follow-ups remain |
 | M17: external failure reproduction | in_progress | Implemented locally; 27 real lifecycles verified; human learning checkpoint pending |
 | M18: external reuse and contribution | planned | Start after M17 review; independent outside reproduction required for completion |
+| M19: real-work coding claim verification | complete | Review findings fixed with regressions; one real pilot recorded; maintainer accepted learning checkpoint on 2026-09-24; uncommitted/unreleased |
 
 See `PLAN.md` for all individual milestone definitions and gates.

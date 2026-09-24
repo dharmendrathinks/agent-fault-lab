@@ -7,6 +7,19 @@ remain separate. `aflab report DIR --check` validates saved JSON without reading
 databases or importing LangGraph. Raw events and invocation/evaluation JSON remain
 beside each lifecycle's private task/checkpoint files. See the [M17 guide](milestones/M17.md).
 
+M19 uses a schema-1 `coding-verification` record in `evaluation.json`. It embeds
+the structured claims, before/after snapshots, change summary, recognized trace,
+independent checks and conservative grades. Raw Codex output, final message, Git
+status/diff, prompt, preflight checks and manifest remain hash-linked companions.
+Saved report regeneration reads only the evaluation; it neither reruns Codex nor
+rechecks the workspace. See the [M19 guide](milestones/M19.md).
+
+M19 v2 adds observed suite inventories and completed-event type/context checks.
+The manifest hashes the verifier and external test observer. Saved v1 verdicts
+are retained, not automatically regraded. Scope is Git-visible files, not a full
+filesystem audit. Coverage JSON/XML under `runs/coverage/` is a separate development
+measurement, not model-run evidence or a claim of complete requirements coverage.
+
 Generated outputs normally live under ignored `runs/`. A custom output directory
 must be new. Review a run before uploading it.
 

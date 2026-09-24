@@ -8,6 +8,7 @@ __pycache__/
 build/
 dist/
 .coverage
+.coverage.*
 htmlcov/
 .DS_Store
 .env

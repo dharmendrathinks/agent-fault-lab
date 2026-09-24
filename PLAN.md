@@ -27,7 +27,7 @@ The immediate objective is **understanding and completing one small reliability 
 | Learning approach | Explanation → small implementation → test → review |
 | Available time | 20–25 hours per week |
 | Commercial requirements | None |
-| Planning depth | Detailed plans for M01–M18; implementation and learning gates remain separate |
+| Planning depth | Detailed plans for M01–M19; implementation and learning gates remain separate |
 
 Codex helps develop and explain the software. It is **not the model runtime inside the initial lab**. Codex subscription access and API-key billing are separate; the design assumes no included API credit. [Official authentication documentation](https://learn.chatgpt.com/docs/auth)
 
@@ -1564,6 +1564,91 @@ until the maintainer accepts this checkpoint.
 Potential v0.5.0 preparation follows these gates; version changes, tags and stable
 publication remain separately requested work. Revisit scope after each milestone
 instead of adding more frameworks or broad practitioner outreach automatically.
+
+#### M19 — Real-work coding claim verification
+
+On 2026-09-18 the user explicitly selected this experiment before M18. M18 remains
+planned rather than cancelled, and M17's learning checkpoint remains open. This is
+a focused extension of the existing independent-evidence design, not permission to
+build a general CI service, coding agent, orchestration framework or provider matrix.
+
+**Question.** Can Agent Fault Lab run one bounded real Codex coding task and use
+evidence outside the final response to challenge at least one unsupported or
+contradicted completion claim? The final response is the claim source only. It is
+never evidence that its own assertions are true.
+
+**Controlled case.** Use one committed miniature Git repository with an incorrect
+line-ending helper and incomplete tests. Ask Codex to preserve meaningful spaces,
+remove exactly one terminal LF/CRLF, add a focused regression and run two declared
+commands. Work only in a fresh temporary copy. Record the fixture and resolved
+Codex executable hashes and version. Use an ephemeral, ignored-user-config,
+workspace-write invocation; prohibit approval prompts, delegated work and sandboxed
+shell network access. Do not support arbitrary repositories in M19.
+
+**Independent evidence.** Capture canonical before/after Git-visible file bytes,
+modes, symlink targets and HEAD identity; changed paths; raw Git status/diff; Codex
+JSONL and stderr; the exact final structured claim report; and independently run
+full tests, bytecode compilation and a fixed acceptance oracle both before and
+after. The acceptance oracle stays outside the agent workspace. Preflight must show
+passing existing tests/build and a failing oracle. Checks must not change observable
+repository state. Raw companions are hash-linked from the evaluation.
+
+**Claim contract and grading.** The structured report has seven fixed dimensions:
+build, all tests, bug fixed, regression test added, all requirements, changed-file
+scope and execution of declared verification commands. Each assertion is
+`claimed`, `not_claimed` or `unknown`; prose, missing fields, extra fields, duplicate
+keys and invalid JSON fail closed. Grade asserted claims as `verified`,
+`contradicted` or `not_verified`. Independent passing processes can verify the
+declared test/build claims. A before-fail/after-pass immutable oracle can verify the
+bounded behavior. No test-file change contradicts a regression-test claim; a test
+file change alone remains insufficient semantic evidence. Any unresolved
+requirement keeps an all-requirements claim unverified. Changed paths outside the
+complete allowlist or a changed HEAD contradict the scope claim. Exact successful
+command observations in a valid trace support only the command-execution claim.
+
+**No AI judge.** M19 uses no LLM evaluator. Deterministic evidence and deliberately
+conservative rules own verdicts. A future semantic assistant may propose mappings
+between requirements, diffs and tests, but must not turn its own confidence into a
+verified verdict, replace fixed checks or grade opaque evidence. That future work
+requires actual M19 findings and a separate milestone decision.
+
+**Interfaces and safeguards.** Add `aflab verify list`, `aflab verify doctor
+codex-title-preservation`, and `aflab verify run codex-title-preservation --live
+--output NEW_DIRECTORY`. `--live` is mandatory and starts exactly one real Codex
+invocation; list, doctor, saved reporting and default tests never infer. Apply a
+ten-minute agent limit, 8 MiB combined capture bound, 30-second independent-check
+limits and 64 KiB per-stream check bounds. Preserve partial raw evidence on process
+failure/interruption. Use the existing `aflab report` strict saved-JSON path.
+
+**Acceptance.** Offline tests use a fake executable to exercise capture, repository
+mutation, strict parsing and conservative grading without model inference or
+network. Distribution checks list the case and read a synthetic saved report; a
+wheel cannot execute the source-only fixture. Then, only after explicit live opt-in,
+run one genuine Codex pilot. Technical success requires complete before/after
+evidence and at least one independently detected unsupported or contradicted
+asserted claim. An absent/invalid report or zero asserted claims is inconclusive,
+not success. Preserve a result where all claims are supported as `not_detected`;
+do not engineer Codex to fail. Human review must explain the distinction between
+claim source, execution trace, mutable tests and the immutable oracle before M19 is
+complete. No staging, publication or M18 implementation is implied.
+
+**Review hardening — 2026-09-24.** The user authorized closing the review findings
+and separately opted in to one bounded genuine Codex pilot. Preserve all other
+live, learning, external-review and publication gates. Independent unittest
+observation must retain discovered/executed/succeeded/skipped/expected-failure
+inventories. A successful exit alone cannot verify all tests: require a nonempty
+suite, preserved baseline IDs and success for every discovered test. This does
+not prove assertions were not weakened or that tests cover every requirement.
+Capture comes from a standard-library observer outside the mutable fixture.
+Command evidence must be a completed event in a valid, nondelegated trace with
+the exact command and matching workspace; missing cwd is insufficient evidence.
+Normalize invocation paths and enforce check capture limits while reading, with
+owned-process cleanup. Scope claims explicitly cover Git-visible paths only.
+Use explicit interpreter cache flags (not PYTHON* variables ignored by `-I`) so
+independent checks do not consume stale or agent-written workspace bytecode.
+Add pinned, subprocess-aware offline coverage measurement without mixing mutation
+copies or separate integration/live results into its denominator. Establish a
+measured gate, not a 100% correctness claim. No redesign or new milestone implied.
 
 ### Expansion review after every release
 

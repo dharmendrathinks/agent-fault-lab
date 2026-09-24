@@ -7,8 +7,19 @@
 - Added `external list/doctor/run`, a fixed 27-lifecycle control/failure matrix,
   between-invocation read-only SQL grading, bounded workers, full partial inventory,
   strict saved reports and real integration checks on both configured CI platforms.
-- No model inference or M18 implementation. Independent outside review and learning
+- M17 involves no model inference or M18 implementation. Outside review and learning
   acceptance remain pending; stable version and release remain v0.4.0.
+- Added the M19 controlled coding-task fixture, `verify list/doctor/run`, strict
+  completion claims, before/after Git evidence, independent tests/build/acceptance,
+  conservative deterministic grading and saved-report support. Default coverage
+  uses a fake Codex executable. One opted-in genuine pilot captured real work;
+  four claims were verified, three remained unverified, and none were contradicted.
+- Hardened M19 v2 against empty/replaced/skipped suites, invalid or inapplicable
+  trace evidence and relative output paths; bounded independent-check capture and
+  owned-process cleanup. Preserve v1 saved report semantics.
+- Added pinned offline line/branch coverage with inherited Python subprocess
+  collection, JSON/XML reports and an existing-CI quality check. Separate live and
+  integration evidence is not folded into the offline coverage claim.
 
 ## 0.4.0 — 2026-09-08
 

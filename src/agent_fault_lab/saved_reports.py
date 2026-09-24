@@ -118,6 +118,14 @@ def render_saved_report(directory: Path) -> tuple[ReportKind, str]:
 
     raw_evaluation = _read_evidence(evaluation_path)
     parsed = json.loads(raw_evaluation)
+    if isinstance(parsed, dict) and parsed.get("artifact") == "coding-verification":
+        from agent_fault_lab.verification_records import (
+            CodingVerification,
+            render_verification,
+        )
+
+        result = CodingVerification.model_validate_json(raw_evaluation)
+        return "run", render_verification(result)
     if isinstance(parsed, dict) and parsed.get("artifact") == "boundary-evaluation":
         from agent_fault_lab.boundary_records import BoundaryEvaluation
         from agent_fault_lab.boundary_reports import (
